@@ -2,10 +2,10 @@
 
 ## Done means
 1. Public repo kogeki88/or-nav-v2 holds the code. No key or password in git.
-2. Tag v2.0.0 → green GitHub Action → `or-nav.apk` on Releases.
+2. Tag v2.0.1 → green GitHub Action → `or-nav.apk` on Releases.
 3. The latest-download link works.
 4. Sean installs it. The dark screen shows Installed Version, Build Number, Remote Tag.
-5. Tag v2.0.1 → Sean taps Check for Updates → progress bar → installs over the old app.
+5. Tag v2.0.2 → Sean taps Check for Updates → progress bar → installs over the old app.
 
 ## Files
 | File | What |
@@ -19,10 +19,10 @@
 
 ## Checks
 - [x] `npx tsc --noEmit` passes
-- [ ] `git ls-files` shows no keystore or keystore.properties
-- [ ] Action run green, Release has `or-nav.apk`
+- [x] `git ls-files` shows no keystore or keystore.properties
+- [x] Action run green, Release has `or-nav.apk` (run 42428805054); APK signature matches ornav-release.keystore
 - [ ] Phone screenshot of Build #1 (no emulator on this PC)
-- [ ] Self-update v2.0.0 → v2.0.1 on the phone
+- [ ] Self-update v2.0.1 → v2.0.2 on the phone
 
 ## Status
-In progress. Do not start Brick 2 until Sean confirms Build #1 is installed.
+Build #1 is v2.0.1 (tag v2.0.0 failed on a build.gradle typo and has no release; force-push is blocked, so it stays). Waiting for Sean to install. Do not start Brick 2 until Sean confirms Build #1 is installed.
