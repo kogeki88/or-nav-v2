@@ -11,7 +11,7 @@ import { C, R, S, T } from '../theme';
 import BottomSheet from '../ui/BottomSheet';
 import { Badge, Button, Group, Icon, IconButton, IconTile, ListRow, PressScale } from '../ui/kit';
 import type { TabName } from '../ui/TabBar';
-import type { OmniAction } from '../../supabase/functions/_shared/schema';
+import type { OmniAction } from '../../supabase/functions/omnibar/schema';
 import type { OmniMessage, Omnibar } from './useOmnibar';
 import { Draft, draftToChange } from './validate';
 

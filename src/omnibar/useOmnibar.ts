@@ -4,8 +4,8 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { supabase } from '../auth/supabase';
 import type { Library } from '../library/useLibrary';
-import type { OmniAction, OmniTurn } from '../../supabase/functions/_shared/schema';
-import { describeRemoved, scrub } from '../../supabase/functions/_shared/scrub';
+import type { OmniAction, OmniTurn } from '../../supabase/functions/omnibar/schema';
+import { describeRemoved, scrub } from '../../supabase/functions/omnibar/scrub';
 import { Draft, draftToChange, localAnswer, validActions } from './validate';
 
 export type DraftState = 'ready' | 'sending' | 'sent' | 'error';

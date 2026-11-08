@@ -4,8 +4,8 @@
 import Anthropic from 'npm:@anthropic-ai/sdk@1.3.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.119.0';
 
-import { scrub } from '../_shared/scrub.ts';
-import type { OmniRequest, OmniTurn } from '../_shared/schema.ts';
+import { scrub } from './scrub.ts';
+import type { OmniRequest, OmniTurn } from './schema.ts';
 import { DEFAULT_MODEL, askClaude } from './core.ts';
 import { libraryContext } from './prompt.ts';
 
@@ -18,6 +18,17 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 const fail = (status: number, error: string) => json(status, { error });
+
+/** The project's public key: the new publishable key ("default"), or the legacy anon key. Never the secret key. */
+function publicKey(): string {
+  try {
+    const keys = JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS') ?? '{}') as Record<string, string>;
+    if (keys.default) return keys.default;
+  } catch {
+    // fall through to the legacy key
+  }
+  return Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+}
 
 function readBody(raw: unknown): OmniRequest | null {
   if (!raw || typeof raw !== 'object') return null;
@@ -46,7 +57,7 @@ Deno.serve(async (req) => {
   }
 
   // Acts as the signed-in user, so row-level security limits what can be read.
-  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, publicKey(), {
     global: { headers: { Authorization: auth } },
     auth: { persistSession: false },
   });

@@ -1,7 +1,7 @@
 // The one Claude call behind the omnibar. No Deno or Supabase code here, so it can be tested from a PC.
 import type Anthropic from 'npm:@anthropic-ai/sdk@1.3.0';
 
-import { ANSWER_SCHEMA, type OmniAnswer, type OmniTurn } from '../_shared/schema.ts';
+import { ANSWER_SCHEMA, type OmniAnswer, type OmniTurn } from './schema.ts';
 import { SYSTEM_PROMPT } from './prompt.ts';
 
 export const DEFAULT_MODEL = 'claude-haiku-5-5';
