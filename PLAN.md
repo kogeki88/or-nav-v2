@@ -133,10 +133,11 @@ Done means: each joined department's items, cards and card lines live in SQLite 
 - [x] Emulator, debug build + real server: migrations ran (v1), server copy saved (2 hospitals, 4 departments, memberships), Admin "Phone database" block shows v1 of v1, 84 KB, last sync
 - [x] Seed applied in Supabase (Sean OK'd, 2026-11-08; editor text matched the file by SHA-256); read back 16 items, 3 cards, 23 card lines; emulator Library shows Cards 3, Items 16
 - [x] Airplane mode: closed and reopened → Library shows all cards and items, strip "Offline — showing your saved copy from just now"; a card opens with phases, quantities and shelves
-- [ ] Green cloud build v2.2.0; signature; no secret key; Sean updates in the app
+- [x] Green cloud build v2.2.0 (run 42527886777); `or-nav.apk` on Releases; signature 47:80:2B…39:08 matches; no secret key (only the library's "sb_secret_" label); bundle holds the phone database code
+- [ ] Sean updates his phone in the app; Library shows the sample cards; airplane-mode reopen still shows them
 - Known: on Android, database calls wait while the updater downloads an APK (expo-file-system and expo-sqlite share a native worker). They finish when the download ends. Only matters during a real update; the debug test app always "sees" an update.
 - Known: `withExclusiveTransactionAsync` was dropped for a plain transaction on the one connection; the job queue keeps reads out of a save.
 - Emulator note: three old Metro servers held ports 8081, 8082, 8095. The test app now loads from port 8099 (debug setting `debug_http_host` = localhost:8099, plus `adb reverse tcp:8099 tcp:8099`).
 
 ## Status
-v2.0.1–v2.0.5 published and confirmed on the phone. Part E done (2026-11-08). v2.1.1 published. Next: Sean updates the phone and joins a department.
+v2.0.1–v2.0.5 published and confirmed on the phone. Part E done (2026-11-08). v2.2.0 (Brick 2, offline library) published 2026-11-08 and checked on the emulator. Next: Sean updates the phone, joins Sample General Hospital / Main OR, and checks the Library in airplane mode. Then Brick 3 (phonetic search).
