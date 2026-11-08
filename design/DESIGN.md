@@ -49,7 +49,7 @@ Sheets and tabs use a spring (about 300 ms). Lists never animate on scroll. Resp
 - **Card**: surface, radius 16, 1px line, padding 16.
 - **List row**: at least 64 high; icon tile, title (body 600) + subtitle (callout, text2), status badge, chevron. Rows in a group share one card with hairline dividers inset 68.
 - **Top bar**: large title left, at most one icon button right (48x48). Department switcher sits under the title.
-- **Bottom sheet** (the preview): slides up over a dimmed list (bg at 60%). Grab handle, title, content, one primary action at the bottom inside thumb reach. Closes by swipe down, tap on the dim area, the close button, or Android Back.
+- **Bottom sheet** (the preview): slides up over a dimmed screen, tab bar included (bg at 60%). Grab handle, title, content, one primary action at the bottom inside thumb reach. Closes by swipe down, tap on the dim area, the close button, or Android Back. With the keyboard open, it shrinks to sit above it; the title never goes under the status bar.
 - **Chip / badge**: chip 40 high (tap area 48), radius 12. Badge 24 high, caption text, tinted fill of its meaning color.
 
 ## States

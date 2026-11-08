@@ -88,5 +88,24 @@ Done means: `0002_tenants.sql` applied in Supabase; the test script reports PASS
 - [ ] Sean runs the test; message says PASSED
 - Next, one at a time: setup questions pick hospital + department from the list → phone SQLite copy of your departments (old Brick 2 tables, plus department_id) → propose / review screens.
 
+## Part F — v2.1.0 Library, detail sheet, To review (Sean, 2026-11-08)
+Done means: tabs Library | To review | Me; search + Cards/Items filter + department switcher (join = pick and go); tap a row → bottom sheet (closes by swipe, dim tap, X, Back); Suggest an edit → proposal → Pending badge; colleague approves/rejects (reject asks twice); offline shows the saved copy; every screen checked on the emulator.
+
+| File | What |
+| --- | --- |
+| `design/DESIGN.md`, `src/theme.ts` | Design system (calm clinical, dark, Ionicons) and its tokens |
+| `src/ui/kit.tsx`, `BottomSheet.tsx`, `TabBar.tsx` | Shared parts; the sheet is drawn in the app window (not a Modal) and measures the keyboard itself |
+| `src/library/*` | types, pure logic (Node-tested), Supabase source + offline copy, demo source, `useLibrary`, Library screen, sheets |
+| `src/review/ReviewScreen.tsx` | To review tab |
+| `App.tsx` | Tabs after sign-in; demo mode (`EXPO_PUBLIC_DEMO=1`, development only) |
+| `package.json` | + @expo/vector-icons 15.0.2, expo-font ~58.0.11, react-native-safe-area-context ~5.11.1 (Sean approved each) |
+
+- [x] Typecheck; 7 Node logic tests; release bundle export
+- [x] Emulator (Pixel 7, Android 15, Expo Go, demo data): library, item + card sheets, edit with keyboard, send, approve, reject confirm, search, departments, swipe close, Me
+- [ ] Sean runs 0002_tenants.sql + test (Part E) — the real app needs these tables
+- [ ] Green cloud build v2.1.0 (adds native modules: expo-font, safe-area-context); signature; no secret key
+- [ ] Phone: join a department, suggest an edit, a second account approves
+- Emulator notes: Metro's file watcher misses edits on this PC; restart it with `--clear` after changes. Expo Go runs with hot reload off.
+
 ## Status
 v2.0.1–v2.0.5 published and confirmed on the phone. Next: Part E, Sean applies and tests the multi-tenant structure in Supabase.

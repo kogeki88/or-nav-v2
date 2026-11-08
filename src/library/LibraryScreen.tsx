@@ -1,0 +1,151 @@
+// Library tab: search and browse your department's preference cards and items.
+import { useMemo, useState } from 'react';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+
+import { Badge, Banner, Button, Chips, EmptyState, Group, Icon, IconButton, ListRow, SearchField, SectionLabel, SkeletonRows } from '../ui/kit';
+import { C, S, T } from '../theme';
+import DepartmentSheet from './DepartmentSheet';
+import LibrarySheet, { Selection } from './LibrarySheet';
+import { cardSubtitle, departmentLabel, itemLocation, pendingFor, searchCards, searchItems, timeAgo } from './logic';
+import type { Library } from './useLibrary';
+
+type Filter = 'all' | 'cards' | 'items';
+const PREVIEW = 5; // rows per section in "All" before "Show all"
+
+export default function LibraryScreen({ lib, topInset, bottomSpace, jobRole }: { lib: Library; topInset: number; bottomSpace: number; jobRole: string | null }) {
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<Filter>('all');
+  const [selection, setSelection] = useState<Selection | null>(null);
+  const [pickDept, setPickDept] = useState(false);
+
+  const deptItems = useMemo(() => lib.data.items.filter((i) => i.department_id === lib.deptId), [lib.data.items, lib.deptId]);
+  const deptCards = useMemo(() => lib.data.cards.filter((c) => c.department_id === lib.deptId), [lib.data.cards, lib.deptId]);
+  const items = useMemo(() => searchItems(deptItems, query), [deptItems, query]);
+  const cards = useMemo(() => searchCards(deptCards, query), [deptCards, query]);
+
+  const showCards = filter !== 'items';
+  const showItems = filter !== 'cards';
+  const cap = (n: number) => (filter === 'all' && query === '' ? Math.min(n, PREVIEW) : n);
+  const noDept = !lib.loading && lib.mine.length === 0;
+  const nothing = !lib.loading && lib.deptId && (showCards ? cards.length : 0) + (showItems ? items.length : 0) === 0;
+
+  return (
+    <View style={{ flex: 1 }} pointerEvents="box-none">
+      <ScrollView
+        style={{ flex: 1, marginBottom: bottomSpace }}
+        contentContainerStyle={[styles.content, { paddingTop: topInset + S.lg }]}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        refreshControl={<RefreshControl refreshing={lib.refreshing} onRefresh={() => lib.refresh(true)} tintColor={C.accent} colors={[C.accent]} progressBackgroundColor={C.raised} />}
+      >
+        <View style={styles.titleRow}>
+          <Text style={T.largeTitle} accessibilityRole="header">
+            Library
+          </Text>
+          {lib.deptId && <IconButton name="add" label="Suggest something new" onPress={() => setSelection({ type: 'new' })} color={C.bg} bg={C.accent} />}
+        </View>
+
+        <Pressable accessibilityRole="button" accessibilityLabel={`Department: ${departmentLabel(lib.data, lib.deptId)}. Change`} onPress={() => setPickDept(true)} style={styles.dept} hitSlop={8}>
+          <Icon name="business-outline" size={18} />
+          <Text style={styles.deptText} numberOfLines={1}>
+            {departmentLabel(lib.data, lib.deptId)}
+          </Text>
+          <Icon name="chevron-down" size={18} />
+        </Pressable>
+
+        {lib.offline && <Banner text={`Offline — showing your saved copy${lib.data.loadedAt ? ` from ${timeAgo(lib.data.loadedAt)}` : ''}.`} />}
+        {!lib.offline && lib.error !== '' && <Banner text={lib.error} tone="danger" icon="alert-circle-outline" />}
+
+        {!noDept && (
+          <View style={{ gap: S.md, marginTop: S.sm }}>
+            <SearchField value={query} onChange={setQuery} placeholder="Search items, surgeons, procedures" />
+            <Chips
+              value={filter}
+              onChange={setFilter}
+              options={[
+                { key: 'all', label: 'All' },
+                { key: 'cards', label: 'Cards', count: cards.length },
+                { key: 'items', label: 'Items', count: items.length },
+              ]}
+            />
+          </View>
+        )}
+
+        {lib.loading && (
+          <View style={{ marginTop: S.xl }}>
+            <SkeletonRows count={4} />
+          </View>
+        )}
+
+        {noDept && (
+          <EmptyState
+            icon="business-outline"
+            title="Join your department"
+            body="Pick your hospital and department to see its preference cards and supplies."
+            action={<Button label="Choose department" icon="add" onPress={() => setPickDept(true)} style={{ alignSelf: 'stretch' }} />}
+          />
+        )}
+
+        {nothing && query !== '' && <EmptyState icon="search-outline" title={`No matches for “${query}”`} body="Try another spelling, or a shorter word." />}
+        {nothing && query === '' && (
+          <EmptyState
+            icon="library-outline"
+            title="Start this department's library"
+            body="Suggest the first item or preference card. A colleague reviews it before it appears."
+            action={<Button label="Suggest something" icon="add" onPress={() => setSelection({ type: 'new' })} style={{ alignSelf: 'stretch' }} />}
+          />
+        )}
+
+        {!lib.loading && showCards && cards.length > 0 && (
+          <View>
+            <SectionLabel text="Preference cards" right={String(cards.length)} />
+            <Group>
+              {cards.slice(0, cap(cards.length)).map((c, i) => (
+                <ListRow
+                  key={c.id}
+                  first={i === 0}
+                  icon="clipboard-outline"
+                  title={c.procedure}
+                  subtitle={cardSubtitle(c)}
+                  right={pendingFor(lib.data.requests, 'card', c.id).length ? <Badge label="Pending" tone="warn" /> : undefined}
+                  onPress={() => setSelection({ type: 'card', id: c.id })}
+                />
+              ))}
+            </Group>
+            {cap(cards.length) < cards.length && <Button kind="ghost" label={`Show all ${cards.length} cards`} onPress={() => setFilter('cards')} />}
+          </View>
+        )}
+
+        {!lib.loading && showItems && items.length > 0 && (
+          <View>
+            <SectionLabel text="Items" right={String(items.length)} />
+            <Group>
+              {items.slice(0, cap(items.length)).map((it, i) => (
+                <ListRow
+                  key={it.id}
+                  first={i === 0}
+                  icon="cube-outline"
+                  title={it.name}
+                  subtitle={itemLocation(it)}
+                  right={pendingFor(lib.data.requests, 'item', it.id).length ? <Badge label="Pending" tone="warn" /> : undefined}
+                  onPress={() => setSelection({ type: 'item', id: it.id })}
+                />
+              ))}
+            </Group>
+            {cap(items.length) < items.length && <Button kind="ghost" label={`Show all ${items.length} items`} onPress={() => setFilter('items')} />}
+          </View>
+        )}
+      </ScrollView>
+
+      <LibrarySheet lib={lib} selection={selection} onSelect={setSelection} onClose={() => setSelection(null)} />
+      <DepartmentSheet lib={lib} open={pickDept} onClose={() => setPickDept(false)} jobRole={jobRole} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  content: { paddingHorizontal: S.lg, paddingBottom: S.xxl, gap: S.sm },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  dept: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, alignSelf: 'flex-start', maxWidth: '100%' },
+  deptText: { color: C.accent, fontSize: 16, fontWeight: '600', flexShrink: 1 },
+});
