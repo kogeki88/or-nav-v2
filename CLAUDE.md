@@ -39,6 +39,11 @@ Also read: `AGENTS.md` (Expo rules: check the SDK 58 docs, never trust memory), 
 - "Check for Updates" works on the sign-in screen too, so a broken login can always be fixed by an update.
 - Settings: `.env` locally (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, git-ignored); CI secrets `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`. Only the publishable key, never the secret key.
 
+## Phone database (v2.2.0, Brick 2)
+- `src/db/`: SQLite file `ornav.db`, WAL. Schema changes = a NEW numbered entry in `MIGRATIONS` (`src/db/schema.ts`); never edit a shipped one.
+- All database calls go through `serial()` in `libraryStore.ts` (one job at a time). Use a plain transaction; do not use `withExclusiveTransactionAsync`.
+- The library copy belongs to one user (`sync_meta.user_id`); another account's copy is never shown.
+
 ## Look (OR Dark Mode)
 Background #0B0F19, cards #111827, accent #38BDF8, text #F8FAFC. Touch targets 48–56dp, in the lower two-thirds of the screen. One screen loop: Search → Preference Card → Scrub Mode, no deep stacks or blocking pop-ups.
 

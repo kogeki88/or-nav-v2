@@ -19,14 +19,25 @@ function readSavedDept(): string | null {
 export type Library = ReturnType<typeof useLibrary>;
 
 export function useLibrary(source: LibrarySource, userId: string, useCache: boolean) {
-  const cached = useMemo(() => (useCache ? readCachedLibrary(userId) : null), [useCache, userId]);
-  const [data, setData] = useState<LibraryData>(cached ?? EMPTY_LIBRARY);
-  const [loading, setLoading] = useState(!cached);
+  const [data, setData] = useState<LibraryData>(EMPTY_LIBRARY);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [offline, setOffline] = useState(false);
   const [deptId, setDeptIdState] = useState<string | null>(readSavedDept);
   const live = useRef(true);
+  /** True once the server answered, so the slower phone copy never overwrites fresh data. */
+  const gotServer = useRef(false);
+
+  // Show the phone copy first (SQLite), while the server loads.
+  useEffect(() => {
+    if (!useCache) return;
+    readCachedLibrary(userId).then((saved) => {
+      if (!live.current || gotServer.current || !saved) return;
+      setData(saved);
+      setLoading(false);
+    });
+  }, [useCache, userId]);
 
   const refresh = useCallback(
     async (pull = false) => {
@@ -34,6 +45,7 @@ export function useLibrary(source: LibrarySource, userId: string, useCache: bool
       try {
         const next = await source.load();
         if (!live.current) return;
+        gotServer.current = true;
         setData(next);
         setError('');
         setOffline(false);

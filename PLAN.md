@@ -118,5 +118,25 @@ Sean's Samsung showed "Join your" instead of "Join your department". `src/ui/kit
 - [ ] Phone: update, heading in full, choose a department
 - Note: Expo Go cannot run the real-server build (no ExpoSQLite in Expo Go); check real-server screens with the release APK.
 
+## Part H — v2.2.0 Brick 2: offline library in the phone's own database (Sean, 2026-11-08)
+Done means: each joined department's items, cards and card lines live in SQLite tables (`ornav.db`, WAL); a server load replaces the copy in one transaction (all or nothing); airplane mode still opens the Library; Admin view shows a "Phone database" block; sample cards exist on the server for Sample General / Main OR.
+
+| File | What |
+| --- | --- |
+| `src/db/schema.ts` | Numbered migrations (v1 tables), row conversion. Pure TS, Node-tested |
+| `src/db/libraryStore.ts` | Opens `ornav.db` (WAL), runs migrations, `saveLibrary` / `readLibrary` / `dbHealth`; one-at-a-time job queue |
+| `src/library/supabaseSource.ts`, `useLibrary.ts` | Phone copy from SQLite instead of one JSON text; the old JSON copy moves in once, then is removed |
+| `src/views/AdminView.tsx` | "Phone database": schema, your departments, cards, items, card lines, suggestions, file size, last sync |
+| `supabase/seed/sample_main_or.sql` | 16 items, 3 cards, 23 card lines (sample data only); run by hand in the SQL editor; does nothing if Main OR already has items |
+
+- [x] Typecheck; 7 Node tests on real SQLite (node:sqlite): migrations, save/read round trip, replace, failed save keeps the old copy, empty library, broken JSON
+- [x] Emulator, debug build + real server: migrations ran (v1), server copy saved (2 hospitals, 4 departments, memberships), Admin "Phone database" block shows v1 of v1, 84 KB, last sync
+- [ ] Seed applied in Supabase (Sean OKs first); Library shows the sample cards; Admin counts match
+- [ ] Airplane mode: close and reopen → Library still shows cards with the offline strip
+- [ ] Green cloud build v2.2.0; signature; no secret key; Sean updates in the app
+- Known: on Android, database calls wait while the updater downloads an APK (expo-file-system and expo-sqlite share a native worker). They finish when the download ends. Only matters during a real update; the debug test app always "sees" an update.
+- Known: `withExclusiveTransactionAsync` was dropped for a plain transaction on the one connection; the job queue keeps reads out of a save.
+- Emulator note: three old Metro servers held ports 8081, 8082, 8095. The test app now loads from port 8099 (debug setting `debug_http_host` = localhost:8099, plus `adb reverse tcp:8099 tcp:8099`).
+
 ## Status
 v2.0.1–v2.0.5 published and confirmed on the phone. Part E done (2026-11-08). v2.1.1 published. Next: Sean updates the phone and joins a department.

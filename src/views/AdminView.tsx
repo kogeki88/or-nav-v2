@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
+import { DbHealth, dbHealth } from '../db/libraryStore';
 import { ConnectionState, SignedInUser, checkConnection, signOut, supabaseHost } from '../auth/supabase';
 import ProfileCard from '../profile/ProfileCard';
 import type { ProfileRow } from '../profile/profile';
@@ -18,6 +19,21 @@ const CONNECTION_LABEL: Record<ConnectionState | 'checking', { text: string; col
   paused: { text: 'Paused — resume in Supabase', color: C.danger },
   error: { text: 'Error', color: C.danger },
 };
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatWhen(iso: string | null): string {
+  if (!iso) return 'Never';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '—';
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${d.getMonth() + 1}/${d.getDate()} ${hh}:${mm}`;
+}
 
 function formatExpiry(seconds?: number): string {
   if (!seconds) return '—';
@@ -37,9 +53,18 @@ type Props = {
 export default function AdminView({ user, update, profile, onPreviewQuestionnaire }: Props) {
   const [connection, setConnection] = useState<ConnectionState | 'checking'>('checking');
 
+  const [db, setDb] = useState<DbHealth | null>(null);
+  const [dbError, setDbError] = useState('');
+
   const runCheck = useCallback(async () => {
     setConnection('checking');
     setConnection(await checkConnection());
+    try {
+      setDb(await dbHealth());
+      setDbError('');
+    } catch (e) {
+      setDbError(e instanceof Error ? e.message : String(e));
+    }
   }, []);
 
   useEffect(() => {
@@ -65,6 +90,30 @@ export default function AdminView({ user, update, profile, onPreviewQuestionnair
         <DetailRow icon="hourglass-outline" label="Session ends" value={formatExpiry(user.sessionExpiresAt)} />
         <DetailRow icon="server-outline" label="Server" value={supabaseHost || 'not set'} middle />
         <DetailRow icon="pulse-outline" label="Connection" value={conn.text} color={conn.color} />
+      </Group>
+
+      <SectionLabel text="Phone database" />
+      <Group style={{ paddingHorizontal: S.lg }}>
+        {dbError ? (
+          <DetailRow first icon="alert-circle-outline" label="Error" value={dbError} color={C.danger} />
+        ) : (
+          <>
+            <DetailRow
+              first
+              icon="layers-outline"
+              label="Schema"
+              value={db ? `v${db.schemaVersion} of v${db.latestVersion}` : '…'}
+              color={db && db.schemaVersion !== db.latestVersion ? C.danger : undefined}
+            />
+            <DetailRow icon="business-outline" label="Your departments" value={db ? String(db.counts.departments) : '…'} />
+            <DetailRow icon="document-text-outline" label="Cards" value={db ? String(db.counts.cards) : '…'} />
+            <DetailRow icon="cube-outline" label="Items" value={db ? String(db.counts.items) : '…'} />
+            <DetailRow icon="list-outline" label="Card lines" value={db ? String(db.counts.cardItems) : '…'} />
+            <DetailRow icon="git-pull-request-outline" label="Suggestions" value={db ? String(db.counts.requests) : '…'} />
+            <DetailRow icon="save-outline" label="File size" value={db ? formatBytes(db.sizeBytes) : '…'} />
+            <DetailRow icon="time-outline" label="Last sync" value={db ? formatWhen(db.loadedAt) : '…'} />
+          </>
+        )}
       </Group>
 
       <View style={{ gap: S.md, marginTop: S.lg }}>

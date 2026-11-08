@@ -1,24 +1,33 @@
-// Library data from Supabase, with a phone copy so the Library still opens offline.
+// Library data from Supabase, with a phone copy (src/db, SQLite) so the Library still opens offline.
 // The server's row-level security decides what this user may see and do.
 import { supabase } from '../auth/supabase';
+import { readLibrary, saveLibrary } from '../db/libraryStore';
 import type { LibraryData, LibrarySource, NewChange } from './types';
 
-const cacheKey = (userId: string) => `ornav.library.${userId}`;
+/** Before v2.2.0 the copy was one JSON text in localStorage. Moved into SQLite once, then removed. */
+const oldCacheKey = (userId: string) => `ornav.library.${userId}`;
 
-export function readCachedLibrary(userId: string): LibraryData | null {
+export async function readCachedLibrary(userId: string): Promise<LibraryData | null> {
   try {
-    const raw = localStorage.getItem(cacheKey(userId));
-    return raw ? (JSON.parse(raw) as LibraryData) : null;
+    const saved = await readLibrary(userId);
+    if (saved) return saved;
+    const raw = localStorage.getItem(oldCacheKey(userId));
+    if (!raw) return null;
+    const old = JSON.parse(raw) as LibraryData;
+    await saveLibrary(userId, old);
+    localStorage.removeItem(oldCacheKey(userId));
+    return old;
   } catch {
     return null;
   }
 }
 
-function writeCache(userId: string, data: LibraryData) {
+async function writeCache(userId: string, data: LibraryData) {
   try {
-    localStorage.setItem(cacheKey(userId), JSON.stringify(data));
+    await saveLibrary(userId, data);
+    localStorage.removeItem(oldCacheKey(userId));
   } catch {
-    // Not critical: the next open loads from the server again.
+    // Not critical: the old copy stays whole (one transaction), and the next open loads from the server again.
   }
 }
 
@@ -56,7 +65,7 @@ export function supabaseSource(userId: string): LibrarySource {
         ),
       ]);
       const data = { hospitals, departments, memberships, items, cards, cardItems, requests, loadedAt: new Date().toISOString() } as LibraryData;
-      writeCache(userId, data);
+      await writeCache(userId, data);
       return data;
     },
 
