@@ -1,16 +1,18 @@
-// Supabase Edge Function "omnibar": the only place the Anthropic key is used.
-// Steps: signed-in user → member of the department → daily limit → scrub again → load library (as the user) → Claude.
+// Supabase Edge Function "omnibar": the only place the AI keys are used (Anthropic, and the free Groq backup).
+// Steps: signed-in user → member of the department → scrub again → daily limit → load library (as the user)
+// → Claude, or the backup when Claude cannot answer.
 // Privacy: never log message text. Logs hold only event names and counts.
 import Anthropic from 'npm:@anthropic-ai/sdk@1.3.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.119.0';
 
 import { scrub } from './scrub.ts';
 import type { OmniRequest, OmniTurn } from './schema.ts';
-import { DEFAULT_MODEL, askClaude } from './core.ts';
+import { DEFAULT_BACKUP_MODEL, DEFAULT_MODEL, answerWithFallback, askClaude, askGroq, type Ask } from './core.ts';
 import { libraryContext } from './prompt.ts';
 
 const DAILY_LIMIT = Number(Deno.env.get('OMNIBAR_DAILY_LIMIT') ?? '50');
 const MODEL = Deno.env.get('OMNIBAR_MODEL') ?? DEFAULT_MODEL;
+const BACKUP_MODEL = Deno.env.get('OMNIBAR_BACKUP_MODEL') ?? DEFAULT_BACKUP_MODEL;
 const MAX_MESSAGE = 1000;
 const MAX_HISTORY = 10;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -50,9 +52,10 @@ Deno.serve(async (req) => {
   const auth = req.headers.get('Authorization');
   if (!auth) return fail(401, 'Sign in first.');
 
-  const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
-  if (!apiKey) {
-    console.error('omnibar: ANTHROPIC_API_KEY is not set');
+  const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY');
+  const groqKey = Deno.env.get('GROQ_API_KEY');
+  if (!anthropicKey && !groqKey) {
+    console.error('omnibar: no AI key is set');
     return fail(503, 'The assistant is not set up yet.');
   }
 
@@ -126,17 +129,19 @@ Deno.serve(async (req) => {
     cardItems: cardItems.data ?? [],
   });
 
+  // Claude fails fast (one retry, 20 s) so the backup still answers within a nurse's patience.
+  const claude: Ask | null = anthropicKey
+    ? (o) => askClaude(new Anthropic({ apiKey: anthropicKey, maxRetries: 1, timeout: 20_000 }), MODEL, o)
+    : null;
+  const backup: Ask | null = groqKey ? (o) => askGroq(groqKey, BACKUP_MODEL, o) : null;
+
   try {
-    const answer = await askClaude(new Anthropic({ apiKey }), { model: MODEL, context, history: alternating, message: clean.text });
-    console.log(`omnibar: ok, ${answer.actions.length} actions`);
-    return json(200, { ...answer, removed: clean.removed });
-  } catch (e) {
-    if (e instanceof Anthropic.RateLimitError) return fail(429, 'The assistant is busy. Try again in a minute.');
-    if (e instanceof Anthropic.APIError) {
-      console.error(`omnibar: Anthropic error ${e.status}`);
-      return fail(502, 'The assistant is not answering right now. Search still works.');
-    }
-    console.error('omnibar: unexpected error');
-    return fail(500, 'Something went wrong. Try again.');
+    const { answer, engine } = await answerWithFallback(claude, backup, { context, history: alternating, message: clean.text }, (event) =>
+      console.log(`omnibar: ${event}`),
+    );
+    console.log(`omnibar: ${engine}, ${answer.actions.length} actions`);
+    return json(200, { ...answer, engine, removed: clean.removed });
+  } catch {
+    return fail(502, 'The assistant is not answering right now. Search still works.');
   }
 });

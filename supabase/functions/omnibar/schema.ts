@@ -48,7 +48,12 @@ export type GoTo = { type: 'go_to'; tab: (typeof TABS)[number] };
 export type OmniAction = OpenItem | OpenCard | ShowResults | DraftItem | DraftCard | DraftCardLine | SwitchDepartment | GoTo;
 export type OmniAnswer = { reply: string; actions: OmniAction[] };
 
+/** Which AI answered: Claude, or the free backup (Groq). Set by the server, never by the model. */
+export type Engine = 'claude' | 'backup';
+
 const str = { type: 'string' } as const;
+/** A fixed value. Written as a one-item enum (not "const") so Claude and the backup accept the same schema. */
+const one = (value: string) => ({ type: 'string', enum: [value] });
 const strOrNull = { type: ['string', 'null'] } as const;
 const kind = { type: 'string', enum: ['add', 'edit', 'remove'] } as const;
 
@@ -56,18 +61,18 @@ function obj(properties: Record<string, unknown>) {
   return { type: 'object', properties, required: Object.keys(properties), additionalProperties: false };
 }
 
-/** JSON schema for Claude's structured output (output_config.format). */
+/** JSON schema for the structured answer (Claude output_config.format; backup response_format json_schema, strict). */
 export const ANSWER_SCHEMA = obj({
   reply: { ...str, description: 'Short plain answer for the nurse, 1-3 sentences.' },
   actions: {
     type: 'array',
     items: {
       anyOf: [
-        obj({ type: { const: 'open_item' }, item_id: str }),
-        obj({ type: { const: 'open_card' }, card_id: str }),
-        obj({ type: { const: 'show_results' }, item_ids: { type: 'array', items: str }, card_ids: { type: 'array', items: str } }),
+        obj({ type: one('open_item'), item_id: str }),
+        obj({ type: one('open_card'), card_id: str }),
+        obj({ type: one('show_results'), item_ids: { type: 'array', items: str }, card_ids: { type: 'array', items: str } }),
         obj({
-          type: { const: 'draft_item' },
+          type: one('draft_item'),
           kind,
           item_id: strOrNull,
           name: strOrNull,
@@ -79,7 +84,7 @@ export const ANSWER_SCHEMA = obj({
           summary: str,
         }),
         obj({
-          type: { const: 'draft_card' },
+          type: one('draft_card'),
           kind,
           card_id: strOrNull,
           surgeon: strOrNull,
@@ -89,7 +94,7 @@ export const ANSWER_SCHEMA = obj({
           summary: str,
         }),
         obj({
-          type: { const: 'draft_card_line' },
+          type: one('draft_card_line'),
           kind,
           card_id: str,
           card_item_id: strOrNull,
@@ -100,8 +105,8 @@ export const ANSWER_SCHEMA = obj({
           note: strOrNull,
           summary: str,
         }),
-        obj({ type: { const: 'switch_department' }, department_id: str }),
-        obj({ type: { const: 'go_to' }, tab: { type: 'string', enum: [...TABS] } }),
+        obj({ type: one('switch_department'), department_id: str }),
+        obj({ type: one('go_to'), tab: { type: 'string', enum: [...TABS] } }),
       ],
     },
   },

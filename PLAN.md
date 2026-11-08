@@ -157,6 +157,9 @@ Done means: "Ask OR-Nav" bar above the tabs on every tab → chat sheet; answers
 - [x] 0003 applied; read back: RLS on, 1 policy, signed-in can call `use_ai_quota`, anon cannot, users cannot insert
 - [x] Function `omnibar` deployed from the dashboard editor as one joined file (same files as git commit 8abac88; SHA-256 checked in the browser). Deploy note: the web editor cannot hold the `../` layout, so `scratchpad`-style join (drop local imports) → one `index.ts`.
 - [x] Emulator: bar above tabs; sheet with examples; "pt Smith needs a bovie" blocked on the phone, nothing sent; "where is the bovie" reached the function → "The assistant is not set up yet" (no key yet). Function's "Verify JWT" left ON: it passed the new ECC user token.
+- Free backup AI (Sean, 2026-11-08): Groq `openai/gpt-oss-120b` answers when Claude cannot (no key, credit, busy, rate limit, down, 20 s timeout); same prompt, library, schema and scrubbed text; "Backup AI" badge. Gemini free tier rejected: its terms let Google use and human-review free-tier prompts and forbid personal/clinical data. Groq: no retention by default, Zero Data Retention option, US-hosted. Neither free tier has a BAA.
+- [x] Fallback: 17 Node tests (order, every failure kind, both fail, timeout, strict schema body, no message text in logs); function type-checked
+- [ ] Sean: Groq key in Supabase Secrets (`GROQ_API_KEY`) + Zero Data Retention on in Groq Data Controls
 - [ ] Sean: Anthropic key in Supabase → Edge Functions → Secrets (`ANTHROPIC_API_KEY`)
 - [ ] 15 jargon requests on the emulator; draft → Send for review → Pending; To review shows the card-line change; airplane mode → plain search
 - [ ] Green cloud build v2.3.0; signature; no `sb_secret_` / `sk-ant-` in the bundle

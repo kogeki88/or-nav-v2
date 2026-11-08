@@ -113,6 +113,7 @@ function Message({ m, lib, omni, onOpenSelection, onGoTo }: { m: OmniMessage; li
     <View style={{ gap: S.sm }}>
       <View style={[styles.assistant, m.tone === 'danger' && { borderColor: C.danger }]}>
         {m.note ? <Badge label={m.note} tone={m.tone === 'danger' ? 'neutral' : 'warn'} /> : null}
+        {m.engine === 'backup' ? <Badge label="Backup AI" tone="neutral" /> : null}
         <Text style={[T.body, { color }]}>{m.text}</Text>
       </View>
       {(m.actions ?? []).map((a, i) => (

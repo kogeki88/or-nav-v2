@@ -4,7 +4,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { supabase } from '../auth/supabase';
 import type { Library } from '../library/useLibrary';
-import type { OmniAction, OmniTurn } from '../../supabase/functions/omnibar/schema';
+import type { Engine, OmniAction, OmniTurn } from '../../supabase/functions/omnibar/schema';
 import { describeRemoved, scrub } from '../../supabase/functions/omnibar/scrub';
 import { Draft, draftToChange, localAnswer, validActions } from './validate';
 
@@ -19,6 +19,8 @@ export type OmniMessage = {
   tone?: 'warn' | 'danger';
   actions?: OmniAction[];
   drafts?: Record<number, { state: DraftState; error?: string }>;
+  /** Set when the free backup AI answered instead of Claude. */
+  engine?: Engine;
 };
 
 const HISTORY_TURNS = 10;
@@ -98,7 +100,7 @@ export function useOmnibar(lib: Library) {
         actions.forEach((a, i) => {
           if (a.type.startsWith('draft_')) drafts[i] = { state: 'ready' };
         });
-        add({ role: 'assistant', text: reply || 'Done.', actions, drafts });
+        add({ role: 'assistant', text: reply || 'Done.', actions, drafts, engine: data?.engine === 'backup' ? 'backup' : 'claude' });
       } catch {
         offline('No connection to the assistant');
       } finally {

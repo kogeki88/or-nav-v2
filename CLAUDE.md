@@ -39,6 +39,12 @@ Also read: `AGENTS.md` (Expo rules: check the SDK 58 docs, never trust memory), 
 - "Check for Updates" works on the sign-in screen too, so a broken login can always be fixed by an update.
 - Settings: `.env` locally (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, git-ignored); CI secrets `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`. Only the publishable key, never the secret key.
 
+## AI omnibar (v2.3.0, Sean 2026-11-08; not in the original 7 bricks)
+- Edge Function `supabase/functions/omnibar/` (self-contained folder; the app imports `scrub.ts` and `schema.ts` from it). AI keys live only in Supabase secrets: `ANTHROPIC_API_KEY` (Claude Haiku 5.5, first), `GROQ_API_KEY` (free backup `openai/gpt-oss-120b`). Never in the app or git.
+- The AI only drafts changes; the nurse sends them for review. The app re-checks every id (`src/omnibar/validate.ts`).
+- Every message is scrubbed on the phone and again on the server. Never log message text.
+- Deploy: push, then the web editor with one joined `index.ts` (see PLAN Part I); the Supabase CLI sign-in does not work in remote mode.
+
 ## Phone database (v2.2.0, Brick 2)
 - `src/db/`: SQLite file `ornav.db`, WAL. Schema changes = a NEW numbered entry in `MIGRATIONS` (`src/db/schema.ts`); never edit a shipped one.
 - All database calls go through `serial()` in `libraryStore.ts` (one job at a time). Use a plain transaction; do not use `withExclusiveTransactionAsync`.
