@@ -36,7 +36,7 @@ Background #0B0F19, cards #111827, accent #38BDF8, text #F8FAFC. Touch targets 4
 ## Migration: Salvage & Strangle (from v0.63 PWA)
 - Salvage (pure TS): Double Metaphone phonetic search; Dexie v8 models (preference cards, procedures, trays, supply locations, roles); Scrub Mode layout rules, card carousel, Resource Inspector validation.
 - Replace: IndexedDB → expo-sqlite (WAL). WebView mic → native audio + local Whisper (whisper.rn / ONNX). Sideloading → GitHub Releases + in-app installer.
-- The v0.63 source is not on this PC yet. Ask Sean for it before Brick 2.
+- Decision (2026-11-08): Sean does not have the v0.63 source. Brick 2 tables are designed fresh from the list below; nothing is salvaged from Dexie v8.
 
 ## The 7 bricks
 1. **Self-updating shell + cloud APK pipeline.** `src/updater.ts`, `.github/workflows/release-apk.yml`. (Current)

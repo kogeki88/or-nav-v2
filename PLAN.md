@@ -73,7 +73,35 @@ Done means: signed in with no profile → 4-step questionnaire (You / Work / Rol
 - [x] Table + 3 policies + RLS on (read back); anonymous read returns `[]`, anonymous insert refused (401, RLS)
 - [x] Typecheck; 13 Node tests; local Android bundle
 - [x] Green cloud build v2.0.5; signature matches; no secret key
-- [ ] Phone: questionnaire on sign-in → greeting + card; preview doesn't save; Sean's row in Supabase
+- [x] Phone: questionnaire on sign-in → greeting + card; preview doesn't save (Sean confirmed 2026-11-08)
+
+## Brick 2 — v2.1.0 SQLite engine (DRAFT, waits for Sean's OK)
+Done means: on start the app opens `ornav.db` in WAL mode, runs any new migrations, loads the sample seed once (all or nothing), and the Admin view has a Health drawer with row counts, schema version and file size. Works in airplane mode. No new add-on (`expo-sqlite` ~58.0.15 is already installed).
+
+Tables (designed fresh; no v0.63 source):
+| Table | One row is | Columns |
+| --- | --- | --- |
+| `items` | One supply or instrument | id, name, category, shelf, sub_location, synonyms (text list), notes, photo_path, updated_at |
+| `preference_cards` | One surgeon's setup for one procedure | id, surgeon, procedure, specialty, notes, updated_at |
+| `card_items` | One item on one card | id, card_id → preference_cards, item_id → items, phase (Setup / Incision / Cannulation-Main / Closure), quantity, open_or_hold, note, sort_order |
+| `phonetic_index` | One search code for one item | item_id → items, code, kind (primary / secondary / trigram / prefix). Empty until Brick 3 |
+| `schema_migrations` | One applied change to the tables | version, applied_at |
+
+Rules: deleting a card deletes its card_items; an item on a card cannot be deleted. Indexes on card_items(card_id), phonetic_index(code).
+
+| File | What |
+| --- | --- |
+| `src/engine/db.ts` | Open `ornav.db`, WAL, foreign keys on, run migrations in order |
+| `src/engine/schema.ts` | Migration 1: the 5 tables + indexes |
+| `src/engine/seed.ts` | Load a seed bundle in one transaction; skip if already loaded |
+| `src/engine/seed-sample.json` | Small made-up sample (no patient data): ~20 items, 2 cards |
+| `src/engine/health.ts` | Row counts, schema version, file size |
+| `src/views/HealthDrawer.tsx`, `AdminView.tsx` | Health drawer in Admin view |
+
+- [ ] Sean OKs this design
+- [ ] Typecheck; Node tests: migrations run once, seed is all-or-nothing, foreign keys hold
+- [ ] Local Android bundle; green cloud build v2.1.0; signature; no secret key
+- [ ] Phone: update, Health drawer shows the sample counts, airplane mode still works
 
 ## Status
-v2.0.1–v2.0.4 published and verified. v2.0.5 (questionnaire) published and verified; waiting for Sean's phone test. Do not start Brick 2 until Sean confirms.
+v2.0.1–v2.0.4 published and verified. v2.0.5 (questionnaire) published and confirmed on the phone. Next: Brick 2 table design, waiting for Sean's OK before code.
