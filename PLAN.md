@@ -72,8 +72,8 @@ Done means: signed in with no profile → 4-step questionnaire (You / Work / Rol
 
 - [x] Table + 3 policies + RLS on (read back); anonymous read returns `[]`, anonymous insert refused (401, RLS)
 - [x] Typecheck; 13 Node tests; local Android bundle
-- [ ] Green cloud build v2.0.5; signature; no secret key
+- [x] Green cloud build v2.0.5; signature matches; no secret key
 - [ ] Phone: questionnaire on sign-in → greeting + card; preview doesn't save; Sean's row in Supabase
 
 ## Status
-v2.0.1–v2.0.4 published and verified. v2.0.5 (questionnaire) building. Do not start Brick 2 until Sean confirms.
+v2.0.1–v2.0.4 published and verified. v2.0.5 (questionnaire) published and verified; waiting for Sean's phone test. Do not start Brick 2 until Sean confirms.
