@@ -16,6 +16,7 @@ import {
   StyleSheet,
   View,
   useWindowDimensions,
+  type ScrollViewInstance,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -30,9 +31,12 @@ type Props = {
   /** Stays fixed at the bottom, in thumb reach (the one main action). */
   footer?: ReactNode;
   label: string;
+  /** Chat-style: keep the newest content (the end) in view as it grows. */
+  stickToEnd?: boolean;
 };
 
-export default function BottomSheet({ open, onClose, header, children, footer, label }: Props) {
+export default function BottomSheet({ open, onClose, header, children, footer, label, stickToEnd }: Props) {
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const { height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [mounted, setMounted] = useState(open);
@@ -134,7 +138,14 @@ export default function BottomSheet({ open, onClose, header, children, footer, l
             <View style={styles.handle} />
             {header}
           </View>
-          <ScrollView style={styles.scroll} contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled" bounces={false}>
+          <ScrollView
+            ref={scrollRef}
+            style={styles.scroll}
+            contentContainerStyle={styles.body}
+            keyboardShouldPersistTaps="handled"
+            bounces={false}
+            onContentSizeChange={stickToEnd ? () => scrollRef.current?.scrollToEnd({ animated: true }) : undefined}
+          >
             {children}
           </ScrollView>
           {footer ? <View style={styles.footer}>{footer}</View> : null}

@@ -12,6 +12,10 @@ import {
 } from './src/auth/supabase';
 import { DEMO_USER_ID, demoSource } from './src/library/demoSource';
 import LibraryScreen from './src/library/LibraryScreen';
+import type { Selection } from './src/library/LibrarySheet';
+import OmniBar, { OMNI_BAR_SPACE } from './src/omnibar/OmniBar';
+import OmniSheet from './src/omnibar/OmniSheet';
+import { useOmnibar } from './src/omnibar/useOmnibar';
 import { toReview } from './src/library/logic';
 import { supabaseSource } from './src/library/supabaseSource';
 import { useLibrary } from './src/library/useLibrary';
@@ -198,18 +202,33 @@ function SignedIn({
   const insets = useSafeAreaInsets();
   const source = useMemo(() => (DEMO ? demoSource() : supabaseSource(user.id)), [user.id]);
   const lib = useLibrary(source, user.id, !DEMO);
+  const omni = useOmnibar(lib);
+  const [omniOpen, setOmniOpen] = useState(false);
+  // An item or card the assistant asked to open; the Library tab opens it in its sheet.
+  const [openRequest, setOpenRequest] = useState<{ selection: Selection; n: number } | null>(null);
+
+  const openSelection = useCallback(
+    (selection: Selection) => {
+      setOmniOpen(false);
+      setTab('library');
+      setOpenRequest((prev) => ({ selection, n: (prev?.n ?? 0) + 1 }));
+    },
+    [setTab],
+  );
 
   // Tab content fills the whole screen and is drawn after the tab bar, so an open sheet's
-  // dim layer covers the tab bar too. Lists pad their bottom by the tab bar's height.
-  const tabBarSpace = TAB_BAR_HEIGHT + Math.max(insets.bottom, S.sm);
+  // dim layer covers the tab bar too. Lists pad their bottom by the tab bar's height plus the omnibar.
+  const tabBarHeight = TAB_BAR_HEIGHT + Math.max(insets.bottom, S.sm);
+  const tabBarSpace = tabBarHeight + OMNI_BAR_SPACE;
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
       <View style={styles.tabBar}>
+        <OmniBar onOpen={() => setOmniOpen(true)} busy={omni.busy} />
         <TabBar value={tab} onChange={setTab} badge={toReview(lib.data, user.id).length} bottomInset={insets.bottom} />
       </View>
       <View style={styles.tabContent} pointerEvents="box-none">
-        {tab === 'library' && <LibraryScreen lib={lib} topInset={insets.top} bottomSpace={tabBarSpace} jobRole={profile.role} />}
+        {tab === 'library' && <LibraryScreen lib={lib} topInset={insets.top} bottomSpace={tabBarSpace} jobRole={profile.role} openRequest={openRequest} />}
         {tab === 'review' && <ReviewScreen lib={lib} topInset={insets.top} bottomSpace={tabBarSpace} />}
         {tab === 'me' && (
           <MeScreen
@@ -223,6 +242,17 @@ function SignedIn({
           />
         )}
       </View>
+      <OmniSheet
+        open={omniOpen}
+        onClose={() => setOmniOpen(false)}
+        omni={omni}
+        lib={lib}
+        onOpenSelection={openSelection}
+        onGoTo={(t) => {
+          setOmniOpen(false);
+          setTab(t);
+        }}
+      />
       {/* Solid strip behind the status bar, so scrolled content never runs under the clock. */}
       <View pointerEvents="none" style={[styles.statusStrip, { height: insets.top }]} />
     </View>

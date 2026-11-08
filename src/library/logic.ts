@@ -129,7 +129,31 @@ export function missingRequired(target: 'item' | 'card', form: Record<string, st
 
 /** The rows the review screen shows: field, before, after. */
 export function reviewRows(data: LibraryData, r: ChangeRequest): { label: string; before: string; after: string }[] {
-  if (r.target === 'card_item') return [];
+  if (r.target === 'card_item') {
+    const line = data.cardItems.find((ci) => ci.id === r.target_id) as Record<string, unknown> | undefined;
+    const cardId = (r.data.card_id as string | undefined) ?? (line?.card_id as string | undefined);
+    const itemId = (r.data.item_id as string | undefined) ?? (line?.item_id as string | undefined);
+    const card = data.cards.find((c) => c.id === cardId);
+    const item = data.items.find((i) => i.id === itemId);
+    const fixed = [
+      { label: 'Card', before: card ? `${card.procedure} · ${card.surgeon}` : '—', after: card ? `${card.procedure} · ${card.surgeon}` : '—' },
+      { label: 'Item', before: item?.name ?? '—', after: item?.name ?? '—' },
+    ];
+    const fields = [
+      { key: 'phase', label: 'Phase' },
+      { key: 'quantity', label: 'Quantity' },
+      { key: 'open_or_hold', label: 'Open or hold' },
+      { key: 'note', label: 'Note' },
+    ].filter((f) => r.kind === 'remove' || f.key in r.data);
+    return [
+      ...fixed,
+      ...fields.map((f) => ({
+        label: f.label,
+        before: r.kind === 'add' ? '—' : show(line?.[f.key]),
+        after: r.kind === 'remove' ? '—' : show(r.data[f.key]),
+      })),
+    ];
+  }
   const current =
     r.target === 'item'
       ? (data.items.find((i) => i.id === r.target_id) as Record<string, unknown> | undefined)
@@ -155,7 +179,14 @@ export function requestTitle(data: LibraryData, r: ChangeRequest): string {
     const proc = (r.data.procedure as string | undefined) ?? c?.procedure ?? 'card';
     return `${verb} card: ${proc}`;
   }
-  return `${verb} card line`;
+  const line = data.cardItems.find((ci) => ci.id === r.target_id);
+  const card = data.cards.find((c) => c.id === ((r.data.card_id as string | undefined) ?? line?.card_id));
+  const item = data.items.find((i) => i.id === ((r.data.item_id as string | undefined) ?? line?.item_id));
+  const what = item?.name ?? 'item';
+  const where = card ? ` · ${card.procedure}` : '';
+  if (r.kind === 'add') return `Add to card: ${what}${where}`;
+  if (r.kind === 'remove') return `Remove from card: ${what}${where}`;
+  return `Change on card: ${what}${where}`;
 }
 
 /** Requests the user can review: pending, in their departments, not their own. */
