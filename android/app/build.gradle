@@ -69,10 +69,6 @@ react {
 def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBuilds') ?: false).toBoolean()
 
 /**
- * The preferred build flavor of JavaScriptCore (JSC)
- *
- * For example, to use the international variant, you can use:
- * `/**
  * OR-Nav release signing. The keystore is never in git.
  * Local builds read android/keystore.properties; GitHub Actions passes environment variables.
  */
@@ -89,7 +85,11 @@ def releaseStoreFile = file('ornav-release.keystore')
 def ornavVersionName = System.getenv('ORNAV_VERSION_NAME') ?: '2.0.0'
 def ornavVersionCode = (System.getenv('ORNAV_VERSION_CODE') ?: '1').toInteger()
 
-def jscFlavor = 'org.webkit:android-jsc-intl:+'`
+/**
+ * The preferred build flavor of JavaScriptCore (JSC)
+ *
+ * For example, to use the international variant, you can use:
+ * `def jscFlavor = 'org.webkit:android-jsc-intl:+'`
  *
  * The international variant includes ICU i18n library and necessary data
  * allowing to use e.g. `Date.toLocaleString` and `String.localeCompare` that
