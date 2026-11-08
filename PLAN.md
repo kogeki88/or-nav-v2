@@ -45,4 +45,4 @@ Done means: sign-in screen on first open; create account → confirm email → s
 - [ ] Phone: in-app update to v2.0.3, create account, confirm, sign in, airplane-mode reopen, sign out
 
 ## Status
-Build #1 is v2.0.1 (tag v2.0.0 failed on a build.gradle typo and has no release). v2.0.2 building. Login code written, waiting for Sean's Supabase project. Do not start Brick 2 until Sean confirms.
+Build #1 is v2.0.1 (tag v2.0.0 failed on a build.gradle typo and has no release). v2.0.2 (updater fix) and v2.0.3 (login) published and verified. Waiting for Sean to update and test the login on the phone. Do not start Brick 2 until Sean confirms.
