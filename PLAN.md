@@ -112,7 +112,8 @@ Done means: tabs Library | To review | Me; search + Cards/Items filter + departm
 Sean's Samsung showed "Join your" instead of "Join your department". `src/ui/kit.tsx` EmptyState: title and body get `alignSelf: 'stretch'`.
 - [x] Typecheck
 - [x] Green cloud build v2.1.1 (run 42510490204); signature 47:80:2B…39:08 matches; no secret key (only the library's "sb_secret_" label)
-- [x] Emulator: v2.1.1 installs over v2.0.4, opens, "You have the latest version". Signed out there, so the Library screen waits for the phone
+- [x] Emulator: v2.1.1 installs over v2.0.4, opens, "You have the latest version"
+- [x] Test phone, debug build + real server, test admin account (2026-11-08): questionnaire saves; Library shows full "Join your department", no red box; Departments lists 2 hospitals x 2; Join Sample General / Main OR → empty library "Start this department's library"; Me shows Admin badge + Regular/Admin switch
 - [x] Server with the app's key: tables answer "permission denied" when signed out (before: "does not exist")
 - [ ] Phone: update, heading in full, choose a department
 - Note: Expo Go cannot run the real-server build (no ExpoSQLite in Expo Go); check real-server screens with the release APK.

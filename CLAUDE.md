@@ -22,6 +22,14 @@ Also read: `AGENTS.md` (Expo rules: check the SDK 58 docs, never trust memory), 
 - Phone link: https://github.com/kogeki88/or-nav-v2/releases/latest/download/or-nav.apk
 - CI uses Node 22 (Expo SDK 58 needs it) and Java 17 Temurin.
 
+## Test phone (emulator `ornav_pixel`, set up 2026-11-08)
+- Runs a DEBUG build of the real app (`com.ornav.app`, debug key). Expo Go cannot run the real app (no ExpoSQLite); use Expo Go only for demo mode.
+- The debug APK is built in the cloud: Actions → "Debug APK (test phone)" (`.github/workflows/debug-apk.yml`, manual). Local builds fail: Windows 260-character path limit in the C++ step. Rebuild only after native changes (new native package, `android/` edits).
+- Run: `npx expo start --dev-client --port 8081` in this folder, `adb reverse tcp:8081 tcp:8081`, open the app. JS changes load live from Metro; real Supabase from `.env`.
+- Signed in as the test admin account (Sean's "+ornavtest" address; see Supabase → Users) (role admin, profile "Test Nurse", member of Sample General Hospital / Main OR). Sean keeps the password; Claude never types it. If signed out, Sean signs in once.
+- The release updater can't install over the debug app (different key); ignore its "Opening the Android installer". To test the updater: uninstall, then `adb install` a release APK.
+- Driving it with adb: never press Back to hide the keyboard (it can close the app); tap the keyboard's ✓ key instead. Take a screenshot before each tap, because the layout moves.
+
 ## Online login (added by Sean, 2026-11-08; not in the original 7 bricks)
 - Supabase email + password. Code: `src/auth/supabase.ts`, `src/auth/LoginScreen.tsx`. Session in `expo-sqlite/localStorage` (Expo SDK 58 guide).
 - Offline rule: sign in once with internet; the app stays signed in offline until Sign out or Supabase ends the session. OR-Nav keeps its own `ornav.signedInUser` note because `getSession()` returns null offline once the 1-hour token expires.
