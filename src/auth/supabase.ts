@@ -5,6 +5,8 @@ import 'expo-sqlite/localStorage/install';
 import { createClient, type AuthError } from '@supabase/supabase-js';
 import { AppState } from 'react-native';
 
+import { Role, roleOf } from './role';
+
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
 const publishableKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? '';
 
@@ -27,15 +29,41 @@ AppState.addEventListener('change', (state) => {
 });
 
 /** Who is signed in, kept by OR-Nav so the answer works offline. */
-export type SignedInUser = { id: string; email: string };
+export type SignedInUser = {
+  id: string;
+  email: string;
+  role: Role;
+  /** Access token expiry (seconds since 1970), for the Admin view. */
+  sessionExpiresAt?: number;
+};
 const USER_KEY = 'ornav.signedInUser';
 
 export function readSignedInUser(): SignedInUser | null {
   try {
     const raw = localStorage.getItem(USER_KEY);
-    return raw ? (JSON.parse(raw) as SignedInUser) : null;
+    if (!raw) return null;
+    const user = JSON.parse(raw) as SignedInUser;
+    return { ...user, role: user.role ?? 'user' }; // notes saved by v2.0.3 have no role
   } catch {
     return null;
+  }
+}
+
+/**
+ * Asks Supabase for the latest account data (role included), so a role set in the
+ * dashboard reaches the app without signing out. Offline or on error: keeps the stored note.
+ */
+export async function refreshSignedInUser(): Promise<SignedInUser | null> {
+  const current = readSignedInUser();
+  if (!current) return null;
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) return current;
+    const updated = { ...current, email: data.user.email ?? current.email, role: roleOf(data.user) };
+    writeSignedInUser(updated);
+    return updated;
+  } catch {
+    return current;
   }
 }
 
@@ -51,13 +79,34 @@ export function watchSignedInUser(onChange: (user: SignedInUser | null) => void)
       writeSignedInUser(null);
       onChange(null);
     } else if (session?.user && event !== 'INITIAL_SESSION') {
-      const user = { id: session.user.id, email: session.user.email ?? '' };
+      const user: SignedInUser = {
+        id: session.user.id,
+        email: session.user.email ?? '',
+        role: roleOf(session.user),
+        sessionExpiresAt: session.expires_at,
+      };
       writeSignedInUser(user);
       onChange(user);
     }
   });
   return () => data.subscription.unsubscribe();
 }
+
+export type ConnectionState = 'ok' | 'offline' | 'paused' | 'error';
+
+/** Pings Supabase's login service. 'paused' = free project asleep (Resume it in the dashboard). */
+export async function checkConnection(): Promise<ConnectionState> {
+  if (!authConfigured) return 'error';
+  try {
+    const res = await fetch(`${url}/auth/v1/health`, { headers: { apikey: publishableKey } });
+    if (res.ok) return 'ok';
+    return res.status === 540 || res.status === 521 || res.status === 503 ? 'paused' : 'error';
+  } catch {
+    return 'offline';
+  }
+}
+
+export const supabaseHost = url.replace(/^https?:\/\//, '');
 
 /** Turns Supabase and network errors into plain words. */
 export function friendlyAuthError(error: AuthError | Error): string {

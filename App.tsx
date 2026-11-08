@@ -1,29 +1,38 @@
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AppState, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import LoginScreen from './src/auth/LoginScreen';
-import { SignedInUser, readSignedInUser, signOut, watchSignedInUser } from './src/auth/supabase';
-import { C } from './src/theme';
 import {
-  RemoteRelease,
-  checkForUpdate,
-  downloadAndInstall,
-  installedBuild,
-  installedVersion,
-} from './src/updater';
-
-type Phase = 'idle' | 'checking' | 'downloading';
+  SignedInUser,
+  readSignedInUser,
+  refreshSignedInUser,
+  watchSignedInUser,
+} from './src/auth/supabase';
+import { C } from './src/theme';
+import { checkForUpdate, downloadAndInstall } from './src/updater';
+import AdminView from './src/views/AdminView';
+import RegularView from './src/views/RegularView';
+import UpdatePanel, { UpdatePhase, UpdateState } from './src/views/UpdatePanel';
+import ViewToggle, { ViewName, readSavedView, saveView } from './src/views/ViewToggle';
 
 export default function App() {
-  const [phase, setPhase] = useState<Phase>('idle');
+  const [phase, setPhase] = useState<UpdatePhase>('idle');
   const [remoteTag, setRemoteTag] = useState('—');
   const [status, setStatus] = useState('');
   const [isError, setIsError] = useState(false);
   const [progress, setProgress] = useState(0);
   const [user, setUser] = useState<SignedInUser | null>(readSignedInUser);
+  const [view, setView] = useState<ViewName>(readSavedView);
 
+  // Account: follow Supabase events, and ask the server for the latest role on start and on return.
   useEffect(() => watchSignedInUser(setUser), []);
+  useEffect(() => {
+    const refresh = () => refreshSignedInUser().then((u) => u && setUser(u));
+    refresh();
+    const sub = AppState.addEventListener('change', (s) => s === 'active' && refresh());
+    return () => sub.remove();
+  }, []);
 
   const runUpdate = useCallback(async () => {
     setIsError(false);
@@ -37,7 +46,12 @@ export default function App() {
         setPhase('idle');
         return;
       }
-      await install(check.remote);
+      setPhase('downloading');
+      setProgress(0);
+      setStatus(`Downloading ${check.remote.tag}…`);
+      await downloadAndInstall(check.remote, setProgress);
+      setStatus('Opening the Android installer. Tap Update to finish.');
+      setPhase('idle');
     } catch (e) {
       setIsError(true);
       setStatus(e instanceof Error ? e.message : String(e));
@@ -45,136 +59,58 @@ export default function App() {
     }
   }, []);
 
-  const install = async (release: RemoteRelease) => {
-    setPhase('downloading');
-    setProgress(0);
-    setStatus(`Downloading ${release.tag}…`);
-    await downloadAndInstall(release, setProgress);
-    setStatus('Opening the Android installer. Tap Update to finish.');
-    setPhase('idle');
-  };
-
   useEffect(() => {
     runUpdate();
   }, [runUpdate]);
 
-  const busy = phase !== 'idle';
-  const pct = Math.round(progress * 100);
+  const update: UpdateState = { phase, progress, status, isError, remoteTag, run: runUpdate };
+  const isAdmin = user?.role === 'admin';
+  const shownView: ViewName = isAdmin ? view : 'regular';
+
+  const changeView = (v: ViewName) => {
+    setView(v);
+    saveView(v);
+  };
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <StatusBar style="light" />
-      <View style={styles.top}>
-        <Text style={styles.title}>OR-Nav</Text>
-        <Text style={styles.subtitle}>
-          {user ? 'Signed in as ' + user.email : 'Operating room assistant'}
-        </Text>
-      </View>
-
-      <View style={styles.bottom}>
-        {!user && <LoginScreen />}
-
-        {user && (
-          <View style={styles.card}>
-            <Row label="Installed Version" value={installedVersion()} />
-            <Row label="Build Number" value={installedBuild()} />
-            <Row label="Remote Tag" value={remoteTag} />
-          </View>
-        )}
-
-        {phase === 'downloading' && (
-          <View style={styles.progressWrap}>
-            <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, { width: `${pct}%` }]} />
-            </View>
-            <Text style={styles.progressText}>{pct}%</Text>
-          </View>
-        )}
-
-        {status !== '' && (
-          <Text style={[styles.status, isError && { color: C.danger }]}>{status}</Text>
-        )}
-
-        <Pressable
-          accessibilityRole="button"
-          disabled={busy}
-          onPress={runUpdate}
-          style={({ pressed }) => [
-            user ? styles.button : styles.secondary,
-            (pressed || busy) && styles.buttonDim,
-          ]}
-        >
-          <Text style={user ? styles.buttonText : styles.secondaryText}>
-            {phase === 'checking'
-              ? 'Checking…'
-              : phase === 'downloading'
-                ? `Downloading ${pct}%`
-                : 'Check for Updates'}
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <View style={styles.top}>
+          <Text style={styles.title}>OR-Nav</Text>
+          <Text style={styles.subtitle}>
+            {user ? 'Signed in as ' + user.email : 'Operating room assistant'}
           </Text>
-        </Pressable>
+          {isAdmin && <ViewToggle value={shownView} onChange={changeView} />}
+        </View>
 
-        {user && (
-          <Pressable accessibilityRole="button" onPress={signOut} style={styles.secondary}>
-            <Text style={styles.secondaryText}>Sign out</Text>
-          </Pressable>
-        )}
-      </View>
+        <View style={styles.bottom}>
+          {!user && (
+            <>
+              <LoginScreen />
+              <UpdatePanel update={update} primary={false} />
+            </>
+          )}
+          {user && shownView === 'regular' && <RegularView update={update} />}
+          {user && shownView === 'admin' && <AdminView user={user} update={update} />}
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.row}>
-      <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={styles.rowValue}>{value}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: C.bg,
+  screen: { flex: 1, backgroundColor: C.bg },
+  content: {
+    flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 64,
     paddingBottom: 40,
     justifyContent: 'space-between',
+    gap: 24,
   },
-  top: { gap: 4 },
+  top: { gap: 12 },
   title: { color: C.text, fontSize: 34, fontWeight: '700' },
   subtitle: { color: C.muted, fontSize: 16 },
   bottom: { gap: 16 },
-  card: { backgroundColor: C.card, borderRadius: 16, paddingHorizontal: 20, paddingVertical: 8 },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    minHeight: 48,
-  },
-  rowLabel: { color: C.muted, fontSize: 17 },
-  rowValue: { color: C.text, fontSize: 19, fontWeight: '600' },
-  progressWrap: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  progressTrack: { flex: 1, height: 10, borderRadius: 5, backgroundColor: C.card, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: C.accent },
-  progressText: { color: C.text, fontSize: 16, width: 48, textAlign: 'right' },
-  status: { color: C.muted, fontSize: 16, textAlign: 'center' },
-  button: {
-    minHeight: 60,
-    borderRadius: 14,
-    backgroundColor: C.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonDim: { opacity: 0.6 },
-  secondary: {
-    minHeight: 56,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: C.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  secondaryText: { color: C.accent, fontSize: 18, fontWeight: '600' },
-  buttonText: { color: C.bg, fontSize: 19, fontWeight: '700' },
 });

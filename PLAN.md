@@ -44,5 +44,20 @@ Done means: sign-in screen on first open; create account → confirm email → s
 - Note: free Supabase pauses after ~1 week idle; signed-in phones keep working, new sign-ins fail until Resume
 - [ ] Phone: in-app update to v2.0.3, create account, confirm, sign in, airplane-mode reopen, sign out
 
+## Part C — v2.0.4 admin account + Regular / Admin toggle
+Done means: regular account sees no toggle; admin sees Regular view | Admin view (remembered); Admin view shows version, build, remote tag, email, role, user id, session expiry, Supabase host, connection check; role works offline and updates on next open.
+
+| File | What |
+| --- | --- |
+| `src/auth/role.ts` | `roleOf(user)` from `app_metadata.role` |
+| `src/auth/supabase.ts` | role + session expiry in the signed-in note; `refreshSignedInUser()`; `checkConnection()` |
+| `src/views/RegularView.tsx`, `AdminView.tsx`, `ViewToggle.tsx`, `UpdatePanel.tsx`, `Row.tsx` | The two views, the switch, the shared update block |
+| `App.tsx` | Picks Sign in / Regular / Admin; scrolls |
+
+- [x] Typecheck; `roleOf` Node test (6 cases); local Android bundle export
+- [ ] Green cloud build v2.0.4; signature; no secret key
+- [ ] Sean creates the admin account in the app; I set `role: admin` in Supabase
+- [ ] Phone: regular → no toggle; admin → toggle, both views; airplane mode keeps role
+
 ## Status
 Build #1 is v2.0.1 (tag v2.0.0 failed on a build.gradle typo and has no release). v2.0.2 (updater fix) and v2.0.3 (login) published and verified. Waiting for Sean to update and test the login on the phone. Do not start Brick 2 until Sean confirms.
