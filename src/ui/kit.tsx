@@ -347,8 +347,9 @@ export function EmptyState({ icon, title, body, action }: { icon: IconName; titl
   return (
     <View style={styles.empty}>
       <IconTile name={icon} size={56} />
-      <Text style={[T.headline, { textAlign: 'center' }]}>{title}</Text>
-      <Text style={[T.callout, { textAlign: 'center' }]}>{body}</Text>
+      {/* alignSelf stretch: on Samsung phones a centered bold line was measured too narrow and its last word was cut off. */}
+      <Text style={[T.headline, { textAlign: 'center', alignSelf: 'stretch' }]}>{title}</Text>
+      <Text style={[T.callout, { textAlign: 'center', alignSelf: 'stretch' }]}>{body}</Text>
       {action}
     </View>
   );

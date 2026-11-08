@@ -84,8 +84,8 @@ Done means: `0002_tenants.sql` applied in Supabase; the test script reports PASS
 | `supabase/migrations/0002_tenants.sql` | hospitals, departments, memberships, items, preference_cards, card_items, change_requests, change_reviews; RLS; `public.review_change()` (the only way a change becomes the truth); `private.apply_change()`; 2 sample hospitals x 2 departments |
 | `supabase/tests/0002_tenants_test.sql` | 10 checks with 3 fake nurses; always ends in an error so the test data is undone; message says PASSED or FAILED n |
 
-- [ ] Sean runs 0002_tenants.sql in the Supabase SQL editor
-- [ ] Sean runs the test; message says PASSED
+- [x] 0002_tenants.sql applied in the Supabase SQL editor (2026-11-08, Claude in the built-in browser; file matched git byte for byte)
+- [x] Test message: PASSED; read back 2 hospitals x 2 departments, 0 memberships, 0 requests
 - Next, one at a time: setup questions pick hospital + department from the list → phone SQLite copy of your departments (old Brick 2 tables, plus department_id) → propose / review screens.
 
 ## Part F — v2.1.0 Library, detail sheet, To review (Sean, 2026-11-08)
@@ -102,11 +102,19 @@ Done means: tabs Library | To review | Me; search + Cards/Items filter + departm
 
 - [x] Typecheck; 7 Node logic tests; release bundle export
 - [x] Emulator (Pixel 7, Android 15, Expo Go, demo data): library, item + card sheets, edit with keyboard, send, approve, reject confirm, search, departments, swipe close, Me
-- [ ] Sean runs 0002_tenants.sql + test (Part E) — the real app needs these tables
+- [x] 0002_tenants.sql + test applied (Part E); phone v2.1.0 showed "server is not set up" until then
 - [ ] Green cloud build v2.1.0 (adds native modules: expo-font, safe-area-context); signature; no secret key
 - [x] Emulator, demo data (2026-11-08): "+" chooser, new card, empty-field message, Pending under Your suggestions, Back closes keyboard before sheet, no-match search, Admin view switch
 - [ ] Phone: join a department, suggest an edit, a second account approves
 - Emulator notes: Metro's file watcher misses edits on this PC; restart it with `--clear` after changes. Expo Go runs with hot reload off.
+
+## Part G — v2.1.1 fix: cut-off empty-state heading
+Sean's Samsung showed "Join your" instead of "Join your department". `src/ui/kit.tsx` EmptyState: title and body get `alignSelf: 'stretch'`.
+- [x] Typecheck
+- [ ] Green cloud build v2.1.1; signature; no secret key
+- [ ] Emulator, real server: Library shows the full heading, no red box
+- [ ] Phone: update, heading in full, choose a department
+- Note: Expo Go cannot run the real-server build (no ExpoSQLite in Expo Go); check real-server screens with the release APK.
 
 ## Status
 v2.0.1–v2.0.5 published and confirmed on the phone. Next: Part E, Sean applies and tests the multi-tenant structure in Supabase.
