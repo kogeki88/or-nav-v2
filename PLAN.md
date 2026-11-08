@@ -1,4 +1,4 @@
-# PLAN — Brick 1: self-updating native shell + cloud APK pipeline
+﻿# PLAN — Brick 1: self-updating native shell + cloud APK pipeline
 
 ## Done means
 1. Public repo kogeki88/or-nav-v2 holds the code. No key or password in git.
@@ -75,33 +75,18 @@ Done means: signed in with no profile → 4-step questionnaire (You / Work / Rol
 - [x] Green cloud build v2.0.5; signature matches; no secret key
 - [x] Phone: questionnaire on sign-in → greeting + card; preview doesn't save (Sean confirmed 2026-11-08)
 
-## Brick 2 — v2.1.0 SQLite engine (DRAFT, waits for Sean's OK)
-Done means: on start the app opens `ornav.db` in WAL mode, runs any new migrations, loads the sample seed once (all or nothing), and the Admin view has a Health drawer with row counts, schema version and file size. Works in airplane mode. No new add-on (`expo-sqlite` ~58.0.15 is already installed).
-
-Tables (designed fresh; no v0.63 source):
-| Table | One row is | Columns |
-| --- | --- | --- |
-| `items` | One supply or instrument | id, name, category, shelf, sub_location, synonyms (text list), notes, photo_path, updated_at |
-| `preference_cards` | One surgeon's setup for one procedure | id, surgeon, procedure, specialty, notes, updated_at |
-| `card_items` | One item on one card | id, card_id → preference_cards, item_id → items, phase (Setup / Incision / Cannulation-Main / Closure), quantity, open_or_hold, note, sort_order |
-| `phonetic_index` | One search code for one item | item_id → items, code, kind (primary / secondary / trigram / prefix). Empty until Brick 3 |
-| `schema_migrations` | One applied change to the tables | version, applied_at |
-
-Rules: deleting a card deletes its card_items; an item on a card cannot be deleted. Indexes on card_items(card_id), phonetic_index(code).
+## Part E — multi-tenant server structure (Sean, 2026-11-08; replaces the first Brick 2 draft)
+Decisions: data belongs to a department in a hospital. Pick and go: a user joins any department, and may join several. Edits are proposals; another member of the same department approves; nobody approves their own. Hospitals and departments are an admin-only list. Job role is display only for now.
+Done means: `0002_tenants.sql` applied in Supabase; the test script reports PASSED; no app change yet.
 
 | File | What |
 | --- | --- |
-| `src/engine/db.ts` | Open `ornav.db`, WAL, foreign keys on, run migrations in order |
-| `src/engine/schema.ts` | Migration 1: the 5 tables + indexes |
-| `src/engine/seed.ts` | Load a seed bundle in one transaction; skip if already loaded |
-| `src/engine/seed-sample.json` | Small made-up sample (no patient data): ~20 items, 2 cards |
-| `src/engine/health.ts` | Row counts, schema version, file size |
-| `src/views/HealthDrawer.tsx`, `AdminView.tsx` | Health drawer in Admin view |
+| `supabase/migrations/0002_tenants.sql` | hospitals, departments, memberships, items, preference_cards, card_items, change_requests, change_reviews; RLS; `public.review_change()` (the only way a change becomes the truth); `private.apply_change()`; 2 sample hospitals x 2 departments |
+| `supabase/tests/0002_tenants_test.sql` | 10 checks with 3 fake nurses; always ends in an error so the test data is undone; message says PASSED or FAILED n |
 
-- [ ] Sean OKs this design
-- [ ] Typecheck; Node tests: migrations run once, seed is all-or-nothing, foreign keys hold
-- [ ] Local Android bundle; green cloud build v2.1.0; signature; no secret key
-- [ ] Phone: update, Health drawer shows the sample counts, airplane mode still works
+- [ ] Sean runs 0002_tenants.sql in the Supabase SQL editor
+- [ ] Sean runs the test; message says PASSED
+- Next, one at a time: setup questions pick hospital + department from the list → phone SQLite copy of your departments (old Brick 2 tables, plus department_id) → propose / review screens.
 
 ## Status
-v2.0.1–v2.0.4 published and verified. v2.0.5 (questionnaire) published and confirmed on the phone. Next: Brick 2 table design, waiting for Sean's OK before code.
+v2.0.1–v2.0.5 published and confirmed on the phone. Next: Part E, Sean applies and tests the multi-tenant structure in Supabase.
