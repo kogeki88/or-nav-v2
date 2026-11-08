@@ -38,8 +38,10 @@ Done means: sign-in screen on first open; create account → confirm email → s
 | `android/gradle/wrapper/gradle-wrapper.properties` | Gradle download timeout 10 s → 60 s (v2.0.2 build hit a timeout) |
 
 - [x] `npx tsc --noEmit` passes
-- [ ] Sean: Supabase project + `.env` filled
-- [ ] Green cloud build v2.0.3, signature matches
+- [x] Supabase: reused paused project OR-NAV (org OR-nav, ref lmofpllllkveuxjcstfo), resumed; email sign-up on, confirm email on; Site URL = github.com/kogeki88/or-nav-v2; `.env` + CI secrets set
+- [x] Green cloud build v2.0.3; signature matches (v2 block SHA-256 47:80:2B…39:08); app holds the Supabase URL + publishable key, not the secret key
+- Note: keytool can't read v2-only APK signatures; use `scratchpad/apkcert.py`-style check (read the APK Signing Block)
+- Note: free Supabase pauses after ~1 week idle; signed-in phones keep working, new sign-ins fail until Resume
 - [ ] Phone: in-app update to v2.0.3, create account, confirm, sign in, airplane-mode reopen, sign out
 
 ## Status
