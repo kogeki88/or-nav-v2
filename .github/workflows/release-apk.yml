@@ -37,6 +37,14 @@ jobs:
           if [ -z "$KEYSTORE_BASE64" ]; then echo "KEYSTORE_BASE64 secret is missing"; exit 1; fi
           echo "$KEYSTORE_BASE64" | base64 --decode > android/app/ornav-release.keystore
 
+      - name: Write Supabase settings (.env)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then echo "Supabase secrets are missing"; exit 1; fi
+          printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=%s\n' "$SUPABASE_URL" "$SUPABASE_PUBLISHABLE_KEY" > .env
+
       - name: Set version from tag
         run: |
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then

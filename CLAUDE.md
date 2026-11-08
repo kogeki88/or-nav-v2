@@ -22,6 +22,12 @@ Also read: `AGENTS.md` (Expo rules: check the SDK 58 docs, never trust memory), 
 - Phone link: https://github.com/kogeki88/or-nav-v2/releases/latest/download/or-nav.apk
 - CI uses Node 22 (Expo SDK 58 needs it) and Java 17 Temurin.
 
+## Online login (added by Sean, 2026-11-08; not in the original 7 bricks)
+- Supabase email + password. Code: `src/auth/supabase.ts`, `src/auth/LoginScreen.tsx`. Session in `expo-sqlite/localStorage` (Expo SDK 58 guide).
+- Offline rule: sign in once with internet; the app stays signed in offline until Sign out or Supabase ends the session. OR-Nav keeps its own `ornav.signedInUser` note because `getSession()` returns null offline once the 1-hour token expires.
+- "Check for Updates" works on the sign-in screen too, so a broken login can always be fixed by an update.
+- Settings: `.env` locally (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, git-ignored); CI secrets `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`. Only the publishable key, never the secret key.
+
 ## Look (OR Dark Mode)
 Background #0B0F19, cards #111827, accent #38BDF8, text #F8FAFC. Touch targets 48–56dp, in the lower two-thirds of the screen. One screen loop: Search → Preference Card → Scrub Mode, no deep stacks or blocking pop-ups.
 

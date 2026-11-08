@@ -1,6 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+
+import LoginScreen from './src/auth/LoginScreen';
+import { SignedInUser, readSignedInUser, signOut, watchSignedInUser } from './src/auth/supabase';
+import { C } from './src/theme';
 import {
   RemoteRelease,
   checkForUpdate,
@@ -8,16 +12,6 @@ import {
   installedBuild,
   installedVersion,
 } from './src/updater';
-
-// OR Dark Mode palette (Master Plan, section 3)
-const C = {
-  bg: '#0B0F19',
-  card: '#111827',
-  accent: '#38BDF8',
-  text: '#F8FAFC',
-  muted: '#94A3B8',
-  danger: '#F87171',
-};
 
 type Phase = 'idle' | 'checking' | 'downloading';
 
@@ -27,6 +21,9 @@ export default function App() {
   const [status, setStatus] = useState('');
   const [isError, setIsError] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [user, setUser] = useState<SignedInUser | null>(readSignedInUser);
+
+  useEffect(() => watchSignedInUser(setUser), []);
 
   const runUpdate = useCallback(async () => {
     setIsError(false);
@@ -65,19 +62,25 @@ export default function App() {
   const pct = Math.round(progress * 100);
 
   return (
-    <View style={styles.screen}>
+    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <StatusBar style="light" />
       <View style={styles.top}>
         <Text style={styles.title}>OR-Nav</Text>
-        <Text style={styles.subtitle}>Native shell · Brick 1</Text>
+        <Text style={styles.subtitle}>
+          {user ? 'Signed in as ' + user.email : 'Operating room assistant'}
+        </Text>
       </View>
 
       <View style={styles.bottom}>
-        <View style={styles.card}>
-          <Row label="Installed Version" value={installedVersion()} />
-          <Row label="Build Number" value={installedBuild()} />
-          <Row label="Remote Tag" value={remoteTag} />
-        </View>
+        {!user && <LoginScreen />}
+
+        {user && (
+          <View style={styles.card}>
+            <Row label="Installed Version" value={installedVersion()} />
+            <Row label="Build Number" value={installedBuild()} />
+            <Row label="Remote Tag" value={remoteTag} />
+          </View>
+        )}
 
         {phase === 'downloading' && (
           <View style={styles.progressWrap}>
@@ -96,9 +99,12 @@ export default function App() {
           accessibilityRole="button"
           disabled={busy}
           onPress={runUpdate}
-          style={({ pressed }) => [styles.button, (pressed || busy) && styles.buttonDim]}
+          style={({ pressed }) => [
+            user ? styles.button : styles.secondary,
+            (pressed || busy) && styles.buttonDim,
+          ]}
         >
-          <Text style={styles.buttonText}>
+          <Text style={user ? styles.buttonText : styles.secondaryText}>
             {phase === 'checking'
               ? 'Checking…'
               : phase === 'downloading'
@@ -106,8 +112,14 @@ export default function App() {
                 : 'Check for Updates'}
           </Text>
         </Pressable>
+
+        {user && (
+          <Pressable accessibilityRole="button" onPress={signOut} style={styles.secondary}>
+            <Text style={styles.secondaryText}>Sign out</Text>
+          </Pressable>
+        )}
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -155,5 +167,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonDim: { opacity: 0.6 },
+  secondary: {
+    minHeight: 56,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: C.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryText: { color: C.accent, fontSize: 18, fontWeight: '600' },
   buttonText: { color: C.bg, fontSize: 19, fontWeight: '700' },
 });
