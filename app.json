@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "OR-Nav",
+    "slug": "or-nav-v2",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0B0F19",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.ornav.app",
+      "versionCode": 1,
+      "permissions": ["INTERNET", "REQUEST_INSTALL_PACKAGES"],
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0F19",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
