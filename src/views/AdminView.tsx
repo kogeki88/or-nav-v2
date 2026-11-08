@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ConnectionState, SignedInUser, checkConnection, signOut, supabaseHost } from '../auth/supabase';
+import ProfileCard from '../profile/ProfileCard';
+import type { ProfileRow } from '../profile/profile';
 import { installedBuild, installedVersion } from '../updater';
 import { C, ui } from '../theme';
 import Row from './Row';
@@ -25,7 +27,14 @@ function formatExpiry(seconds?: number): string {
   return `${d.getMonth() + 1}/${d.getDate()} ${hh}:${mm}`;
 }
 
-export default function AdminView({ user, update }: { user: SignedInUser; update: UpdateState }) {
+type Props = {
+  user: SignedInUser;
+  update: UpdateState;
+  profile: ProfileRow | null;
+  onPreviewQuestionnaire: () => void;
+};
+
+export default function AdminView({ user, update, profile, onPreviewQuestionnaire }: Props) {
   const [connection, setConnection] = useState<ConnectionState | 'checking'>('checking');
 
   const runCheck = useCallback(async () => {
@@ -63,6 +72,12 @@ export default function AdminView({ user, update }: { user: SignedInUser; update
         style={({ pressed }) => [ui.secondary, (pressed || connection === 'checking') && ui.dim]}
       >
         <Text style={ui.secondaryText}>Check connection</Text>
+      </Pressable>
+
+      {profile && <ProfileCard profile={profile} />}
+
+      <Pressable accessibilityRole="button" onPress={onPreviewQuestionnaire} style={ui.secondary}>
+        <Text style={ui.secondaryText}>Preview questionnaire</Text>
       </Pressable>
 
       <UpdatePanel update={update} primary />

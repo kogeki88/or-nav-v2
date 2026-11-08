@@ -2,12 +2,16 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { signOut } from '../auth/supabase';
+import ProfileCard from '../profile/ProfileCard';
+import type { ProfileRow } from '../profile/profile';
 import { C, ui } from '../theme';
 import UpdatePanel, { UpdateState } from './UpdatePanel';
 
-export default function RegularView({ update }: { update: UpdateState }) {
+export default function RegularView({ update, profile }: { update: UpdateState; profile: ProfileRow | null }) {
   return (
     <View style={styles.wrap}>
+      {profile && <ProfileCard profile={profile} />}
+
       <View style={[ui.card, styles.placeholder]}>
         <Text style={styles.placeholderText}>Instrument search is coming in a later update.</Text>
       </View>

@@ -69,7 +69,10 @@ export async function refreshSignedInUser(): Promise<SignedInUser | null> {
 
 function writeSignedInUser(user: SignedInUser | null) {
   if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
-  else localStorage.removeItem(USER_KEY);
+  else {
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem('ornav.profile'); // the phone copy of the profile (src/profile/profileStore.ts)
+  }
 }
 
 /** Calls back with the signed-in user (or null) whenever Supabase reports a change. */

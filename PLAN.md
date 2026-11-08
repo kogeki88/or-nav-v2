@@ -55,9 +55,25 @@ Done means: regular account sees no toggle; admin sees Regular view | Admin view
 | `App.tsx` | Picks Sign in / Regular / Admin; scrolls |
 
 - [x] Typecheck; `roleOf` Node test (6 cases); local Android bundle export
-- [ ] Green cloud build v2.0.4; signature; no secret key
-- [ ] Sean creates the admin account in the app; I set `role: admin` in Supabase
+- [x] Green cloud build v2.0.4; signature matches; no secret key
+- [x] Sean created iglesia.sean@gmail.com; `role: admin` set in Supabase (read back)
 - [ ] Phone: regular → no toggle; admin → toggle, both views; airplane mode keeps role
 
+## Part D — v2.0.5 first sign-in questionnaire
+Done means: signed in with no profile → 4-step questionnaire (You / Work / Role / Fun); Finish saves to Supabase + phone; greeting "Hi, {nickname} {emoji}" and profile card in both views; admin "Preview questionnaire" never saves; offline finish syncs later.
+
+| File | What |
+| --- | --- |
+| `supabase/migrations/0001_profiles.sql` | `profiles` table + RLS (applied in SQL editor) |
+| `src/profile/profile.ts` | Questions, choices, `validateStep`, `toRow` |
+| `src/profile/profileStore.ts` | Phone copy + Supabase upsert, offline `pendingSync` |
+| `src/profile/Questionnaire.tsx`, `ProfileCard.tsx` | Wizard, answers card, greeting |
+| `App.tsx`, `src/views/*` | Questionnaire gate, preview, profile in both views |
+
+- [x] Table + 3 policies + RLS on (read back); anonymous read returns `[]`, anonymous insert refused (401, RLS)
+- [x] Typecheck; 13 Node tests; local Android bundle
+- [ ] Green cloud build v2.0.5; signature; no secret key
+- [ ] Phone: questionnaire on sign-in → greeting + card; preview doesn't save; Sean's row in Supabase
+
 ## Status
-Build #1 is v2.0.1 (tag v2.0.0 failed on a build.gradle typo and has no release). v2.0.2 (updater fix) and v2.0.3 (login) published and verified. Waiting for Sean to update and test the login on the phone. Do not start Brick 2 until Sean confirms.
+v2.0.1–v2.0.4 published and verified. v2.0.5 (questionnaire) building. Do not start Brick 2 until Sean confirms.
