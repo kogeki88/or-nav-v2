@@ -23,7 +23,7 @@
 - [x] Action run green, Release has `or-nav.apk` (run 42428805054); APK signature matches ornav-release.keystore
 - [x] Sean installed v2.0.1 on the phone; "Check for Updates" showed "GitHub answered 504"
 - [x] v2.0.2 fix: retry on 5xx/network (3 tries) + fallback to the releases/latest redirect; Node tests pass (real API, real redirect, forced 504, no network)
-- [ ] Self-update to v2.0.2 on the phone
+- [x] Self-update on the phone (Sean updated v2.0.4 → v2.0.5 in the app, 2026-11-08). Emulator: v2.0.4 found v2.0.5, downloaded 0–100%, opened Android's installer (stopped at the "allow this source" setting, which only Sean may change)
 
 ## Part B — v2.0.3 online login (Supabase)
 Done means: sign-in screen on first open; create account → confirm email → sign in → "Signed in as …" + Sign out; airplane-mode reopen stays signed in; Check for Updates works on the sign-in screen; no password or token in git.
@@ -104,6 +104,7 @@ Done means: tabs Library | To review | Me; search + Cards/Items filter + departm
 - [x] Emulator (Pixel 7, Android 15, Expo Go, demo data): library, item + card sheets, edit with keyboard, send, approve, reject confirm, search, departments, swipe close, Me
 - [ ] Sean runs 0002_tenants.sql + test (Part E) — the real app needs these tables
 - [ ] Green cloud build v2.1.0 (adds native modules: expo-font, safe-area-context); signature; no secret key
+- [x] Emulator, demo data (2026-11-08): "+" chooser, new card, empty-field message, Pending under Your suggestions, Back closes keyboard before sheet, no-match search, Admin view switch
 - [ ] Phone: join a department, suggest an edit, a second account approves
 - Emulator notes: Metro's file watcher misses edits on this PC; restart it with `--clear` after changes. Expo Go runs with hot reload off.
 
