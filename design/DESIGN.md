@@ -51,6 +51,9 @@ Sheets and tabs use a spring (about 300 ms). Lists never animate on scroll. Resp
 - **Top bar**: large title left, at most one icon button right (48x48). Department switcher sits under the title.
 - **Bottom sheet** (the preview): slides up over a dimmed screen, tab bar included (bg at 60%). Grab handle, title, content, one primary action at the bottom inside thumb reach. Closes by swipe down, tap on the dim area, the close button, or Android Back. With the keyboard open, it shrinks to sit above it; the title never goes under the status bar.
 - **Chip / badge**: chip 40 high (tap area 48), radius 12. Badge 24 high, caption text, tinted fill of its meaning color.
+- **Touch feedback**: anything button-like uses `PressScale` (shrinks to 97% while held); list rows tint to raised instead.
+- **Item icons**: by category (instrument, suture, implant, drug, drape, else box), from `src/library/icons.ts`.
+- **Status strip**: scrolling screens keep a solid bg strip behind the status bar.
 
 ## States
 Every list has: loading (3 grey skeleton rows, no spinner), empty (icon, one sentence, one action), error (sentence in plain words + Try again), offline (thin banner: "Offline — showing your saved copy").
@@ -60,3 +63,4 @@ Tap targets 48x48 dp minimum with 8 between. Main actions in the lower two-third
 
 ## Change log
 - 2026-11-08: created (calm clinical, Linear / Apple Health, dark only, Ionicons).
+- 2026-11-08: whole-app polish (Sean): sign-in, setup questions and Me moved onto the kit; sentence case everywhere. Rule: never change the color of a rounded view in place on Android (it loses its corners); mount a fresh view instead.

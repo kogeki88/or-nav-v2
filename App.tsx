@@ -21,12 +21,11 @@ import type { ProfileRow } from './src/profile/profile';
 import { loadProfile, saveProfile } from './src/profile/profileStore';
 import ReviewScreen from './src/review/ReviewScreen';
 import { C, S, T } from './src/theme';
+import { IconTile } from './src/ui/kit';
 import TabBar, { TAB_BAR_HEIGHT, TabName } from './src/ui/TabBar';
 import { checkForUpdate, downloadAndInstall } from './src/updater';
-import AdminView from './src/views/AdminView';
-import RegularView from './src/views/RegularView';
+import MeScreen from './src/views/MeScreen';
 import UpdatePanel, { UpdatePhase, UpdateState } from './src/views/UpdatePanel';
-import ViewToggle, { ViewName, readSavedView, saveView } from './src/views/ViewToggle';
 
 /** Demo mode: sample data, no sign-in. Only in a development run started with EXPO_PUBLIC_DEMO=1. */
 const DEMO = __DEV__ && process.env.EXPO_PUBLIC_DEMO === '1';
@@ -63,6 +62,8 @@ function Main() {
   const [profile, setProfile] = useState<ProfileRow | null | undefined>(DEMO ? DEMO_PROFILE : undefined);
   const [previewing, setPreviewing] = useState(false);
   const [welcome, setWelcome] = useState('');
+  // Kept here so closing the setup-questions preview returns to the same tab (Me).
+  const [tab, setTab] = useState<TabName>('library');
 
   const userId = user?.id;
   useEffect(() => {
@@ -136,6 +137,8 @@ function Main() {
         profile={profile}
         update={update}
         welcome={welcome}
+        tab={tab}
+        setTab={setTab}
         onPreviewQuestionnaire={() => {
           setWelcome('');
           setPreviewing(true);
@@ -147,22 +150,27 @@ function Main() {
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <StatusBar style="light" />
-      <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 32 }]} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + S.xxl, paddingBottom: insets.bottom + S.xl }]} keyboardShouldPersistTaps="handled">
         <View style={styles.top}>
-          <Text style={styles.title}>OR-Nav</Text>
-          <Text style={styles.subtitle}>{user ? greeting(profile ?? null, user.email) : 'Operating room assistant'}</Text>
+          <View style={styles.brandRow}>
+            <IconTile name="navigate" size={48} />
+            <Text style={T.largeTitle}>OR-Nav</Text>
+          </View>
+          <Text style={[T.body, { color: C.text2 }]}>
+            {user ? greeting(profile ?? null, user.email) : 'Preference cards and supply locations for your OR, even offline.'}
+          </Text>
         </View>
 
         <View style={styles.bottom}>
           {!user && (
             <>
               <LoginScreen />
-              <UpdatePanel update={update} primary={false} />
+              <UpdatePanel update={update} primary={false} quiet />
             </>
           )}
           {user && profile === undefined && <ActivityIndicator color={C.accent} size="large" />}
           {user && profile === null && <Questionnaire onSave={finishQuestionnaire} onClose={() => {}} />}
-          {user && !profile && <UpdatePanel update={update} primary={false} />}
+          {user && !profile && <UpdatePanel update={update} primary={false} quiet />}
           {user && profile && previewing && <Questionnaire preview onClose={() => setPreviewing(false)} />}
         </View>
       </ScrollView>
@@ -175,21 +183,21 @@ function SignedIn({
   profile,
   update,
   welcome,
+  tab,
+  setTab,
   onPreviewQuestionnaire,
 }: {
   user: SignedInUser;
   profile: ProfileRow;
   update: UpdateState;
   welcome: string;
+  tab: TabName;
+  setTab: (t: TabName) => void;
   onPreviewQuestionnaire: () => void;
 }) {
   const insets = useSafeAreaInsets();
-  const [tab, setTab] = useState<TabName>('library');
-  const [view, setView] = useState<ViewName>(readSavedView);
   const source = useMemo(() => (DEMO ? demoSource() : supabaseSource(user.id)), [user.id]);
   const lib = useLibrary(source, user.id, !DEMO);
-  const isAdmin = user.role === 'admin';
-  const shownView: ViewName = isAdmin ? view : 'regular';
 
   // Tab content fills the whole screen and is drawn after the tab bar, so an open sheet's
   // dim layer covers the tab bar too. Lists pad their bottom by the tab bar's height.
@@ -204,29 +212,19 @@ function SignedIn({
         {tab === 'library' && <LibraryScreen lib={lib} topInset={insets.top} bottomSpace={tabBarSpace} jobRole={profile.role} />}
         {tab === 'review' && <ReviewScreen lib={lib} topInset={insets.top} bottomSpace={tabBarSpace} />}
         {tab === 'me' && (
-          <ScrollView style={{ flex: 1, marginBottom: tabBarSpace }} contentContainerStyle={[styles.me, { paddingTop: insets.top + S.lg }]}>
-            <Text style={T.largeTitle} accessibilityRole="header">
-              Me
-            </Text>
-            <Text style={styles.subtitle}>{greeting(profile, user.email)}</Text>
-            {welcome !== '' && <Text style={styles.welcome}>{welcome}</Text>}
-            {isAdmin && (
-              <ViewToggle
-                value={shownView}
-                onChange={(v) => {
-                  setView(v);
-                  saveView(v);
-                }}
-              />
-            )}
-            {shownView === 'regular' ? (
-              <RegularView update={update} profile={profile} />
-            ) : (
-              <AdminView user={user} update={update} profile={profile} onPreviewQuestionnaire={onPreviewQuestionnaire} />
-            )}
-          </ScrollView>
+          <MeScreen
+            user={user}
+            profile={profile}
+            update={update}
+            welcome={welcome}
+            topInset={insets.top}
+            bottomSpace={tabBarSpace}
+            onPreviewQuestionnaire={onPreviewQuestionnaire}
+          />
         )}
       </View>
+      {/* Solid strip behind the status bar, so scrolled content never runs under the clock. */}
+      <View pointerEvents="none" style={[styles.statusStrip, { height: insets.top }]} />
     </View>
   );
 }
@@ -235,17 +233,15 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.bg },
   content: {
     flexGrow: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: S.lg,
     justifyContent: 'space-between',
-    gap: 24,
+    gap: S.xl,
   },
-  top: { gap: 12 },
-  title: { color: C.text, fontSize: 34, fontWeight: '700' },
-  subtitle: { color: C.text2, fontSize: 18 },
-  welcome: { color: C.ok, fontSize: 16 },
-  bottom: { gap: 16 },
-  me: { paddingHorizontal: S.lg, paddingBottom: S.xxl, gap: S.lg },
+  top: { gap: S.md },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: S.md },
+  bottom: { gap: S.lg },
   tabBar: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+  statusStrip: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: C.bg },
   // Full screen and drawn after the tab bar. Lists stop above the bar (marginBottom), so the
   // bar stays tappable; an open sheet is absolute and covers everything, bar included.
   tabContent: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },

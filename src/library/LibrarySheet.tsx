@@ -1,11 +1,12 @@
 // What the preview sheet shows: an item, a preference card, the edit form, or "sent for review".
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import BottomSheet from '../ui/BottomSheet';
-import { Badge, Banner, Button, Field, Group, Icon, IconButton, IconTile, ListRow, SectionLabel } from '../ui/kit';
+import { Badge, Banner, Button, Field, Group, Icon, IconButton, IconTile, ListRow, PressScale, SectionLabel } from '../ui/kit';
 import { C, R, S, T } from '../theme';
 import { FIELDS, cardLines, cardSubtitle, cardsUsing, changedFields, departmentLabel, itemLocation, missingRequired, pendingFor, show } from './logic';
+import { itemIcon } from './icons';
 import type { Library } from './useLibrary';
 import type { Card, Item } from './types';
 
@@ -98,7 +99,7 @@ export default function LibrarySheet({ lib, selection, onSelect, onClose }: { li
       />
     );
   } else if (item) {
-    header = <SheetTitle icon="cube-outline" title={item.name} subtitle={[item.category, `version ${item.version}`].filter(Boolean).join(' · ')} onClose={onClose} />;
+    header = <SheetTitle icon={itemIcon(item.category)} title={item.name} subtitle={item.category ?? 'Item'} onClose={onClose} />;
   } else if (card) {
     header = <SheetTitle icon="clipboard-outline" title={card.procedure} subtitle={cardSubtitle(card)} onClose={onClose} />;
   } else {
@@ -190,14 +191,14 @@ function SheetTitle({ icon, title, subtitle, onClose, iconColor, iconBg }: { ico
 
 function Choice({ icon, title, body, onPress }: { icon: Parameters<typeof IconTile>[0]['name']; title: string; body: string; onPress: () => void }) {
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.choice, pressed && { borderColor: C.accent }]}>
+    <PressScale onPress={onPress} accessibilityLabel={`${title}. ${body}`} style={styles.choice}>
       <IconTile name={icon} size={48} />
       <View style={{ flex: 1, gap: 2 }}>
         <Text style={T.headline}>{title}</Text>
         <Text style={T.callout}>{body}</Text>
       </View>
       <Icon name="chevron-forward" color={C.text3} />
-    </Pressable>
+    </PressScale>
   );
 }
 
@@ -223,7 +224,6 @@ function ItemBody({ lib, item, onSelect }: { lib: Library; item: Item; onSelect:
       </View>
       <Group style={{ paddingHorizontal: S.lg }}>
         <Detail first label="Also called" value={show(item.synonyms)} />
-        <Detail label="Category" value={show(item.category)} />
         <Detail label="Notes" value={show(item.notes)} />
       </Group>
       <SectionLabel text="On preference cards" right={String(cards.length)} />
@@ -260,6 +260,7 @@ function CardBody({ lib, card, onSelect }: { lib: Library; card: Card; onSelect:
               <ListRow
                 key={line.id}
                 first={i === 0}
+                icon={itemIcon(item?.category)}
                 title={`${line.quantity} × ${item?.name ?? 'Unknown item'}`}
                 subtitle={item ? itemLocation(item) : undefined}
                 right={line.open_or_hold === 'hold' ? <Badge label="Hold" tone="warn" /> : <Badge label="Open" tone="ok" />}

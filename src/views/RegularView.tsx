@@ -1,26 +1,27 @@
-// The Me tab for nurses: profile, updates, sign out. Search and cards live in the Library tab.
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+// The Me tab for nurses: profile details, updates, sign out. Search and cards live in the Library tab.
+import { View } from 'react-native';
 
 import { signOut } from '../auth/supabase';
 import ProfileCard from '../profile/ProfileCard';
 import type { ProfileRow } from '../profile/profile';
-import { ui } from '../theme';
+import { S } from '../theme';
+import { Button, DetailRow, Group, SectionLabel } from '../ui/kit';
+import { installedVersion } from '../updater';
 import UpdatePanel, { UpdateState } from './UpdatePanel';
 
 export default function RegularView({ update, profile }: { update: UpdateState; profile: ProfileRow | null }) {
   return (
-    <View style={styles.wrap}>
+    <View>
       {profile && <ProfileCard profile={profile} />}
 
-      <UpdatePanel update={update} primary />
-
-      <Pressable accessibilityRole="button" onPress={signOut} style={ui.secondary}>
-        <Text style={ui.secondaryText}>Sign out</Text>
-      </Pressable>
+      <SectionLabel text="App" />
+      <Group style={{ paddingHorizontal: S.lg }}>
+        <DetailRow first icon="phone-portrait-outline" label="Version" value={installedVersion()} />
+      </Group>
+      <View style={{ gap: S.md, marginTop: S.md }}>
+        <UpdatePanel update={update} primary={false} />
+        <Button kind="ghost" tone="danger" icon="log-out-outline" label="Sign out" onPress={signOut} />
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: { gap: 16 },
-});

@@ -30,8 +30,11 @@ export default function TabBar({ value, onChange, badge, bottomInset }: { value:
             onPress={() => onChange(t.key)}
             style={styles.tab}
           >
-            <View>
-              <Icon name={on ? t.iconOn : t.icon} size={26} color={on ? C.accent : C.text3} />
+            <View style={styles.pill}>
+              {/* Mounted fresh on the active tab: changing the color of an existing rounded view
+                  lost its rounded corners on Android (seen on the emulator, 2026-11-08). */}
+              {on && <View style={styles.pillOn} />}
+              <Icon name={on ? t.iconOn : t.icon} size={24} color={on ? C.accent : C.text3} />
               {count > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>{count > 99 ? '99+' : count}</Text>
@@ -50,6 +53,8 @@ const styles = StyleSheet.create({
   bar: { flexDirection: 'row', backgroundColor: C.bg, borderTopWidth: 1, borderTopColor: C.line, paddingTop: S.xs },
   tab: { flex: 1, minHeight: 56, alignItems: 'center', justifyContent: 'center', gap: 2 },
   label: { color: C.text3, fontSize: 13, fontWeight: '600' },
-  badge: { position: 'absolute', top: -4, right: -12, minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 5, backgroundColor: C.warn, alignItems: 'center', justifyContent: 'center' },
+  pill: { width: 56, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  pillOn: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 15, backgroundColor: C.accentSoft },
+  badge: { position: 'absolute', top: -6, right: 2, minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 5, backgroundColor: C.warn, alignItems: 'center', justifyContent: 'center' },
   badgeText: { color: C.bg, fontSize: 12, fontWeight: '800' },
 });

@@ -5,6 +5,7 @@ import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'r
 import { Badge, Banner, Button, Chips, EmptyState, Group, Icon, IconButton, ListRow, SearchField, SectionLabel, SkeletonRows } from '../ui/kit';
 import { C, S, T } from '../theme';
 import DepartmentSheet from './DepartmentSheet';
+import { itemIcon } from './icons';
 import LibrarySheet, { Selection } from './LibrarySheet';
 import { cardSubtitle, departmentLabel, itemLocation, pendingFor, searchCards, searchItems, timeAgo } from './logic';
 import type { Library } from './useLibrary';
@@ -124,7 +125,7 @@ export default function LibraryScreen({ lib, topInset, bottomSpace, jobRole }: {
                 <ListRow
                   key={it.id}
                   first={i === 0}
-                  icon="cube-outline"
+                  icon={itemIcon(it.category)}
                   title={it.name}
                   subtitle={itemLocation(it)}
                   right={pendingFor(lib.data.requests, 'item', it.id).length ? <Badge label="Pending" tone="warn" /> : undefined}

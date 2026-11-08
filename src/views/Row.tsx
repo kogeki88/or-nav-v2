@@ -1,14 +1,6 @@
-import { Text, View } from 'react-native';
+// Kept for older callers; new screens use DetailRow from ../ui/kit directly.
+import { DetailRow } from '../ui/kit';
 
-import { ui } from '../theme';
-
-export default function Row({ label, value, color }: { label: string; value: string; color?: string }) {
-  return (
-    <View style={ui.row}>
-      <Text style={ui.rowLabel}>{label}</Text>
-      <Text style={[ui.rowValue, color ? { color } : null]} numberOfLines={1} ellipsizeMode="middle">
-        {value}
-      </Text>
-    </View>
-  );
+export default function Row({ label, value, color, first }: { label: string; value: string; color?: string; first?: boolean }) {
+  return <DetailRow label={label} value={value} color={color} first={first} middle />;
 }

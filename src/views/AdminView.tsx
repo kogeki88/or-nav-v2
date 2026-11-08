@@ -1,21 +1,21 @@
 // Admin test & diagnostics. Display only: anything powerful added here later must also be
 // checked on the server (RLS on auth.jwt() -> 'app_metadata' ->> 'role').
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { ConnectionState, SignedInUser, checkConnection, signOut, supabaseHost } from '../auth/supabase';
 import ProfileCard from '../profile/ProfileCard';
 import type { ProfileRow } from '../profile/profile';
+import { C, S } from '../theme';
+import { Button, DetailRow, Group, SectionLabel } from '../ui/kit';
 import { installedBuild, installedVersion } from '../updater';
-import { C, ui } from '../theme';
-import Row from './Row';
 import UpdatePanel, { UpdateState } from './UpdatePanel';
 
 const CONNECTION_LABEL: Record<ConnectionState | 'checking', { text: string; color: string }> = {
-  checking: { text: 'Checking…', color: C.muted },
-  ok: { text: 'OK', color: C.ok },
+  checking: { text: 'Checking…', color: C.text2 },
+  ok: { text: 'Connected', color: C.ok },
   offline: { text: 'Offline', color: C.danger },
-  paused: { text: 'Paused – Resume in Supabase', color: C.danger },
+  paused: { text: 'Paused — resume in Supabase', color: C.danger },
   error: { text: 'Error', color: C.danger },
 };
 
@@ -49,46 +49,35 @@ export default function AdminView({ user, update, profile, onPreviewQuestionnair
   const conn = CONNECTION_LABEL[connection];
 
   return (
-    <View style={styles.wrap}>
-      <View style={ui.card}>
-        <Row label="Installed Version" value={installedVersion()} />
-        <Row label="Build Number" value={installedBuild()} />
-        <Row label="Remote Tag" value={update.remoteTag} />
-      </View>
+    <View>
+      <SectionLabel text="App" />
+      <Group style={{ paddingHorizontal: S.lg }}>
+        <DetailRow first icon="phone-portrait-outline" label="Installed" value={installedVersion()} />
+        <DetailRow icon="construct-outline" label="Build" value={installedBuild()} />
+        <DetailRow icon="cloud-download-outline" label="Latest on GitHub" value={update.remoteTag} />
+      </Group>
 
-      <View style={ui.card}>
-        <Row label="Account" value={user.email} />
-        <Row label="Role" value={user.role} />
-        <Row label="User ID" value={user.id} />
-        <Row label="Session expires" value={formatExpiry(user.sessionExpiresAt)} />
-        <Row label="Supabase" value={supabaseHost || 'not set'} />
-        <Row label="Connection" value={conn.text} color={conn.color} />
-      </View>
+      <SectionLabel text="Account" />
+      <Group style={{ paddingHorizontal: S.lg }}>
+        <DetailRow first icon="mail-outline" label="Email" value={user.email} middle />
+        <DetailRow icon="shield-checkmark-outline" label="Role" value={user.role} />
+        <DetailRow icon="finger-print-outline" label="User ID" value={user.id} middle />
+        <DetailRow icon="hourglass-outline" label="Session ends" value={formatExpiry(user.sessionExpiresAt)} />
+        <DetailRow icon="server-outline" label="Server" value={supabaseHost || 'not set'} middle />
+        <DetailRow icon="pulse-outline" label="Connection" value={conn.text} color={conn.color} />
+      </Group>
 
-      <Pressable
-        accessibilityRole="button"
-        onPress={runCheck}
-        disabled={connection === 'checking'}
-        style={({ pressed }) => [ui.secondary, (pressed || connection === 'checking') && ui.dim]}
-      >
-        <Text style={ui.secondaryText}>Check connection</Text>
-      </Pressable>
+      <View style={{ gap: S.md, marginTop: S.lg }}>
+        <Button kind="secondary" icon="pulse-outline" label="Check connection" busy={connection === 'checking'} onPress={runCheck} />
+        <Button kind="secondary" icon="eye-outline" label="Preview setup questions" onPress={onPreviewQuestionnaire} />
+      </View>
 
       {profile && <ProfileCard profile={profile} />}
 
-      <Pressable accessibilityRole="button" onPress={onPreviewQuestionnaire} style={ui.secondary}>
-        <Text style={ui.secondaryText}>Preview questionnaire</Text>
-      </Pressable>
-
-      <UpdatePanel update={update} primary />
-
-      <Pressable accessibilityRole="button" onPress={signOut} style={ui.secondary}>
-        <Text style={ui.secondaryText}>Sign out</Text>
-      </Pressable>
+      <View style={{ gap: S.md, marginTop: S.xl }}>
+        <UpdatePanel update={update} primary={false} />
+        <Button kind="ghost" tone="danger" icon="log-out-outline" label="Sign out" onPress={signOut} />
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: { gap: 12 },
-});
