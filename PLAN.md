@@ -139,5 +139,28 @@ Done means: each joined department's items, cards and card lines live in SQLite 
 - Known: `withExclusiveTransactionAsync` was dropped for a plain transaction on the one connection; the job queue keeps reads out of a save.
 - Emulator note: three old Metro servers held ports 8081, 8082, 8095. The test app now loads from port 8099 (debug setting `debug_http_host` = localhost:8099, plus `adb reverse tcp:8099 tcp:8099`).
 
+## Part I — v2.3.0 AI omnibar (Sean, 2026-11-08)
+Done means: "Ask OR-Nav" bar above the tabs on every tab → chat sheet; answers with tappable items/cards; edit requests become drafts the nurse sends for review (never applied by the AI); switch department / go to tab; patient-info scrubber on the phone and again on the server; OR jargon understood; 50 messages/person/day; offline falls back to plain search. Model: Claude Haiku 5.5 (Sean's choice). Key only on the server.
+
+| File | What |
+| --- | --- |
+| `supabase/functions/omnibar/scrub.ts` | HIPAA Safe Harbor–based scrubber, shared by app and server; blocks names and dates of birth, replaces numbers/dates/contacts/addresses |
+| `supabase/functions/omnibar/schema.ts` | Answer schema (structured output) + action types, shared |
+| `supabase/functions/omnibar/prompt.ts`, `core.ts`, `index.ts` | System prompt + OR glossary; the one Claude call; the Edge Function (login, membership, daily limit, second scrub, library as the user) |
+| `supabase/migrations/0003_ai_usage.sql` | `ai_usage` + `use_ai_quota()` (applied 2026-11-08) |
+| `src/omnibar/*` | Bar, chat sheet, chat state, action checks (`validate.ts`, Node-tested) |
+| `src/library/logic.ts` | To review shows card-line changes (card, item, phase, quantity, open/hold) |
+
+- [x] Scrubber: 53 Node tests (each identifier type; OR talk passes unchanged)
+- [x] Action checks + card-line review text: 10 Node tests
+- [x] Typecheck (app); function bundle type-checked against the real SDK and supabase-js types
+- [x] 0003 applied; read back: RLS on, 1 policy, signed-in can call `use_ai_quota`, anon cannot, users cannot insert
+- [x] Function `omnibar` deployed from the dashboard editor as one joined file (same files as git commit 8abac88; SHA-256 checked in the browser). Deploy note: the web editor cannot hold the `../` layout, so `scratchpad`-style join (drop local imports) → one `index.ts`.
+- [x] Emulator: bar above tabs; sheet with examples; "pt Smith needs a bovie" blocked on the phone, nothing sent; "where is the bovie" reached the function → "The assistant is not set up yet" (no key yet). Function's "Verify JWT" left ON: it passed the new ECC user token.
+- [ ] Sean: Anthropic key in Supabase → Edge Functions → Secrets (`ANTHROPIC_API_KEY`)
+- [ ] 15 jargon requests on the emulator; draft → Send for review → Pending; To review shows the card-line change; airplane mode → plain search
+- [ ] Green cloud build v2.3.0; signature; no `sb_secret_` / `sk-ant-` in the bundle
+- HIPAA note: the scrubber is a backstop. Full compliance also needs signed BAAs with Anthropic and Supabase (paid plan) — Sean's legal step.
+
 ## Status
 v2.0.1–v2.0.5 published and confirmed on the phone. Part E done (2026-11-08). v2.2.0 (Brick 2, offline library) published 2026-11-08 and checked on the emulator. Next: Sean updates the phone, joins Sample General Hospital / Main OR, and checks the Library in airplane mode. Then Brick 3 (phonetic search).
