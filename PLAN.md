@@ -131,8 +131,8 @@ Done means: each joined department's items, cards and card lines live in SQLite 
 
 - [x] Typecheck; 7 Node tests on real SQLite (node:sqlite): migrations, save/read round trip, replace, failed save keeps the old copy, empty library, broken JSON
 - [x] Emulator, debug build + real server: migrations ran (v1), server copy saved (2 hospitals, 4 departments, memberships), Admin "Phone database" block shows v1 of v1, 84 KB, last sync
-- [ ] Seed applied in Supabase (Sean OKs first); Library shows the sample cards; Admin counts match
-- [ ] Airplane mode: close and reopen → Library still shows cards with the offline strip
+- [x] Seed applied in Supabase (Sean OK'd, 2026-11-08; editor text matched the file by SHA-256); read back 16 items, 3 cards, 23 card lines; emulator Library shows Cards 3, Items 16
+- [x] Airplane mode: closed and reopened → Library shows all cards and items, strip "Offline — showing your saved copy from just now"; a card opens with phases, quantities and shelves
 - [ ] Green cloud build v2.2.0; signature; no secret key; Sean updates in the app
 - Known: on Android, database calls wait while the updater downloads an APK (expo-file-system and expo-sqlite share a native worker). They finish when the download ends. Only matters during a real update; the debug test app always "sees" an update.
 - Known: `withExclusiveTransactionAsync` was dropped for a plain transaction on the one connection; the job queue keeps reads out of a save.
