@@ -11,6 +11,15 @@ Also read: `AGENTS.md` (Expo rules: check the SDK 58 docs, never trust memory), 
 - Heavy work (scraping, Presidio PHI/PII scrubbing, data compiling) lives in `/tools` CLI scripts. The app in `/src` stays lean, deterministic, no Python, 100% offline.
 - No new UI frameworks or heavy dependencies unless asked. Prefer pure TypeScript modules.
 
+## Architecture (ports and adapters, one repo; see `docs/adr/0001-hexagonal-ideas-in-one-repo.md`)
+- `src/contracts/`: port interfaces and data types only. No runtime code, no React.
+- `src/core/`: logic and adapters (SQLite, Supabase, search, voice). No React or React Native UI. Tests run in Jest without the emulator.
+- `src/features/<name>/`: screens and their hooks. Use ports from `src/contracts/` only; never import `src/core/` or another feature.
+- `App.tsx` is the shell: it builds the adapters and passes them in as plain values. No business logic. Add a React Context only when deep screens need several ports.
+- One Jest test checks these import rules; `npm test` must pass.
+- No event bus until two features must talk and no simpler way works. No pnpm monorepo until a second app needs a part.
+- Old code moves into these folders only when a ticket already changes it. New core parts (Brick 3 search, Brick 7 voice) start here with a port.
+
 ## Signing key (changed from the original document)
 - The release key `android/app/ornav-release.keystore` and `android/keystore.properties` are **never in git** (repo is public).
 - CI gets them from GitHub Secrets: `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`.
