@@ -54,6 +54,26 @@ Also read: `AGENTS.md` (Expo rules: check the SDK 58 docs, never trust memory), 
 - `src/diag/`. Every new catch block that hides an error calls `logFault(area, error)`. Pass the error only: never omnibar message text or anything the user typed.
 - Admin view → Run full check / Send report. Reports land in Supabase `fault_reports` (admins read): read them there before guessing at a fault.
 
+## Agent skills
+
+How we build: `C:\Users\igles\phone app\WORKFLOW.md` (grill → spec → tickets → one ticket per fresh session with `/implement`).
+
+### Issue tracker
+
+GitHub Issues on kogeki88/or-nav-v2, with native "blocked by" links. Kanban board: GitHub Project "OR-Nav board". See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Defaults: `needs-triage`, `needs-info`, `ready-for-agent` (AFK), `ready-for-human` (HITL), `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` + `docs/adr/` at the repo root, made as terms get settled. See `docs/agents/domain.md`.
+
+### Tests
+
+`npm test` (Jest with jest-expo) and `npm run typecheck`. Test files sit beside the code as `*.test.ts`; import `describe`, `it`, `expect` from `@jest/globals`. Both must pass before a ticket is done.
+
 ## Look (OR Dark Mode)
 Background #0B0F19, cards #111827, accent #38BDF8, text #F8FAFC. Touch targets 48–56dp, in the lower two-thirds of the screen. One screen loop: Search → Preference Card → Scrub Mode, no deep stacks or blocking pop-ups.
 
