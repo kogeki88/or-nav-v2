@@ -2,11 +2,11 @@
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { itemIcon } from '../library/icons';
-import type { Selection } from '../library/LibrarySheet';
-import { cardSubtitle, departmentLabel, itemLocation, requestTitle, reviewRows } from '../library/logic';
+import { itemIcon } from '../features/library/icons';
+import type { Selection } from '../features/library/LibrarySheet';
+import { cardSubtitle, departmentLabel, itemLocation, requestTitle, reviewRows } from '../features/library/logic';
 import type { ChangeRequest } from '../contracts/library';
-import type { Library } from '../library/useLibrary';
+import type { Library } from '../features/library/useLibrary';
 import { C, R, S, T } from '../theme';
 import BottomSheet from '../ui/BottomSheet';
 import { Badge, Button, Group, Icon, IconButton, IconTile, ListRow, PressScale } from '../ui/kit';

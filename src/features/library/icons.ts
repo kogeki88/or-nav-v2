@@ -1,5 +1,5 @@
 // Icon for an item, by its category, so lists are easy to scan. Unknown categories get a box.
-import type { IconName } from '../ui/kit';
+import type { IconName } from '../../ui/kit';
 
 const BY_CATEGORY: [RegExp, IconName][] = [
   [/instrument|clamp|forceps|retractor|scissor/i, 'cut-outline'],

@@ -2,13 +2,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import BottomSheet from '../ui/BottomSheet';
-import { Badge, Banner, Button, Field, Group, Icon, IconButton, IconTile, ListRow, PressScale, SectionLabel } from '../ui/kit';
-import { C, R, S, T } from '../theme';
+import BottomSheet from '../../ui/BottomSheet';
+import { Badge, Banner, Button, Field, Group, Icon, IconButton, IconTile, ListRow, PressScale, SectionLabel } from '../../ui/kit';
+import { C, R, S, T } from '../../theme';
 import { FIELDS, cardLines, cardSubtitle, cardsUsing, changedFields, departmentLabel, itemLocation, missingRequired, pendingFor, show } from './logic';
 import { itemIcon } from './icons';
 import type { Library } from './useLibrary';
-import type { Card, Item } from '../contracts/library';
+import type { Card, Item } from '../../contracts/library';
 
 export type Selection =
   | { type: 'item'; id: string }

@@ -52,7 +52,7 @@ Sheets and tabs use a spring (about 300 ms). Lists never animate on scroll. Resp
 - **Bottom sheet** (the preview): slides up over a dimmed screen, tab bar included (bg at 60%). Grab handle, title, content, one primary action at the bottom inside thumb reach. Closes by swipe down, tap on the dim area, the close button, or Android Back. With the keyboard open, it shrinks to sit above it; the title never goes under the status bar.
 - **Chip / badge**: chip 40 high (tap area 48), radius 12. Badge 24 high, caption text, tinted fill of its meaning color.
 - **Touch feedback**: anything button-like uses `PressScale` (shrinks to 97% while held); list rows tint to raised instead.
-- **Item icons**: by category (instrument, suture, implant, drug, drape, else box), from `src/library/icons.ts`.
+- **Item icons**: by category (instrument, suture, implant, drug, drape, else box), from `src/features/library/icons.ts`.
 - **Status strip**: scrolling screens keep a solid bg strip behind the status bar.
 
 ## States

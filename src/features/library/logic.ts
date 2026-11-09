@@ -1,5 +1,5 @@
 // Pure library logic (no React Native imports), so Node tests can run it directly.
-import type { Card, CardItem, ChangeRequest, Department, Hospital, Item, LibraryData, Target } from '../contracts/library';
+import type { Card, CardItem, ChangeRequest, Department, Hospital, Item, LibraryData, Target } from '../../contracts/library';
 
 /** Fields a person can edit, in the order the edit form and the review screen show them. */
 export const FIELDS: Record<'item' | 'card', { key: string; label: string; multiline?: boolean; list?: boolean; required?: boolean }[]> = {

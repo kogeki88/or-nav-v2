@@ -2,9 +2,9 @@
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 
-import BottomSheet from '../ui/BottomSheet';
-import { Banner, Button, Group, Icon, IconButton, IconTile, ListRow, SectionLabel } from '../ui/kit';
-import { C, S, T } from '../theme';
+import BottomSheet from '../../ui/BottomSheet';
+import { Banner, Button, Group, Icon, IconButton, IconTile, ListRow, SectionLabel } from '../../ui/kit';
+import { C, S, T } from '../../theme';
 import type { Library } from './useLibrary';
 
 export default function DepartmentSheet({ lib, open, onClose, jobRole }: { lib: Library; open: boolean; onClose: () => void; jobRole: string | null }) {

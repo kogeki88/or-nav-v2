@@ -4,7 +4,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { supabase } from '../auth/supabase';
 import { logFault } from '../diag/faultStore';
-import type { Library } from '../library/useLibrary';
+import type { Library } from '../features/library/useLibrary';
 import type { Engine, OmniAction, OmniTurn } from '../../supabase/functions/omnibar/schema';
 import { describeRemoved, scrub } from '../../supabase/functions/omnibar/scrub';
 import { Draft, draftToChange, localAnswer, validActions } from './validate';

@@ -1,7 +1,7 @@
 // Checks what the AI returned against the phone's own copy, and turns drafts into review requests.
 // Pure TypeScript (Node-tested). Never trusts an id from the AI: unknown ids drop the action.
 import type { DraftCard, DraftCardLine, DraftItem, OmniAction } from '../../supabase/functions/omnibar/schema';
-import { searchCards, searchItems } from '../library/logic';
+import { searchCards, searchItems } from '../features/library/logic';
 import type { LibraryData, NewChange } from '../contracts/library';
 
 export type Draft = DraftItem | DraftCard | DraftCardLine;

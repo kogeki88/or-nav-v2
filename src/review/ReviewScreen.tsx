@@ -2,8 +2,8 @@
 import { useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import type { Library } from '../library/useLibrary';
-import { departmentLabel, myPending, requestTitle, reviewRows, timeAgo, toReview } from '../library/logic';
+import type { Library } from '../features/library/useLibrary';
+import { departmentLabel, myPending, requestTitle, reviewRows, timeAgo, toReview } from '../features/library/logic';
 import type { ChangeRequest } from '../contracts/library';
 import { Badge, Banner, Button, EmptyState, Group, Icon, ListRow, SectionLabel, SkeletonRows } from '../ui/kit';
 import { C, R, S, T } from '../theme';

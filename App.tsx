@@ -11,14 +11,14 @@ import {
   watchSignedInUser,
 } from './src/auth/supabase';
 import { DEMO_USER_ID, demoSource } from './src/core/library/demoSource';
-import LibraryScreen from './src/library/LibraryScreen';
-import type { Selection } from './src/library/LibrarySheet';
+import LibraryScreen from './src/features/library/LibraryScreen';
+import type { Selection } from './src/features/library/LibrarySheet';
 import OmniBar, { OMNI_BAR_SPACE } from './src/omnibar/OmniBar';
 import OmniSheet from './src/omnibar/OmniSheet';
 import { useOmnibar } from './src/omnibar/useOmnibar';
-import { toReview } from './src/library/logic';
+import { toReview } from './src/features/library/logic';
 import { supabaseSource } from './src/core/library/supabaseSource';
-import { useLibrary } from './src/library/useLibrary';
+import { useLibrary } from './src/features/library/useLibrary';
 import { greeting } from './src/profile/ProfileCard';
 import Questionnaire from './src/profile/Questionnaire';
 import type { ProfileRow } from './src/profile/profile';

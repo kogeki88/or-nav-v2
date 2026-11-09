@@ -2,9 +2,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
-import { logFault } from '../diag/faultStore';
+import { logFault } from '../../diag/faultStore';
 import { myDepartments } from './logic';
-import type { LibraryData, LibrarySource, NewChange } from '../contracts/library';
+import type { LibraryData, LibrarySource, NewChange } from '../../contracts/library';
 
 const EMPTY_LIBRARY: LibraryData = {
   hospitals: [],
