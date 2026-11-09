@@ -96,5 +96,8 @@ export function supabaseSource(userId: string): LibrarySource {
       if (error) throw error;
       return data as 'approved' | 'rejected';
     },
+
+    savedCopy: () => readCachedLibrary(userId),
+    explainError: friendlyDataError,
   };
 }

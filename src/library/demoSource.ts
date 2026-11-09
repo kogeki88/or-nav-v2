@@ -161,5 +161,11 @@ export function demoSource(): LibrarySource {
       r.status = 'rejected';
       return 'rejected';
     },
+    async savedCopy() {
+      return null;
+    },
+    explainError(e) {
+      return e instanceof Error ? e.message : String(e);
+    },
   };
 }

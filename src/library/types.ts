@@ -92,4 +92,8 @@ export interface LibrarySource {
   leave(departmentId: string): Promise<void>;
   propose(change: NewChange): Promise<void>;
   review(requestId: string, decision: 'approve' | 'reject', note?: string): Promise<'approved' | 'rejected'>;
+  /** The library copy saved on the phone for the signed-in user, or null when there is none. */
+  savedCopy(): Promise<LibraryData | null>;
+  /** The plain-language message the nurse sees for this error. */
+  explainError(e: unknown): string;
 }

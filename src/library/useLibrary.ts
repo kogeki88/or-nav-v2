@@ -4,7 +4,6 @@ import { AppState } from 'react-native';
 
 import { logFault } from '../diag/faultStore';
 import { myDepartments } from './logic';
-import { friendlyDataError, readCachedLibrary } from './supabaseSource';
 import { EMPTY_LIBRARY, LibraryData, LibrarySource, NewChange } from './types';
 
 const DEPT_KEY = 'ornav.library.department';
@@ -33,12 +32,12 @@ export function useLibrary(source: LibrarySource, userId: string, useCache: bool
   // Show the phone copy first (SQLite), while the server loads.
   useEffect(() => {
     if (!useCache) return;
-    readCachedLibrary(userId).then((saved) => {
+    source.savedCopy().then((saved) => {
       if (!live.current || gotServer.current || !saved) return;
       setData(saved);
       setLoading(false);
     });
-  }, [useCache, userId]);
+  }, [source, useCache]);
 
   const refresh = useCallback(
     async (pull = false) => {
@@ -53,7 +52,7 @@ export function useLibrary(source: LibrarySource, userId: string, useCache: bool
       } catch (e) {
         logFault('sync', e);
         if (!live.current) return;
-        const msg = friendlyDataError(e);
+        const msg = source.explainError(e);
         setError(msg);
         setOffline(/offline/i.test(msg));
       } finally {
@@ -99,10 +98,10 @@ export function useLibrary(source: LibrarySource, userId: string, useCache: bool
         return out;
       } catch (e) {
         logFault('sync', e);
-        throw new Error(friendlyDataError(e));
+        throw new Error(source.explainError(e));
       }
     },
-    [refresh],
+    [refresh, source],
   );
 
   return {
