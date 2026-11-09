@@ -14,7 +14,7 @@ Also read: `AGENTS.md` (Expo rules: check the SDK 58 docs, never trust memory), 
 ## Architecture (ports and adapters, one repo; see `docs/adr/0001-hexagonal-ideas-in-one-repo.md`)
 - `src/contracts/`: port interfaces and data types only. No runtime code, no React.
 - `src/core/`: logic and adapters (SQLite, Supabase, search, voice). No React or React Native UI. Tests run in Jest without the emulator.
-- `src/features/<name>/`: screens and their hooks. Use ports from `src/contracts/` only; never import `src/core/` or another feature.
+- `src/features/<name>/`: screens and their hooks. Use ports from `src/contracts/` for data. May also import its own folder, shared UI (`src/ui/`) and theme, and old folders (such as the fault log) until they move (Sean, 2026-11-09). Never import `src/core/` or another feature.
 - `App.tsx` is the shell: it builds the adapters and passes them in as plain values. No business logic. Add a React Context only when deep screens need several ports.
 - One Jest test checks these import rules; `npm test` must pass.
 - No event bus until two features must talk and no simpler way works. No pnpm monorepo until a second app needs a part.
