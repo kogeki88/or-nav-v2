@@ -27,8 +27,7 @@ export type Card = {
   version: number;
 };
 
-export const PHASES = ['Setup', 'Incision', 'Cannulation/Main', 'Closure'] as const;
-export type Phase = (typeof PHASES)[number];
+export type Phase = 'Setup' | 'Incision' | 'Cannulation/Main' | 'Closure';
 
 export type CardItem = {
   id: string;
@@ -72,17 +71,6 @@ export type LibraryData = {
   requests: ChangeRequest[];
   /** When this copy came from the server (ISO time). */
   loadedAt: string;
-};
-
-export const EMPTY_LIBRARY: LibraryData = {
-  hospitals: [],
-  departments: [],
-  memberships: [],
-  items: [],
-  cards: [],
-  cardItems: [],
-  requests: [],
-  loadedAt: '',
 };
 
 /** The one place screens read and write library data. Supabase in the app, sample data in demo mode. */

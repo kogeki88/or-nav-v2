@@ -1,9 +1,9 @@
 // Library data from Supabase, with a phone copy (src/db, SQLite) so the Library still opens offline.
 // The server's row-level security decides what this user may see and do.
-import { supabase } from '../auth/supabase';
-import { readLibrary, saveLibrary } from '../db/libraryStore';
-import { logFault } from '../diag/faultStore';
-import type { LibraryData, LibrarySource, NewChange } from './types';
+import { supabase } from '../../auth/supabase';
+import { readLibrary, saveLibrary } from '../../db/libraryStore';
+import { logFault } from '../../diag/faultStore';
+import type { LibraryData, LibrarySource, NewChange } from '../../contracts/library';
 
 /** Before v2.2.0 the copy was one JSON text in localStorage. Moved into SQLite once, then removed. */
 const oldCacheKey = (userId: string) => `ornav.library.${userId}`;

@@ -2,7 +2,7 @@
 // Pure TypeScript (Node-tested). Never trusts an id from the AI: unknown ids drop the action.
 import type { DraftCard, DraftCardLine, DraftItem, OmniAction } from '../../supabase/functions/omnibar/schema';
 import { searchCards, searchItems } from '../library/logic';
-import type { LibraryData, NewChange } from '../library/types';
+import type { LibraryData, NewChange } from '../contracts/library';
 
 export type Draft = DraftItem | DraftCard | DraftCardLine;
 

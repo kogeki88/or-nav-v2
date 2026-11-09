@@ -5,7 +5,7 @@ import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-nati
 import { itemIcon } from '../library/icons';
 import type { Selection } from '../library/LibrarySheet';
 import { cardSubtitle, departmentLabel, itemLocation, requestTitle, reviewRows } from '../library/logic';
-import type { ChangeRequest } from '../library/types';
+import type { ChangeRequest } from '../contracts/library';
 import type { Library } from '../library/useLibrary';
 import { C, R, S, T } from '../theme';
 import BottomSheet from '../ui/BottomSheet';

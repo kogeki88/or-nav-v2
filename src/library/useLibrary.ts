@@ -4,7 +4,18 @@ import { AppState } from 'react-native';
 
 import { logFault } from '../diag/faultStore';
 import { myDepartments } from './logic';
-import { EMPTY_LIBRARY, LibraryData, LibrarySource, NewChange } from './types';
+import type { LibraryData, LibrarySource, NewChange } from '../contracts/library';
+
+const EMPTY_LIBRARY: LibraryData = {
+  hospitals: [],
+  departments: [],
+  memberships: [],
+  items: [],
+  cards: [],
+  cardItems: [],
+  requests: [],
+  loadedAt: '',
+};
 
 const DEPT_KEY = 'ornav.library.department';
 

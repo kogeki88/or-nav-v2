@@ -8,7 +8,7 @@ import { C, R, S, T } from '../theme';
 import { FIELDS, cardLines, cardSubtitle, cardsUsing, changedFields, departmentLabel, itemLocation, missingRequired, pendingFor, show } from './logic';
 import { itemIcon } from './icons';
 import type { Library } from './useLibrary';
-import type { Card, Item } from './types';
+import type { Card, Item } from '../contracts/library';
 
 export type Selection =
   | { type: 'item'; id: string }

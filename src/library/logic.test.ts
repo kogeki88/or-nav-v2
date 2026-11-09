@@ -1,7 +1,7 @@
 // The view logic, fed with the demo library from a fresh demo adapter in each test.
 import { describe, expect, it } from '@jest/globals';
 
-import { DEMO_USER_ID, demoSource } from './demoSource';
+import { DEMO_USER_ID, demoSource } from '../core/library/demoSource';
 import { myDepartments, myPending, searchCards, searchItems, toReview } from './logic';
 
 describe('view logic on the demo library', () => {

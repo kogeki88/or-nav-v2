@@ -1,6 +1,6 @@
 // Demo mode: made-up sample data in memory, with the same rules as the server.
 // Used only for emulator screenshots (EXPO_PUBLIC_DEMO=1 in a development run). No patient data.
-import type { Card, CardItem, ChangeRequest, Item, LibraryData, LibrarySource } from './types';
+import type { Card, CardItem, ChangeRequest, Item, LibraryData, LibrarySource } from '../../contracts/library';
 
 export const DEMO_USER_ID = 'demo-user';
 const COLLEAGUE = 'demo-colleague';

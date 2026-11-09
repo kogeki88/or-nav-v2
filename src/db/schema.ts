@@ -1,6 +1,6 @@
 // The phone's own library database: table layout and row conversion.
 // Pure TypeScript (no Expo imports), so Node can test it.
-import type { Card, CardItem, ChangeRequest, Department, Hospital, Item, LibraryData, Membership } from '../library/types';
+import type { Card, CardItem, ChangeRequest, Department, Hospital, Item, LibraryData, Membership } from '../contracts/library';
 
 export type Migration = { version: number; sql: string };
 

@@ -2,7 +2,7 @@
 // It holds the last copy the server sent, so the Library opens with no signal in the OR.
 import * as SQLite from 'expo-sqlite';
 
-import type { LibraryData } from '../library/types';
+import type { LibraryData } from '../contracts/library';
 import { LATEST_VERSION, LIBRARY_TABLES, LibraryRows, fromRows, libraryInserts, pendingMigrations } from './schema';
 
 let ready: Promise<SQLite.SQLiteDatabase> | null = null;
