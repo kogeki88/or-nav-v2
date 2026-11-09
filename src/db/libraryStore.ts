@@ -39,7 +39,7 @@ let queue: Promise<unknown> = Promise.resolve();
  * Note: on Android, database calls wait while expo-file-system downloads an update APK
  * (shared native worker). They finish once the download ends.
  */
-function serial<T>(job: (db: SQLite.SQLiteDatabase) => Promise<T>): Promise<T> {
+export function serial<T>(job: (db: SQLite.SQLiteDatabase) => Promise<T>): Promise<T> {
   const run = queue.then(async () => job(await getDb()));
   queue = run.catch(() => undefined);
   return run;

@@ -27,6 +27,8 @@ import ReviewScreen from './src/review/ReviewScreen';
 import { C, S, T } from './src/theme';
 import { IconTile } from './src/ui/kit';
 import TabBar, { TAB_BAR_HEIGHT, TabName } from './src/ui/TabBar';
+import { startFaultCapture } from './src/diag/capture';
+import { logFault } from './src/diag/faultStore';
 import { checkForUpdate, downloadAndInstall } from './src/updater';
 import MeScreen from './src/views/MeScreen';
 import UpdatePanel, { UpdatePhase, UpdateState } from './src/views/UpdatePanel';
@@ -45,6 +47,8 @@ const DEMO_PROFILE: ProfileRow = {
   years_in_or: '3-10',
   walkup_song: null,
 };
+
+startFaultCapture();
 
 export default function App() {
   return (
@@ -122,6 +126,7 @@ function Main() {
       setStatus('Opening the Android installer. Tap Update to finish.');
       setPhase('idle');
     } catch (e) {
+      logFault('update', e);
       setIsError(true);
       setStatus(e instanceof Error ? e.message : String(e));
       setPhase('idle');

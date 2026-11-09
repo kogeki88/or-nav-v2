@@ -50,6 +50,10 @@ Also read: `AGENTS.md` (Expo rules: check the SDK 58 docs, never trust memory), 
 - All database calls go through `serial()` in `libraryStore.ts` (one job at a time). Use a plain transaction; do not use `withExclusiveTransactionAsync`.
 - The library copy belongs to one user (`sync_meta.user_id`); another account's copy is never shown.
 
+## Fault log (v2.4.0)
+- `src/diag/`. Every new catch block that hides an error calls `logFault(area, error)`. Pass the error only: never omnibar message text or anything the user typed.
+- Admin view → Run full check / Send report. Reports land in Supabase `fault_reports` (admins read): read them there before guessing at a fault.
+
 ## Look (OR Dark Mode)
 Background #0B0F19, cards #111827, accent #38BDF8, text #F8FAFC. Touch targets 48–56dp, in the lower two-thirds of the screen. One screen loop: Search → Preference Card → Scrub Mode, no deep stacks or blocking pop-ups.
 

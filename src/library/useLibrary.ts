@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
+import { logFault } from '../diag/faultStore';
 import { myDepartments } from './logic';
 import { friendlyDataError, readCachedLibrary } from './supabaseSource';
 import { EMPTY_LIBRARY, LibraryData, LibrarySource, NewChange } from './types';
@@ -50,6 +51,7 @@ export function useLibrary(source: LibrarySource, userId: string, useCache: bool
         setError('');
         setOffline(false);
       } catch (e) {
+        logFault('sync', e);
         if (!live.current) return;
         const msg = friendlyDataError(e);
         setError(msg);
@@ -96,6 +98,7 @@ export function useLibrary(source: LibrarySource, userId: string, useCache: bool
         await refresh();
         return out;
       } catch (e) {
+        logFault('sync', e);
         throw new Error(friendlyDataError(e));
       }
     },

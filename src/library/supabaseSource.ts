@@ -2,6 +2,7 @@
 // The server's row-level security decides what this user may see and do.
 import { supabase } from '../auth/supabase';
 import { readLibrary, saveLibrary } from '../db/libraryStore';
+import { logFault } from '../diag/faultStore';
 import type { LibraryData, LibrarySource, NewChange } from './types';
 
 /** Before v2.2.0 the copy was one JSON text in localStorage. Moved into SQLite once, then removed. */
@@ -17,7 +18,8 @@ export async function readCachedLibrary(userId: string): Promise<LibraryData | n
     await saveLibrary(userId, old);
     localStorage.removeItem(oldCacheKey(userId));
     return old;
-  } catch {
+  } catch (e) {
+    logFault('database', e);
     return null;
   }
 }
@@ -26,7 +28,8 @@ async function writeCache(userId: string, data: LibraryData) {
   try {
     await saveLibrary(userId, data);
     localStorage.removeItem(oldCacheKey(userId));
-  } catch {
+  } catch (e) {
+    logFault('database', e);
     // Not critical: the old copy stays whole (one transaction), and the next open loads from the server again.
   }
 }

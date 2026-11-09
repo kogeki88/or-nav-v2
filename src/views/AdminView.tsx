@@ -1,10 +1,13 @@
 // Admin test & diagnostics. Display only: anything powerful added here later must also be
 // checked on the server (RLS on auth.jwt() -> 'app_metadata' ->> 'role').
 import { useCallback, useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { DbHealth, dbHealth } from '../db/libraryStore';
 import { ConnectionState, SignedInUser, checkConnection, signOut, supabaseHost } from '../auth/supabase';
+import { CheckResult, CheckStatus, FaultEntry, recentErrors } from '../diag/faultLog';
+import { logFault, readFaults } from '../diag/faultStore';
+import { runFullCheck, sendReport } from '../diag/fullCheck';
 import ProfileCard from '../profile/ProfileCard';
 import type { ProfileRow } from '../profile/profile';
 import { C, S } from '../theme';
@@ -35,6 +38,10 @@ function formatWhen(iso: string | null): string {
   return `${d.getMonth() + 1}/${d.getDate()} ${hh}:${mm}`;
 }
 
+const CHECK_COLOR: Record<CheckStatus, string> = { ok: C.ok, warn: C.warn, fail: C.danger };
+const CHECK_ICON = { ok: 'checkmark-circle-outline', warn: 'alert-circle-outline', fail: 'close-circle-outline' } as const;
+const SHOWN_FAULTS = 20;
+
 function formatExpiry(seconds?: number): string {
   if (!seconds) return '—';
   const d = new Date(seconds * 1000);
@@ -55,6 +62,53 @@ export default function AdminView({ user, update, profile, onPreviewQuestionnair
 
   const [db, setDb] = useState<DbHealth | null>(null);
   const [dbError, setDbError] = useState('');
+
+  const [faults, setFaults] = useState<FaultEntry[] | null>(null);
+  const [checks, setChecks] = useState<CheckResult[] | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendNote, setSendNote] = useState<{ text: string; ok: boolean } | null>(null);
+
+  const loadFaults = useCallback(async () => {
+    try {
+      setFaults(await readFaults());
+    } catch {
+      setFaults([]);
+    }
+  }, []);
+
+  const fullCheck = useCallback(async () => {
+    setChecking(true);
+    setSendNote(null);
+    try {
+      setChecks(await runFullCheck(user.id));
+    } finally {
+      setChecking(false);
+      loadFaults();
+    }
+  }, [user.id, loadFaults]);
+
+  const send = useCallback(async () => {
+    setSending(true);
+    try {
+      const entries = await readFaults();
+      await sendReport(user.id, checks ?? [], entries);
+      setSendNote({ text: `Sent: ${checks ? checks.length : 0} check lines, ${Math.min(entries.length, 200)} log entries.`, ok: true });
+    } catch (e) {
+      setSendNote({ text: e instanceof Error ? e.message : String(e), ok: false });
+    } finally {
+      setSending(false);
+    }
+  }, [user.id, checks]);
+
+  const testFault = useCallback(() => {
+    logFault('test', new Error('Test fault from the Admin view'));
+    setTimeout(loadFaults, 300);
+  }, [loadFaults]);
+
+  useEffect(() => {
+    loadFaults();
+  }, [loadFaults]);
 
   const runCheck = useCallback(async () => {
     setConnection('checking');
@@ -115,6 +169,44 @@ export default function AdminView({ user, update, profile, onPreviewQuestionnair
           </>
         )}
       </Group>
+
+      <SectionLabel text="Fault log" right={faults ? `${faults.length} saved` : '…'} />
+      <Group style={{ paddingHorizontal: S.lg }}>
+        <DetailRow
+          first
+          icon="bug-outline"
+          label="Errors in 24 h"
+          value={faults ? String(recentErrors(faults)) : '…'}
+          color={faults ? (recentErrors(faults) ? C.danger : C.ok) : undefined}
+        />
+        {(faults ?? []).slice(0, SHOWN_FAULTS).map((f, i) => (
+          <DetailRow
+            key={`${f.at}-${i}`}
+            icon={f.level === 'error' ? 'close-circle-outline' : f.level === 'warn' ? 'alert-circle-outline' : 'cloud-offline-outline'}
+            label={`${formatWhen(f.at)} ${f.area}`}
+            value={f.message}
+            color={f.level === 'error' ? C.danger : f.level === 'warn' ? C.warn : C.text2}
+          />
+        ))}
+      </Group>
+
+      {checks && (
+        <>
+          <SectionLabel text="Full check" />
+          <Group style={{ paddingHorizontal: S.lg }}>
+            {checks.map((c, i) => (
+              <DetailRow key={c.name} first={i === 0} icon={CHECK_ICON[c.status]} label={c.name} value={c.value} color={CHECK_COLOR[c.status]} />
+            ))}
+          </Group>
+        </>
+      )}
+
+      <View style={{ gap: S.md, marginTop: S.lg }}>
+        <Button kind="primary" icon="medkit-outline" label="Run full check" busy={checking} onPress={fullCheck} />
+        <Button kind="secondary" icon="cloud-upload-outline" label="Send report" busy={sending} onPress={send} />
+        {sendNote && <Text style={{ color: sendNote.ok ? C.ok : C.danger, fontSize: 15, lineHeight: 20 }}>{sendNote.text}</Text>}
+        {__DEV__ && <Button kind="ghost" icon="flask-outline" label="Add test fault" onPress={testFault} />}
+      </View>
 
       <View style={{ gap: S.md, marginTop: S.lg }}>
         <Button kind="secondary" icon="pulse-outline" label="Check connection" busy={connection === 'checking'} onPress={runCheck} />

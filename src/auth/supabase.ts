@@ -5,6 +5,7 @@ import 'expo-sqlite/localStorage/install';
 import { createClient, type AuthError } from '@supabase/supabase-js';
 import { AppState } from 'react-native';
 
+import { logFault } from '../diag/faultStore';
 import { Role, roleOf } from './role';
 
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
@@ -58,11 +59,15 @@ export async function refreshSignedInUser(): Promise<SignedInUser | null> {
   if (!current) return null;
   try {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) return current;
+    if (error || !data.user) {
+      if (error) logFault('signin', error, 'warn');
+      return current;
+    }
     const updated = { ...current, email: data.user.email ?? current.email, role: roleOf(data.user) };
     writeSignedInUser(updated);
     return updated;
-  } catch {
+  } catch (e) {
+    logFault('signin', e, 'warn');
     return current;
   }
 }

@@ -3,6 +3,7 @@ import { FunctionsFetchError, FunctionsHttpError, FunctionsRelayError } from '@s
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { supabase } from '../auth/supabase';
+import { logFault } from '../diag/faultStore';
 import type { Library } from '../library/useLibrary';
 import type { Engine, OmniAction, OmniTurn } from '../../supabase/functions/omnibar/schema';
 import { describeRemoved, scrub } from '../../supabase/functions/omnibar/scrub';
@@ -86,10 +87,12 @@ export function useOmnibar(lib: Library) {
             } catch {
               // keep the plain message
             }
+            logFault('omnibar', new Error(`HTTP ${error.context.status}: ${msg}`));
             add({ role: 'assistant', text: msg, tone: 'danger' });
           } else if (error instanceof FunctionsFetchError || error instanceof FunctionsRelayError) {
             offline('No connection to the assistant');
           } else {
+            logFault('omnibar', error);
             add({ role: 'assistant', text: 'The assistant could not answer. Try again.', tone: 'danger' });
           }
           return true;
@@ -101,7 +104,8 @@ export function useOmnibar(lib: Library) {
           if (a.type.startsWith('draft_')) drafts[i] = { state: 'ready' };
         });
         add({ role: 'assistant', text: reply || 'Done.', actions, drafts, engine: data?.engine === 'backup' ? 'backup' : 'claude' });
-      } catch {
+      } catch (e) {
+        logFault('omnibar', e);
         offline('No connection to the assistant');
       } finally {
         setBusy(false);
@@ -129,6 +133,7 @@ export function useOmnibar(lib: Library) {
         await lib.propose(change);
         setDraft(msgId, index, 'sent');
       } catch (e) {
+        logFault('omnibar', e);
         setDraft(msgId, index, 'error', e instanceof Error ? e.message : String(e));
       }
     },

@@ -33,6 +33,15 @@ CREATE TABLE change_requests (
 CREATE TABLE sync_meta (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);
 `,
   },
+  {
+    // Fault log (src/diag). Not a library table: a server load never empties it.
+    version: 2,
+    sql: `
+CREATE TABLE fault_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT NOT NULL, level TEXT NOT NULL, area TEXT NOT NULL,
+  message TEXT NOT NULL, detail TEXT, app_version TEXT NOT NULL);
+`,
+  },
 ];
 
 export const LATEST_VERSION = MIGRATIONS[MIGRATIONS.length - 1].version;

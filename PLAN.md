@@ -165,5 +165,24 @@ Done means: "Ask OR-Nav" bar above the tabs on every tab → chat sheet; answers
 - [ ] Green cloud build v2.3.0; signature; no `sb_secret_` / `sk-ant-` in the bundle
 - HIPAA note: the scrubber is a backstop. Full compliance also needs signed BAAs with Anthropic and Supabase (paid plan) — Sean's legal step.
 
+## Part J — v2.4.0 fault log + "Run full check" (Sean, 2026-11-08)
+Done means: faults are saved on the phone (newest 500, survive restart, work offline); crashes and the catch blocks in sign-in, sync, database, update and omnibar write a line; no omnibar message text or patient details in any line (scrubbed); Admin view shows the log, "Run full check" (server, sign-in, phone database, last sync, app version, fault log, one real omnibar call) and "Send report" (to Supabase `fault_reports`, admins read; Claude reads it in the dashboard). Regular users see nothing new.
+
+| File | What |
+| --- | --- |
+| `src/diag/faultLog.ts` | Entry rules: scrub, cut, offline = "info", report (pure, Node-tested) |
+| `src/diag/faultStore.ts` | `logFault()`, crash kept in localStorage until next start, read; via `serial()` |
+| `src/diag/capture.ts` | Global crash handler; release builds also catch unhandled promise errors |
+| `src/diag/fullCheck.ts` | The check lines and `sendReport()` |
+| `src/db/schema.ts` | Migration v2: `fault_log` table (not a library table, so a server load keeps it) |
+| `src/views/AdminView.tsx` | Fault log section, Run full check, Send report, "Add test fault" (debug only) |
+| `supabase/migrations/0004_fault_reports.sql` | `fault_reports`: insert own, admins read, no update/delete |
+
+- [x] Typecheck; 10 Node tests (scrub email/phone, drop likely patient name/DOB, cut, offline = info, report size); real SQLite: v1 → v2, trim to 500, log not a library table
+- [x] Emulator, debug build + real server (2026-11-08): test fault shows; full check green for server, sign-in, database (v2 of v2), sync; omnibar red "The assistant is not set up yet" (no AI key yet, see Part I); airplane mode → network lines "Offline", database still green, offline faults saved in grey; log still there after a full app restart; Send report before 0004 → "Run 0004_fault_reports.sql" message
+- [ ] Sean: run `0004_fault_reports.sql` in the Supabase SQL editor (should list 2 policies)
+- [ ] Send report on the emulator; read the row in the Supabase dashboard
+- [ ] Green cloud build v2.4.0; Sean installs through the in-app updater
+
 ## Status
 v2.0.1–v2.0.5 published and confirmed on the phone. Part E done (2026-11-08). v2.2.0 (Brick 2, offline library) published 2026-11-08 and checked on the emulator. Next: Sean updates the phone, joins Sample General Hospital / Main OR, and checks the Library in airplane mode. Then Brick 3 (phonetic search).
