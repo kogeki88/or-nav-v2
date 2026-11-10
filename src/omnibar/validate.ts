@@ -1,8 +1,36 @@
 // Checks what the AI returned against the phone's own copy, and turns drafts into review requests.
 // Pure TypeScript (Node-tested). Never trusts an id from the AI: unknown ids drop the action.
 import type { DraftCard, DraftCardLine, DraftItem, OmniAction } from '../../supabase/functions/omnibar/schema';
-import { searchCards, searchItems } from '../features/library/logic';
-import type { LibraryData, NewChange } from '../contracts/library';
+import type { Card, Item, LibraryData, NewChange } from '../contracts/library';
+
+// The offline plain search, kept as it was when the Library box moved to the search engine
+// (ticket #7): every typed word starts a word in name, category, shelf, bin or other names.
+const norm = (s: string | null | undefined) =>
+  (s ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+
+function matches(query: string, ...hay: (string | null | undefined)[]): boolean {
+  const q = norm(query).split(' ').filter(Boolean);
+  if (q.length === 0) return true;
+  const words = hay.flatMap((h) => norm(h).split(' ')).filter(Boolean);
+  return q.every((part) => words.some((w) => w.startsWith(part)));
+}
+
+function searchItems(items: Item[], query: string): Item[] {
+  return items
+    .filter((i) => matches(query, i.name, i.category, i.shelf, i.sub_location, ...i.synonyms))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function searchCards(cards: Card[], query: string): Card[] {
+  return cards
+    .filter((c) => matches(query, c.surgeon, c.procedure, c.specialty))
+    .sort((a, b) => a.procedure.localeCompare(b.procedure) || a.surgeon.localeCompare(b.surgeon));
+}
 
 export type Draft = DraftItem | DraftCard | DraftCardLine;
 

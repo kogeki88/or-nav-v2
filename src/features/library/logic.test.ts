@@ -2,7 +2,7 @@
 import { describe, expect, it } from '@jest/globals';
 
 import type { Card, ChangeRequest, Item, LibraryData } from '../../contracts/library';
-import { myDepartments, myPending, searchCards, searchItems, toReview } from './logic';
+import { myDepartments, myPending, toReview } from './logic';
 
 const ME = 'me';
 const COLLEAGUE = 'colleague';
@@ -55,21 +55,6 @@ function library(requests: ChangeRequest[] = []): LibraryData {
 }
 
 describe('view logic on a small library', () => {
-  it('searches items by name, synonym and location, in name order', () => {
-    const data = library();
-    expect(searchItems(data.items, 'debakeys').map((i) => i.name)).toEqual(['DeBakey forceps']);
-    expect(searchItems(data.items, 'prolene').map((i) => i.name)).toEqual(['4-0 Prolene']);
-    expect(searchItems(data.items, 'suture cart').map((i) => i.name)).toEqual(['0 Vicryl CT-1', '4-0 Prolene']);
-    expect(searchItems(data.items, 'nothing like this')).toEqual([]);
-  });
-
-  it('searches preference cards by surgeon, procedure and specialty', () => {
-    const data = library();
-    expect(searchCards(data.cards, 'cabg').map((c) => c.id)).toEqual(['c-cabg']);
-    expect(searchCards(data.cards, 'kim').map((c) => c.id)).toEqual(['c-chole']);
-    expect(searchCards(data.cards, 'cardiac').map((c) => c.procedure)).toEqual(['AVR', 'CABG x3']);
-  });
-
   it('lists my departments with their hospital, sorted', () => {
     expect(myDepartments(library(), ME).map((m) => `${m.hospital?.name} · ${m.department.name}`)).toEqual([
       'Sample General Hospital · CVOR / Cardiac OR',

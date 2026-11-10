@@ -19,34 +19,6 @@ export const FIELDS: Record<'item' | 'card', { key: string; label: string; multi
   ],
 };
 
-const norm = (s: string | null | undefined) =>
-  (s ?? '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
-
-/** True when every word of the query starts a word somewhere in the haystack. */
-export function matches(query: string, ...hay: (string | null | undefined)[]): boolean {
-  const q = norm(query).split(' ').filter(Boolean);
-  if (q.length === 0) return true;
-  const words = hay.flatMap((h) => norm(h).split(' ')).filter(Boolean);
-  return q.every((part) => words.some((w) => w.startsWith(part)));
-}
-
-export function searchItems(items: Item[], query: string): Item[] {
-  return items
-    .filter((i) => matches(query, i.name, i.category, i.shelf, i.sub_location, ...i.synonyms))
-    .sort((a, b) => a.name.localeCompare(b.name));
-}
-
-export function searchCards(cards: Card[], query: string): Card[] {
-  return cards
-    .filter((c) => matches(query, c.surgeon, c.procedure, c.specialty))
-    .sort((a, b) => a.procedure.localeCompare(b.procedure) || a.surgeon.localeCompare(b.surgeon));
-}
-
 export function itemLocation(i: Pick<Item, 'shelf' | 'sub_location'>): string {
   return [i.shelf, i.sub_location].filter(Boolean).join(' · ') || 'No location yet';
 }

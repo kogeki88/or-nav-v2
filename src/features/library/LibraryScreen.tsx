@@ -7,7 +7,8 @@ import { C, S, T } from '../../theme';
 import DepartmentSheet from './DepartmentSheet';
 import { itemIcon } from './icons';
 import LibrarySheet, { Selection } from './LibrarySheet';
-import { cardSubtitle, departmentLabel, itemLocation, pendingFor, searchCards, searchItems, timeAgo } from './logic';
+import type { SearchEngine } from '../../contracts/search';
+import { cardSubtitle, departmentLabel, itemLocation, pendingFor, timeAgo } from './logic';
 import type { Library } from './useLibrary';
 
 type Filter = 'all' | 'cards' | 'items';
@@ -15,12 +16,15 @@ const PREVIEW = 5; // rows per section in "All" before "Show all"
 
 export default function LibraryScreen({
   lib,
+  search,
   topInset,
   bottomSpace,
   jobRole,
   openRequest,
 }: {
   lib: Library;
+  /** The search port; the shell builds the engine. */
+  search: SearchEngine;
   topInset: number;
   bottomSpace: number;
   jobRole: string | null;
@@ -38,8 +42,10 @@ export default function LibraryScreen({
 
   const deptItems = useMemo(() => lib.data.items.filter((i) => i.department_id === lib.deptId), [lib.data.items, lib.deptId]);
   const deptCards = useMemo(() => lib.data.cards.filter((c) => c.department_id === lib.deptId), [lib.data.cards, lib.deptId]);
-  const items = useMemo(() => searchItems(deptItems, query), [deptItems, query]);
-  const cards = useMemo(() => searchCards(deptCards, query), [deptCards, query]);
+  const index = useMemo(() => search.index(deptItems, deptCards), [search, deptItems, deptCards]);
+  const results = useMemo(() => index.search(query), [index, query]);
+  const items = useMemo(() => results.items.map((r) => r.record), [results]);
+  const cards = useMemo(() => results.cards.map((r) => r.record), [results]);
 
   const showCards = filter !== 'items';
   const showItems = filter !== 'cards';

@@ -18,6 +18,7 @@ import OmniSheet from './src/omnibar/OmniSheet';
 import { useOmnibar } from './src/omnibar/useOmnibar';
 import { toReview } from './src/features/library/logic';
 import { supabaseSource } from './src/core/library/supabaseSource';
+import { wordSearch } from './src/core/search/engine';
 import { useLibrary } from './src/features/library/useLibrary';
 import { greeting } from './src/profile/ProfileCard';
 import Questionnaire from './src/profile/Questionnaire';
@@ -233,7 +234,7 @@ function SignedIn({
         <TabBar value={tab} onChange={setTab} badge={toReview(lib.data, user.id).length} bottomInset={insets.bottom} />
       </View>
       <View style={styles.tabContent} pointerEvents="box-none">
-        {tab === 'library' && <LibraryScreen lib={lib} topInset={insets.top} bottomSpace={tabBarSpace} jobRole={profile.role} openRequest={openRequest} />}
+        {tab === 'library' && <LibraryScreen lib={lib} search={wordSearch} topInset={insets.top} bottomSpace={tabBarSpace} jobRole={profile.role} openRequest={openRequest} />}
         {tab === 'review' && <ReviewScreen lib={lib} topInset={insets.top} bottomSpace={tabBarSpace} />}
         {tab === 'me' && (
           <MeScreen

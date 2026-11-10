@@ -151,7 +151,7 @@ describe('checkFile', () => {
       "import React, { useState } from 'react';",
       "import { View } from 'react-native';",
       "import type { LibrarySource } from '../../contracts/library';",
-      "import { searchItems } from './logic';",
+      "import { itemLocation } from './logic';",
       "import { BottomSheet } from '../../ui/BottomSheet';",
       "import { colors } from '../../theme';",
     ].join('\n');
