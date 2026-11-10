@@ -134,7 +134,7 @@ Done means: each joined department's items, cards and card lines live in SQLite 
 - [x] Seed applied in Supabase (Sean OK'd, 2026-11-08; editor text matched the file by SHA-256); read back 16 items, 3 cards, 23 card lines; emulator Library shows Cards 3, Items 16
 - [x] Airplane mode: closed and reopened → Library shows all cards and items, strip "Offline — showing your saved copy from just now"; a card opens with phases, quantities and shelves
 - [x] Green cloud build v2.2.0 (run 42527886777); `or-nav.apk` on Releases; signature 47:80:2B…39:08 matches; no secret key (only the library's "sb_secret_" label); bundle holds the phone database code
-- [ ] Sean updates his phone in the app; Library shows the sample cards; airplane-mode reopen still shows them
+- [x] Sean updated his phone in the app (v2.4.0); joined Sample General Hospital / Main OR; Library shows 3 cards, 16 items; airplane-mode reopen still shows them (Sean, 2026-11-10)
 - Known: on Android, database calls wait while the updater downloads an APK (expo-file-system and expo-sqlite share a native worker). They finish when the download ends. Only matters during a real update; the debug test app always "sees" an update.
 - Known: `withExclusiveTransactionAsync` was dropped for a plain transaction on the one connection; the job queue keeps reads out of a save.
 - Emulator note: three old Metro servers held ports 8081, 8082, 8095. The test app now loads from port 8099 (debug setting `debug_http_host` = localhost:8099, plus `adb reverse tcp:8099 tcp:8099`).
@@ -180,9 +180,9 @@ Done means: faults are saved on the phone (newest 500, survive restart, work off
 
 - [x] Typecheck; 10 Node tests (scrub email/phone, drop likely patient name/DOB, cut, offline = info, report size); real SQLite: v1 → v2, trim to 500, log not a library table
 - [x] Emulator, debug build + real server (2026-11-08): test fault shows; full check green for server, sign-in, database (v2 of v2), sync; omnibar red "The assistant is not set up yet" (no AI key yet, see Part I); airplane mode → network lines "Offline", database still green, offline faults saved in grey; log still there after a full app restart; Send report before 0004 → "Run 0004_fault_reports.sql" message
-- [ ] Sean: run `0004_fault_reports.sql` in the Supabase SQL editor (should list 2 policies)
-- [ ] Send report on the emulator; read the row in the Supabase dashboard
-- [ ] Green cloud build v2.4.0; Sean installs through the in-app updater
+- [x] `0004_fault_reports.sql` applied in the Supabase SQL editor (2026-11-10, Claude in the built-in browser; editor text matched the file by SHA-256); lists 2 policies
+- [x] Send report from Sean's phone (2026-11-10; emulator skipped, PC out of memory); row 1 read back: v2.4.0, 7 checks (all ok except fault log warn and omnibar "not set up yet"), 5 entries (airplane-mode "info" lines + omnibar 503)
+- [x] Green cloud build v2.4.0; Sean installed it through the in-app updater
 
 ## Status
-v2.0.1–v2.0.5 published and confirmed on the phone. Part E done (2026-11-08). v2.2.0 (Brick 2, offline library) published 2026-11-08 and checked on the emulator. Next: Sean updates the phone, joins Sample General Hospital / Main OR, and checks the Library in airplane mode. Then Brick 3 (phonetic search).
+v2.4.0 on Sean's phone (2026-11-10): offline library checked in airplane mode; fault report reached Supabase. Ports-and-adapters move done (issues 1–5). AI omnibar waits for keys (Sean chose search first). Next: Brick 3, sound-alike search (spec + tickets on GitHub).
