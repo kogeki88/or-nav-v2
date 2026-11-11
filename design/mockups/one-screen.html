@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OR-Nav One Screen</title>
+<link rel="stylesheet" href="../../../../brand/brand.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap">
+<script src="https://unpkg.com/feather-icons@4.29.2/dist/feather.min.js"></script>
+<style>
+  /* Page frame follows BRAND.md. The phones show the proposed new app look (version 3: motion). */
+  body { background:#222; color:#eeeef2; font-family:Arial, sans-serif; margin:0; padding:40px 24px 80px; }
+  .bar { width:80px; height:4px; background:#e63946; margin-bottom:12px; }
+  h1 { font-weight:400; font-size:31px; margin:0 0 8px; }
+  .lead { color:#b4b4b8; font-size:16px; margin:0 0 40px; max-width:760px; line-height:1.5; }
+  .row { display:flex; flex-wrap:wrap; gap:32px; }
+  figure { margin:0; width:360px; }
+  figcaption { color:#b4b4b8; font-size:16px; margin-top:12px; line-height:1.4; }
+  figcaption b { color:#eeeef2; font-weight:400; display:block; font-size:18px; margin-bottom:4px; }
+
+  /* ---- phone tokens ---- */
+  .phone {
+    --bg:#121314; --fill:#1C1D20; --fill2:#26272B; --hair:#2A2B2F;
+    --text:#ECECEE; --text2:#A1A2A8; --text3:#6E6F75;
+    --accent:#7DD3B8; --accentDim:#7DD3B840; --onAccent:#0E2A22; --warn:#E9B65A;
+    --ease:cubic-bezier(.2,.8,.2,1); --spring:cubic-bezier(.34,1.3,.5,1);
+    width:360px; height:760px; background:var(--bg); border:1px solid #3a3a3a; border-radius:32px; overflow:hidden; position:relative;
+    font-family:Manrope, Roboto, system-ui, sans-serif; color:var(--text); display:flex; flex-direction:column;
+    font-feature-settings:"tnum" 1; -webkit-font-smoothing:antialiased; }
+  .phone svg.feather { stroke-width:1.75; flex:none; }
+  .status { height:28px; display:flex; justify-content:space-between; align-items:center; padding:0 22px; font-size:13px; color:var(--text2); font-weight:500; position:relative; z-index:2; }
+  .top { height:56px; display:flex; align-items:center; padding:0 6px; position:relative; z-index:2; }
+  .ib { width:48px; height:48px; display:grid; place-items:center; color:var(--text2); position:relative; flex:none; }
+  .ib svg { width:22px; height:22px; }
+  .dot { position:absolute; top:13px; right:12px; width:7px; height:7px; border-radius:50%; background:var(--warn); }
+  .label { flex:1; display:flex; justify-content:center; }
+  .spacer { flex:1; }
+  .body { flex:1; overflow:hidden; padding:0 22px; display:flex; flex-direction:column; position:relative; z-index:1; }
+
+  /* the case label: the signature. A live dot that breathes slowly, like a monitor. */
+  .case-label { display:inline-flex; align-items:center; gap:8px; height:36px; padding:0 14px; border-radius:18px; font-size:15px; font-weight:600;
+    color:var(--text2); transition:background .5s var(--ease), color .5s var(--ease); position:relative; }
+  .case-label .live { width:7px; height:7px; border-radius:50%; background:var(--text3); transition:background .5s; }
+  .case-label.known { background:var(--fill); color:var(--text); }
+  .case-label.known .live { background:var(--accent); animation:breathe 3.2s ease-in-out infinite; }
+  .case-label .txt { transition:opacity .25s, filter .25s; }
+  .case-label .txt.swap { opacity:0; filter:blur(4px); }
+  .case-label svg { width:15px; height:15px; color:var(--text3); }
+  .case-label::after { content:""; position:absolute; inset:0; border-radius:18px; box-shadow:0 0 0 0 var(--accentDim); opacity:0; }
+  .case-label.learned::after { animation:ring 1.1s var(--ease); }
+  @keyframes breathe { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.45; transform:scale(.8); } }
+  @keyframes ring { 0% { opacity:1; box-shadow:0 0 0 0 #7DD3B866; } 100% { opacity:0; box-shadow:0 0 0 12px #7DD3B800; } }
+
+  /* the ambient light: one soft pool of light above the hello, like the surgical light before a case */
+  .lamp { position:absolute; left:50%; top:-160px; width:520px; height:420px; transform:translateX(-50%); pointer-events:none; z-index:0;
+    background:radial-gradient(closest-side, #7DD3B81A, #7DD3B808 55%, transparent); opacity:0; transition:opacity 1.6s var(--ease); }
+  .lamp.on { opacity:1; }
+
+  /* main */
+  .greet { margin-top:52px; font-size:30px; line-height:36px; font-weight:600; letter-spacing:-0.02em; }
+  .greet .l { display:block; }
+  .greet .l2 { color:var(--text3); }
+  .trace { display:block; margin-top:22px; width:120px; height:24px; overflow:visible; }
+  .trace path { fill:none; stroke:var(--accent); stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:200; stroke-dashoffset:200; opacity:.9; }
+  .sub { font-size:15px; color:var(--text3); margin:0 0 6px; font-weight:500; }
+  .plain { display:flex; align-items:center; gap:14px; min-height:56px; }
+  .plain .t { font-size:17px; font-weight:500; line-height:22px; }
+  .plain .s { font-size:14px; color:var(--text3); line-height:19px; }
+  .plain .grow { flex:1; min-width:0; }
+  .plain .ic { color:var(--text3); display:grid; }
+  .plain .ic svg { width:20px; height:20px; }
+  .when { font-size:14px; color:var(--text3); }
+
+  /* enter states (driven by script) */
+  .rise { opacity:0; transform:translateY(10px); transition:opacity .55s var(--ease), transform .55s var(--ease); }
+  .rise.in { opacity:1; transform:none; }
+
+  /* composer */
+  .composer { padding:8px 14px 22px; position:relative; z-index:2; }
+  .box { min-height:56px; background:var(--fill); border-radius:28px; display:flex; align-items:center; gap:4px; padding:0 6px 0 20px; }
+  .box .ph { flex:1; color:var(--text3); font-size:17px; }
+  .box .typed { flex:1; color:var(--text); font-size:17px; white-space:pre; }
+  .caret { display:inline-block; width:2px; height:20px; background:var(--accent); vertical-align:-4px; margin-left:1px; animation:blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+  .send { width:44px; height:44px; border-radius:50%; display:grid; place-items:center; background:var(--fill2); color:var(--text3);
+    transition:background .3s var(--ease), color .3s, transform .35s var(--spring); }
+  .send svg { width:20px; height:20px; stroke-width:2.25; }
+  .send.on { background:var(--accent); color:var(--onAccent); }
+  .send.pop { transform:scale(.88); }
+  .mic { width:44px; height:44px; display:grid; place-items:center; color:var(--text3); overflow:hidden; transition:opacity .2s, width .3s var(--ease); }
+  .mic svg { width:20px; height:20px; }
+  .mic.hide { opacity:0; width:0; }
+
+  /* search */
+  .group-h { font-size:14px; color:var(--text3); font-weight:500; margin:18px 0 2px; }
+  .hit .t mark { background:none; color:var(--accent); font-weight:600; }
+  .where { font-size:14px; color:var(--text2); font-weight:600; }
+
+  /* chat */
+  .pinned { display:flex; align-items:center; gap:12px; padding:12px 14px 12px 16px; border-radius:20px; background:var(--fill); margin-top:4px; }
+  .pinned .t { font-size:15px; font-weight:600; }
+  .pinned .s { font-size:13px; color:var(--text3); }
+  .open-btn { margin-left:auto; height:40px; padding:0 16px; border-radius:20px; background:var(--accent); color:var(--onAccent); display:grid; place-items:center; font-size:15px; font-weight:700; transition:transform .35s var(--spring); }
+  .open-btn.pop { transform:scale(.9); }
+  .msg-me { align-self:flex-end; background:var(--fill2); border-radius:22px; padding:11px 16px; font-size:16px; max-width:78%; margin:10px 0 18px; line-height:22px; }
+  .msg-ai { font-size:17px; line-height:26px; min-height:80px; }
+  .msg-ai .w { opacity:0; transition:opacity .35s; }
+  .msg-ai .w.in { opacity:1; }
+  .inline-item { display:flex; align-items:center; gap:12px; margin-top:12px; padding:12px 0; border-top:1px solid var(--hair); border-bottom:1px solid var(--hair); }
+  .inline-item .t { font-size:16px; font-weight:600; }
+  .inline-item .s { font-size:14px; color:var(--text2); }
+  .tag { font-size:14px; font-weight:700; }
+  .tag.hold { color:var(--warn); } .tag.open { color:var(--accent); }
+
+  /* sidebar */
+  .scrim { position:absolute; inset:0; background:#000; opacity:0; transition:opacity .4s var(--ease); z-index:3; }
+  .scrim.on { opacity:.65; }
+  .drawer { position:absolute; top:0; bottom:0; left:0; width:300px; background:#18191B; display:flex; flex-direction:column; padding:40px 14px 18px;
+    border-radius:0 28px 28px 0; z-index:4; transform:translateX(-102%); transition:transform .55s var(--spring); }
+  .drawer.on { transform:none; }
+  .newcase { height:48px; border-radius:24px; background:var(--fill2); color:var(--text); font-weight:600; font-size:16px; display:flex; align-items:center; gap:10px; padding:0 18px; margin-bottom:10px; }
+  .newcase svg { width:20px; height:20px; }
+  .nav { height:48px; display:flex; align-items:center; gap:14px; padding:0 18px; font-size:16px; font-weight:500; }
+  .nav svg { width:20px; height:20px; color:var(--text2); }
+  .nav .count { margin-left:auto; color:var(--warn); font-weight:700; font-size:15px; }
+  .dh { font-size:14px; color:var(--text3); font-weight:500; padding:22px 18px 6px; }
+  .case { height:46px; display:flex; align-items:center; gap:10px; padding:0 18px; border-radius:23px; font-size:16px; color:var(--text2); white-space:nowrap; }
+  .case.cur { background:var(--fill); color:var(--text); font-weight:600; }
+  .case.cur::before { content:""; width:6px; height:6px; border-radius:50%; background:var(--accent); animation:breathe 3.2s ease-in-out infinite; }
+  .me { margin-top:auto; height:56px; display:flex; align-items:center; gap:12px; padding:0 10px; }
+  .avatar { width:36px; height:36px; border-radius:50%; background:var(--accent); color:var(--onAccent); display:grid; place-items:center; font-weight:700; font-size:16px; }
+  .me .name { font-size:16px; font-weight:600; }
+  .drawer .rise { transform:translateX(-12px); }
+  .drawer .rise.in { transform:none; }
+
+  /* sheet */
+  .sheet { position:absolute; left:0; right:0; bottom:0; background:#1A1B1E; border-radius:28px 28px 0 0; padding:10px 22px 26px; z-index:4;
+    transform:translateY(105%); transition:transform .6s var(--spring); }
+  .sheet.on { transform:none; }
+  .handle { width:36px; height:4px; border-radius:2px; background:#3A3B40; margin:2px auto 22px; }
+  .who { display:flex; align-items:center; gap:14px; margin-bottom:12px; }
+  .who .avatar { width:52px; height:52px; font-size:21px; }
+  .who .n { font-size:21px; font-weight:600; letter-spacing:-0.01em; }
+  .who .r { font-size:15px; color:var(--text3); }
+  .sheet .plain + .plain { border-top:1px solid var(--hair); }
+  .val { font-size:15px; color:var(--text2); }
+  .signout .t { color:#F08A80; }
+  .admin-note { font-size:13px; color:var(--text3); margin:14px 0 0; }
+  .ghost { flex:1; padding:0 22px; }
+  .ghost .gl { height:14px; border-radius:7px; background:var(--fill); margin-top:18px; }
+
+  /* scrub */
+  .scrubtop { display:flex; align-items:center; padding:0 6px; height:56px; }
+  .scrubtop .who2 { font-size:15px; color:var(--text2); font-weight:500; }
+  .proc { padding:4px 22px 0; font-size:26px; line-height:31px; font-weight:700; letter-spacing:-0.02em; }
+  .phasebar { display:flex; gap:22px; padding:18px 22px 0; font-size:15px; font-weight:600; color:var(--text3); border-bottom:1px solid var(--hair); position:relative; }
+  .phasebar span { padding-bottom:12px; transition:color .3s; }
+  .phasebar .on { color:var(--text); }
+  .ink { position:absolute; bottom:-1px; height:2px; background:var(--accent); border-radius:1px; transition:left .5s var(--spring), width .5s var(--spring); }
+  .pages { display:flex; width:200%; transition:transform .6s var(--ease); }
+  .page { width:50%; }
+  .rowbig { display:flex; align-items:baseline; gap:18px; padding:18px 22px; border-bottom:1px solid var(--hair); }
+  .qty { font-size:40px; line-height:40px; font-weight:400; width:34px; color:var(--text); letter-spacing:-0.03em; }
+  .rowbig .t { font-size:20px; font-weight:600; line-height:26px; }
+  .rowbig .s { font-size:16px; color:var(--text2); margin-top:4px; }
+  .rowbig .s .tag { margin-left:10px; }
+  .note { margin:18px 22px 0; font-size:16px; color:var(--text2); line-height:23px; display:flex; gap:10px; }
+  .note svg { width:18px; height:18px; color:var(--warn); margin-top:2px; }
+  .swipe { text-align:center; font-size:14px; color:var(--text3); padding:14px 0 22px; }
+
+</style>
+</head>
+<body>
+  <div class="bar"></div>
+  <h1>OR-Nav: one screen, version 3</h1>
+  <p class="lead">Same layout and colors as version 2, now with motion. Each phone plays its moment again and again. The motion is quiet: things rise gently, sheets slide with a soft spring, and the AI answer fades in word by word. One signature: the case label has a small green dot that breathes slowly, like a patient monitor, once the app knows the case.</p>
+
+  <div class="row">
+
+    <!-- 1. Open the app -->
+    <figure>
+      <div class="phone" id="p1">
+        <div class="lamp"></div>
+        <div class="status"><span>7:42</span><span>82%</span></div>
+        <div class="top">
+          <div class="ib"><i data-feather="menu"></i><span class="dot"></span></div>
+          <div class="label"><span class="case-label"><span class="live"></span><span class="txt">Case 7:42</span></span></div>
+          <div class="ib"><i data-feather="edit"></i></div>
+        </div>
+        <div class="body">
+          <div class="greet">
+            <span class="l rise">Morning, Sean.</span>
+            <span class="l l2 rise">What do you need?</span>
+            <svg class="trace" viewBox="0 0 120 24"><path d="M0 14 H44 L50 14 L54 4 L59 22 L63 10 L66 14 H120"/></svg>
+          </div>
+          <div class="spacer"></div>
+          <div class="sub rise">Pick up a case</div>
+          <div class="plain rise"><div class="grow"><div class="t">Dr. Avery, lap chole</div></div><div class="when">7:10</div></div>
+          <div class="plain rise"><div class="grow"><div class="t">Dr. Patel, total knee</div></div><div class="when">Yesterday</div></div>
+          <div class="plain rise"><div class="grow"><div class="t">Dr. Avery, lap hernia</div></div><div class="when">Mon</div></div>
+        </div>
+        <div class="composer"><div class="box"><span class="ph">Find an item or ask</span><span class="mic"><i data-feather="mic"></i></span><span class="send"><i data-feather="arrow-up"></i></span></div></div>
+      </div>
+      <figcaption><b>1. Open the app</b>A soft pool of light comes up, like the room lights before a case. The hello rises, one heartbeat line draws once under it, then your 3 recent cases come up near your thumb.</figcaption>
+    </figure>
+
+    <!-- 2. Type -->
+    <figure>
+      <div class="phone" id="p2">
+        <div class="status"><span>7:43</span><span>82%</span></div>
+        <div class="top">
+          <div class="ib"><i data-feather="menu"></i><span class="dot"></span></div>
+          <div class="label"><span class="case-label"><span class="live"></span><span class="txt">Case 7:42</span></span></div>
+          <div class="ib"><i data-feather="edit"></i></div>
+        </div>
+        <div class="body">
+          <div class="spacer"></div>
+          <div class="group-h rise">Item</div>
+          <div class="plain hit rise"><span class="ic"><i data-feather="zap"></i></span><div class="grow"><div class="t"><mark>Bovie</mark> pencil</div></div><div class="where">A1, bin 1</div></div>
+          <div class="group-h rise">On these cards</div>
+          <div class="plain rise"><span class="ic"><i data-feather="file-text"></i></span><div class="grow"><div class="t">Lap chole</div><div class="s">Dr. Avery</div></div></div>
+          <div class="plain rise"><span class="ic"><i data-feather="file-text"></i></span><div class="grow"><div class="t">Total knee</div><div class="s">Dr. Patel</div></div></div>
+        </div>
+        <div class="composer"><div class="box"><span class="typed"><span class="chars"></span><span class="caret"></span></span><span class="mic"><i data-feather="mic"></i></span><span class="send"><i data-feather="arrow-up"></i></span></div></div>
+      </div>
+      <figcaption><b>2. Type</b>Matches rise in as you type, one line after another. The mic slides away and the Send arrow turns green, because now there is something to send.</figcaption>
+    </figure>
+
+    <!-- 3. Ask -->
+    <figure>
+      <div class="phone" id="p3">
+        <div class="status"><span>7:51</span><span>80%</span></div>
+        <div class="top">
+          <div class="ib"><i data-feather="menu"></i><span class="dot"></span></div>
+          <div class="label"><span class="case-label"><span class="live"></span><span class="txt">Case 7:42</span></span></div>
+          <div class="ib"><i data-feather="edit"></i></div>
+        </div>
+        <div class="body">
+          <div class="pinned rise"><div><div class="t">Preference card</div><div class="s">Lap chole, 10 items</div></div><span class="open-btn">Open</span></div>
+          <div class="spacer"></div>
+          <div class="msg-me rise">does avery want the endo bag open?</div>
+          <div class="msg-ai"><span class="stream">No. On his card the specimen bag stays on hold until closure.</span>
+            <div class="inline-item rise"><div style="flex:1"><div class="t">Specimen retrieval bag</div><div class="s">A4, bin 1</div></div><span class="tag hold">Hold</span></div>
+          </div>
+          <div style="height:12px"></div>
+        </div>
+        <div class="composer"><div class="box"><span class="ph">Find an item or ask</span><span class="mic"><i data-feather="mic"></i></span><span class="send"><i data-feather="arrow-up"></i></span></div></div>
+      </div>
+      <figcaption><b>3. Ask</b>The nurse opens the lap chole card. The label at the top softly changes to "Dr. Avery, lap chole", a faint green ring goes out once, and the dot starts to breathe. Then the AI answer fades in word by word.</figcaption>
+    </figure>
+
+    <!-- 4. Sidebar -->
+    <figure>
+      <div class="phone" id="p4">
+        <div class="status"><span>7:52</span><span>80%</span></div>
+        <div class="top"><div class="ib"><i data-feather="menu"></i></div><div class="label"><span class="case-label known"><span class="live"></span><span class="txt">Dr. Avery, lap chole</span></span></div><div class="ib"></div></div>
+        <div class="ghost"><div class="gl" style="width:60%"></div><div class="gl" style="width:85%"></div><div class="gl" style="width:40%"></div></div>
+        <div class="scrim"></div>
+        <div class="drawer">
+          <div class="newcase rise"><i data-feather="plus"></i>New case</div>
+          <div class="nav rise"><i data-feather="book-open"></i>Library</div>
+          <div class="nav rise"><i data-feather="check-circle"></i>To review<span class="count">2</span></div>
+          <div class="dh rise">Cases</div>
+          <div class="case cur rise">Dr. Avery, lap chole</div>
+          <div class="case rise">Case 6:55</div>
+          <div class="case rise">Dr. Patel, total knee</div>
+          <div class="case rise">Dr. Avery, lap hernia</div>
+          <div class="me rise"><div class="avatar">S</div><div class="name">Sean</div></div>
+        </div>
+      </div>
+      <figcaption><b>4. Sidebar</b>Slides in with a soft spring, and the lines follow a beat behind. The case you are in has the breathing dot.</figcaption>
+    </figure>
+
+    <!-- 5. Your name -->
+    <figure>
+      <div class="phone" id="p5">
+        <div class="status"><span>7:52</span><span>80%</span></div>
+        <div class="ghost"><div class="gl" style="width:60%;margin-top:80px"></div><div class="gl" style="width:85%"></div><div class="gl" style="width:40%"></div></div>
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="handle"></div>
+          <div class="who"><div class="avatar">S</div><div><div class="n">Sean</div><div class="r">RN, circulator</div></div></div>
+          <div class="plain"><span class="ic"><i data-feather="map-pin"></i></span><div class="grow"><div class="t">Department</div></div><div class="val">Main OR</div></div>
+          <div class="plain"><span class="ic"><i data-feather="download"></i></span><div class="grow"><div class="t">Check for updates</div></div><div class="val">v2.5.0</div></div>
+          <div class="plain"><span class="ic"><i data-feather="tool"></i></span><div class="grow"><div class="t">Admin tools</div></div><span class="ic"><i data-feather="chevron-right"></i></span></div>
+          <div class="plain signout"><span class="ic"><i data-feather="log-out"></i></span><div class="grow"><div class="t">Sign out</div></div></div>
+          <p class="admin-note">Only admins see Admin tools.</p>
+        </div>
+      </div>
+      <figcaption><b>5. Your name</b>The sheet slides up from the bottom with the same soft spring. A regular nurse sees Department, Check for updates and Sign out. Admins also see Admin tools.</figcaption>
+    </figure>
+
+    <!-- 6. Scrub Mode -->
+    <figure>
+      <div class="phone" id="p6">
+        <div class="status"><span>7:53</span><span>80%</span></div>
+        <div class="scrubtop"><div class="ib"><i data-feather="arrow-left"></i></div><span class="who2">Dr. Avery</span></div>
+        <div class="proc">Laparoscopic cholecystectomy</div>
+        <div class="phasebar"><span>Setup</span><span class="on">Incision</span><span>Main</span><span>Closure</span><i class="ink"></i></div>
+        <div style="overflow:hidden">
+          <div class="pages">
+            <div class="page">
+              <div class="rowbig"><div class="qty">1</div><div><div class="t">Veress needle 120 mm</div><div class="s">A3, bin 2<span class="tag open">Open</span></div></div></div>
+              <div class="rowbig"><div class="qty">3</div><div><div class="t">5 mm trocar</div><div class="s">A3, bin 4<span class="tag open">Open</span></div></div></div>
+              <div class="rowbig"><div class="qty">1</div><div><div class="t">12 mm trocar</div><div class="s">A3, bin 5<span class="tag open">Open</span></div></div></div>
+              <div class="note"><i data-feather="alert-circle"></i>Reverse Trendelenburg, left tilt.</div>
+            </div>
+            <div class="page">
+              <div class="rowbig"><div class="qty">1</div><div><div class="t">Clip applier, medium-large</div><div class="s">A2, bin 3<span class="tag open">Open</span></div></div></div>
+              <div class="rowbig"><div class="qty">2</div><div><div class="t">Maryland grasper</div><div class="s">A2, bin 1<span class="tag open">Open</span></div></div></div>
+              <div class="rowbig"><div class="qty">1</div><div><div class="t">Specimen retrieval bag</div><div class="s">A4, bin 1<span class="tag hold">Hold</span></div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <div class="swipe">Swipe for the next phase</div>
+      </div>
+      <figcaption><b>6. A card (Scrub Mode)</b>Swipe, and the whole list slides to the next phase. The green line under the tabs follows with a small spring. Big numbers stay still and easy to read.</figcaption>
+    </figure>
+
+  </div>
+
+<script>
+feather.replace();
+/* Demo page: always plays, even when the computer asks for reduced motion. The real app respects that setting (fade only). */
+const reduce = false;
+const wait = ms => new Promise(r => setTimeout(r, reduce ? 0 : ms));
+const $ = (root, s) => root.querySelector(s);
+const $$ = (root, s) => [...root.querySelectorAll(s)];
+async function stagger(els, gap) { for (const e of els) { e.classList.add('in'); await wait(gap); } }
+function reset(els) { els.forEach(e => e.classList.remove('in')); }
+async function loop(fn) { for (;;) { await fn(); if (reduce) return; } }
+
+/* 1. open */
+loop(async () => {
+  const p = document.getElementById('p1'), path = $(p, '.trace path'), lamp = $(p, '.lamp'), rises = $$(p, '.rise');
+  reset(rises); lamp.classList.remove('on');
+  path.style.transition = 'none'; path.style.strokeDashoffset = 200; path.style.opacity = .9;
+  await wait(700);
+  lamp.classList.add('on');
+  await wait(300);
+  await stagger(rises.slice(0, 2), 140);
+  path.style.transition = 'stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)'; path.style.strokeDashoffset = 0;
+  await wait(1300);
+  path.style.transition = 'opacity 1.2s'; path.style.opacity = .35;
+  await stagger(rises.slice(2), 90);
+  await wait(4200);
+});
+
+/* 2. type */
+loop(async () => {
+  const p = document.getElementById('p2'), chars = $(p, '.chars'), send = $(p, '.send'), mic = $(p, '.mic'), rises = $$(p, '.rise');
+  reset(rises); chars.textContent = ''; send.classList.remove('on'); mic.classList.remove('hide');
+  await wait(1000);
+  const word = 'bovee';
+  for (let i = 0; i < word.length; i++) {
+    chars.textContent += word[i];
+    if (i === 0) { mic.classList.add('hide'); send.classList.add('on'); }
+    if (i === 2) stagger(rises, 80);
+    await wait(170 + Math.random() * 90);
+  }
+  await wait(4000);
+});
+
+/* 3. ask: the case learns */
+const streamEl = $(document.getElementById('p3'), '.stream');
+streamEl.innerHTML = streamEl.textContent.split(' ').map(w => '<span class="w">' + w + ' </span>').join('');
+loop(async () => {
+  const p = document.getElementById('p3'), label = $(p, '.case-label'), txt = $(label, '.txt'), btn = $(p, '.open-btn');
+  const [pin, me, item] = $$(p, '.rise'), words = $$(p, '.w');
+  reset([pin, me, item]); words.forEach(w => w.classList.remove('in'));
+  label.classList.remove('known', 'learned'); txt.textContent = 'Case 7:42';
+  await wait(900);
+  pin.classList.add('in');
+  await wait(900);
+  btn.classList.add('pop'); await wait(160); btn.classList.remove('pop');
+  await wait(500);
+  txt.classList.add('swap'); await wait(260);
+  txt.textContent = 'Dr. Avery, lap chole'; label.classList.add('known', 'learned');
+  txt.classList.remove('swap');
+  await wait(1500);
+  me.classList.add('in');
+  await wait(900);
+  for (const w of words) { w.classList.add('in'); await wait(70); }
+  await wait(250);
+  item.classList.add('in');
+  await wait(4500);
+});
+
+/* 4. sidebar */
+loop(async () => {
+  const p = document.getElementById('p4'), d = $(p, '.drawer'), s = $(p, '.scrim'), rises = $$(d, '.rise');
+  d.classList.remove('on'); s.classList.remove('on'); reset(rises);
+  await wait(1200);
+  d.classList.add('on'); s.classList.add('on');
+  await wait(120);
+  await stagger(rises, 45);
+  await wait(4200);
+});
+
+/* 5. sheet */
+loop(async () => {
+  const p = document.getElementById('p5'), sh = $(p, '.sheet'), s = $(p, '.scrim');
+  sh.classList.remove('on'); s.classList.remove('on');
+  await wait(1200);
+  sh.classList.add('on'); s.classList.add('on');
+  await wait(4600);
+});
+
+/* 6. scrub */
+(function () {
+  const p = document.getElementById('p6'), tabs = $$(p, '.phasebar span'), ink = $(p, '.ink'), pages = $(p, '.pages');
+  function go(i) {
+    tabs.forEach((t, k) => t.classList.toggle('on', k === i));
+    ink.style.left = tabs[i].offsetLeft + 'px'; ink.style.width = tabs[i].offsetWidth + 'px';
+    pages.style.transform = 'translateX(' + (i === 2 ? -50 : 0) + '%)';
+  }
+  document.fonts.ready.then(() => {
+    go(1);
+    loop(async () => { await wait(2600); go(2); await wait(3200); go(1); });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OR-Nav One Screen</title>
+<link rel="stylesheet" href="../../../../brand/brand.css">
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<style>
+  /* Page frame follows BRAND.md; the phones follow the app's design/DESIGN.md. */
+  body { background:#222; color:#eeeef2; font-family:Arial, sans-serif; margin:0; padding:40px 24px 80px; }
+  .bar { width:80px; height:4px; background:#e63946; margin-bottom:12px; }
+  h1 { font-weight:400; font-size:31px; margin:0 0 8px; }
+  .lead { color:#b4b4b8; font-size:16px; margin:0 0 40px; max-width:720px; }
+  .row { display:flex; flex-wrap:wrap; gap:32px; }
+  figure { margin:0; width:360px; }
+  figcaption { color:#b4b4b8; font-size:16px; margin-top:12px; line-height:1.4; }
+  figcaption b { color:#eeeef2; font-weight:400; display:block; font-size:18px; margin-bottom:4px; }
+
+  /* ---- phone (app tokens) ---- */
+  .phone { --bg:#0B0F19; --surface:#111827; --raised:#172033; --line:#1F2937; --accent:#38BDF8; --accentSoft:#38BDF81F;
+    --text:#F8FAFC; --text2:#94A3B8; --text3:#64748B; --ok:#4ADE80; --warn:#FBBF24; --warnSoft:#FBBF2426; --danger:#F87171;
+    width:360px; height:760px; background:var(--bg); border:1px solid #444; border-radius:28px; overflow:hidden; position:relative;
+    font-family:Roboto, "Segoe UI", system-ui, sans-serif; color:var(--text); display:flex; flex-direction:column; }
+  .status { height:28px; display:flex; justify-content:space-between; align-items:center; padding:0 20px; font-size:13px; color:var(--text2); }
+  .top { height:56px; display:flex; align-items:center; gap:8px; padding:0 8px; }
+  .iconbtn { width:48px; height:48px; display:grid; place-items:center; color:var(--text); font-size:24px; position:relative; flex:none; }
+  .dot { position:absolute; top:10px; right:10px; width:9px; height:9px; border-radius:50%; background:var(--warn); border:2px solid var(--bg); }
+  .label { flex:1; display:flex; justify-content:center; }
+  .chip { display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 12px; border-radius:12px; background:var(--surface);
+    border:1px solid var(--line); font-size:15px; color:var(--text); max-width:220px; white-space:nowrap; overflow:hidden; }
+  .chip.unset { color:var(--text2); }
+  .chip ion-icon { font-size:16px; color:var(--text3); flex:none; }
+  .body { flex:1; overflow:hidden; padding:8px 16px; display:flex; flex-direction:column; }
+  .caption { font-size:13px; font-weight:600; letter-spacing:.6px; text-transform:uppercase; color:var(--text2); margin:8px 4px 8px; }
+  .group { background:var(--surface); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+  .li { min-height:64px; display:flex; align-items:center; gap:12px; padding:8px 12px; border-top:1px solid var(--line); }
+  .li:first-child { border-top:none; }
+  .tile { width:40px; height:40px; border-radius:12px; background:var(--accentSoft); color:var(--accent); display:grid; place-items:center; font-size:22px; flex:none; }
+  .li .t { font-size:17px; font-weight:600; line-height:22px; }
+  .li .s { font-size:15px; color:var(--text2); line-height:20px; }
+  .li .grow { flex:1; min-width:0; }
+  .li .chev { color:var(--text3); font-size:20px; }
+  .spacer { flex:1; }
+  .hello { text-align:center; color:var(--text2); font-size:16px; margin:40px 0 24px; }
+  .hello .big { color:var(--text); font-size:24px; font-weight:700; display:block; margin-bottom:6px; }
+  .composer { padding:8px 12px 20px; }
+  .box { min-height:56px; background:var(--surface); border:1px solid var(--line); border-radius:16px; display:flex; align-items:center; gap:4px; padding:0 4px 0 16px; }
+  .box.focus { border-color:var(--accent); }
+  .box .ph { flex:1; color:var(--text3); font-size:17px; }
+  .box .typed { flex:1; color:var(--text); font-size:17px; }
+  .caret { display:inline-block; width:2px; height:20px; background:var(--accent); vertical-align:middle; margin-left:1px; }
+  .send { width:44px; height:44px; border-radius:12px; display:grid; place-items:center; font-size:22px; background:var(--raised); color:var(--text3); }
+  .send.on { background:var(--accent); color:var(--bg); }
+  .hint { font-size:13px; color:var(--text3); text-align:center; margin-top:8px; }
+  .badge { height:24px; padding:0 8px; border-radius:12px; font-size:13px; font-weight:600; display:inline-flex; align-items:center; }
+  .badge.warn { background:var(--warnSoft); color:var(--warn); }
+  .badge.open { background:#4ADE8024; color:var(--ok); }
+  .badge.hold { background:var(--warnSoft); color:var(--warn); }
+  .msg-me { align-self:flex-end; background:var(--raised); border-radius:16px 16px 4px 16px; padding:10px 14px; font-size:17px; max-width:80%; margin:8px 0; }
+  .msg-ai { font-size:17px; line-height:24px; margin:8px 0; }
+  .ai-item { margin-top:10px; }
+  .pinned { display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:10px 12px; }
+  .pinned .t { font-size:16px; font-weight:600; }
+  .pinned .s { font-size:14px; color:var(--text2); }
+  .open-btn { margin-left:auto; height:40px; padding:0 14px; border-radius:12px; border:1px solid var(--accent); color:var(--accent); display:grid; place-items:center; font-size:15px; font-weight:600; }
+
+  /* sidebar */
+  .scrim { position:absolute; inset:0; background:#0B0F19B3; }
+  .drawer { position:absolute; top:0; bottom:0; left:0; width:296px; background:var(--surface); border-right:1px solid var(--line); display:flex; flex-direction:column; padding:28px 12px 16px; }
+  .newcase { height:52px; border-radius:14px; background:var(--accent); color:var(--bg); font-weight:700; font-size:17px; display:flex; align-items:center; justify-content:center; gap:8px; margin:12px 0 12px; }
+  .navrow { height:52px; display:flex; align-items:center; gap:12px; padding:0 8px; border-radius:12px; font-size:17px; }
+  .navrow ion-icon { font-size:22px; color:var(--text2); }
+  .navrow .badge { margin-left:auto; }
+  .case { height:48px; display:flex; flex-direction:column; justify-content:center; padding:0 8px; border-radius:12px; }
+  .case .t { font-size:16px; } .case .s { font-size:13px; color:var(--text3); }
+  .case.cur { background:var(--raised); }
+  .me { margin-top:auto; height:56px; display:flex; align-items:center; gap:12px; padding:0 8px; border-top:1px solid var(--line); }
+  .avatar { width:36px; height:36px; border-radius:50%; background:var(--accentSoft); color:var(--accent); display:grid; place-items:center; font-weight:700; }
+
+  /* profile sheet */
+  .sheet { position:absolute; left:0; right:0; bottom:0; background:var(--raised); border-top:1px solid var(--line); border-radius:28px 28px 0 0; padding:8px 16px 24px; }
+  .handle { width:40px; height:5px; border-radius:3px; background:#334155; margin:4px auto 12px; }
+  .sheet .who { display:flex; align-items:center; gap:12px; margin:4px 4px 16px; }
+  .sheet .who .avatar { width:48px; height:48px; font-size:20px; }
+  .sheet .group { background:var(--surface); }
+  .admin-tag { float:right; color:var(--text3); text-transform:none; letter-spacing:0; font-weight:400; }
+  .danger { color:var(--danger); }
+
+  /* scrub mode */
+  .scrubhead { padding:4px 16px 8px; }
+  .scrubhead .sur { font-size:16px; color:var(--text2); }
+  .scrubhead .proc { font-size:24px; font-weight:700; line-height:30px; }
+  .phases { display:flex; gap:6px; padding:8px 16px; }
+  .phase { flex:1; height:44px; border-radius:12px; background:var(--surface); border:1px solid var(--line); display:grid; place-items:center; font-size:15px; color:var(--text2); }
+  .phase.on { background:var(--accentSoft); border-color:var(--accent); color:var(--accent); font-weight:600; }
+  .big { padding:16px; border-top:1px solid var(--line); display:flex; gap:12px; align-items:flex-start; }
+  .big:first-child { border-top:none; }
+  .qty { font-size:28px; font-weight:700; width:44px; text-align:center; line-height:32px; font-variant-numeric:tabular-nums; }
+  .big .t { font-size:20px; font-weight:600; line-height:26px; }
+  .big .s { font-size:17px; color:var(--text2); margin-top:4px; display:flex; gap:8px; align-items:center; }
+  .note { margin:12px 16px 0; padding:12px; border-radius:12px; background:var(--surface); color:var(--text2); font-size:16px; display:flex; gap:8px; }
+  .dots { display:flex; justify-content:center; gap:6px; padding:12px; }
+  .dots i { width:8px; height:8px; border-radius:50%; background:#334155; } .dots i.on { background:var(--accent); }
+</style>
+</head>
+<body>
+  <div class="bar"></div>
+  <h1>OR-Nav: one screen</h1>
+  <p class="lead">Picture only, no code yet. Sample data from Main OR. Six moments, from left to right: open the app, type, ask, the sidebar, your name, and a card.</p>
+
+  <div class="row">
+
+    <!-- 1. Main, new case -->
+    <figure>
+      <div class="phone">
+        <div class="status"><span>7:42</span><span>●●● 82%</span></div>
+        <div class="top">
+          <div class="iconbtn"><ion-icon name="menu-outline"></ion-icon><span class="dot"></span></div>
+          <div class="label"><span class="chip unset"><ion-icon name="time-outline"></ion-icon>Case 7:42</span></div>
+          <div class="iconbtn"><ion-icon name="create-outline"></ion-icon></div>
+        </div>
+        <div class="body">
+          <div class="hello"><span class="big">Hi, Sean</span>Find an item, or ask about the case.</div>
+          <div class="caption">Recent cases</div>
+          <div class="group">
+            <div class="li"><div class="tile"><ion-icon name="document-text-outline"></ion-icon></div><div class="grow"><div class="t">Dr. Avery · Lap chole</div><div class="s">Today, 7:10</div></div><ion-icon class="chev" name="chevron-forward"></ion-icon></div>
+            <div class="li"><div class="tile"><ion-icon name="document-text-outline"></ion-icon></div><div class="grow"><div class="t">Dr. Patel · Total knee</div><div class="s">Yesterday</div></div><ion-icon class="chev" name="chevron-forward"></ion-icon></div>
+            <div class="li"><div class="tile"><ion-icon name="document-text-outline"></ion-icon></div><div class="grow"><div class="t">Dr. Avery · Lap hernia</div><div class="s">Mon</div></div><ion-icon class="chev" name="chevron-forward"></ion-icon></div>
+          </div>
+          <div class="spacer"></div>
+        </div>
+        <div class="composer"><div class="box"><span class="ph">Find an item or ask…</span><span class="send"><ion-icon name="arrow-up"></ion-icon></span></div></div>
+      </div>
+      <figcaption><b>1. Open the app</b>A new case, named by the time. One box at the bottom. Your 3 recent cases. The yellow dot on ☰ means something waits in To review.</figcaption>
+    </figure>
+
+    <!-- 2. Typing -->
+    <figure>
+      <div class="phone">
+        <div class="status"><span>7:43</span><span>●●● 82%</span></div>
+        <div class="top">
+          <div class="iconbtn"><ion-icon name="menu-outline"></ion-icon><span class="dot"></span></div>
+          <div class="label"><span class="chip unset"><ion-icon name="time-outline"></ion-icon>Case 7:42</span></div>
+          <div class="iconbtn"><ion-icon name="create-outline"></ion-icon></div>
+        </div>
+        <div class="body">
+          <div class="spacer"></div>
+          <div class="caption">Items</div>
+          <div class="group">
+            <div class="li"><div class="tile"><ion-icon name="flash-outline"></ion-icon></div><div class="grow"><div class="t">Bovie pencil</div><div class="s">A1 · Bin 1</div></div><ion-icon class="chev" name="chevron-forward"></ion-icon></div>
+          </div>
+          <div class="caption" style="margin-top:16px">Cards with it</div>
+          <div class="group">
+            <div class="li"><div class="tile"><ion-icon name="document-text-outline"></ion-icon></div><div class="grow"><div class="t">Lap chole</div><div class="s">Dr. Avery</div></div><ion-icon class="chev" name="chevron-forward"></ion-icon></div>
+            <div class="li"><div class="tile"><ion-icon name="document-text-outline"></ion-icon></div><div class="grow"><div class="t">Total knee</div><div class="s">Dr. Patel</div></div><ion-icon class="chev" name="chevron-forward"></ion-icon></div>
+          </div>
+        </div>
+        <div class="composer"><div class="box focus"><span class="typed">bovee<span class="caret"></span></span><span class="send on"><ion-icon name="arrow-up"></ion-icon></span></div><div class="hint">Matches show as you type. Tap ↑ to ask instead.</div></div>
+      </div>
+      <figcaption><b>2. Type</b>"bovee" finds Bovie pencil at once, offline, with sound-alike spelling. Nothing guesses. Tap ↑ only to ask a question.</figcaption>
+    </figure>
+
+    <!-- 3. Ask, case known -->
+    <figure>
+      <div class="phone">
+        <div class="status"><span>7:51</span><span>●●● 80%</span></div>
+        <div class="top">
+          <div class="iconbtn"><ion-icon name="menu-outline"></ion-icon><span class="dot"></span></div>
+          <div class="label"><span class="chip">Dr. Avery · Lap chole<ion-icon name="chevron-down"></ion-icon></span></div>
+          <div class="iconbtn"><ion-icon name="create-outline"></ion-icon></div>
+        </div>
+        <div class="body">
+          <div class="pinned"><div class="tile"><ion-icon name="document-text-outline"></ion-icon></div><div><div class="t">Preference card</div><div class="s">Lap chole · 10 items</div></div><span class="open-btn">Open</span></div>
+          <div class="spacer"></div>
+          <div class="msg-me">does avery want the endo bag open?</div>
+          <div class="msg-ai">No. On his card the specimen bag is on <b>hold</b> for closure.
+            <div class="group ai-item"><div class="li"><div class="tile"><ion-icon name="bag-outline"></ion-icon></div><div class="grow"><div class="t">Specimen retrieval bag</div><div class="s">A4 · Bin 1</div></div><span class="badge hold">Hold</span></div></div>
+          </div>
+        </div>
+        <div class="composer"><div class="box"><span class="ph">Find an item or ask…</span><span class="send"><ion-icon name="arrow-up"></ion-icon></span></div></div>
+      </div>
+      <figcaption><b>3. Ask</b>The case learned "Dr. Avery · Lap chole" when the nurse opened that card. No question asked. Tap the label to change it. The AI answers with a tappable item.</figcaption>
+    </figure>
+
+    <!-- 4. Sidebar -->
+    <figure>
+      <div class="phone">
+        <div class="status"><span>7:52</span><span>●●● 80%</span></div>
+        <div class="top"><div class="iconbtn"><ion-icon name="menu-outline"></ion-icon></div><div class="label"><span class="chip">Dr. Avery · Lap chole</span></div><div class="iconbtn"></div></div>
+        <div class="body"></div>
+        <div class="scrim"></div>
+        <div class="drawer">
+          <div class="newcase"><ion-icon name="add"></ion-icon>New case</div>
+          <div class="navrow"><ion-icon name="library-outline"></ion-icon>Library</div>
+          <div class="navrow"><ion-icon name="checkmark-done-outline"></ion-icon>To review<span class="badge warn">2</span></div>
+          <div class="caption" style="margin-top:16px">Recent cases</div>
+          <div class="case cur"><div class="t">Dr. Avery · Lap chole</div><div class="s">Today, 7:10</div></div>
+          <div class="case"><div class="t">Case 6:55</div><div class="s">Today</div></div>
+          <div class="case"><div class="t">Dr. Patel · Total knee</div><div class="s">Yesterday</div></div>
+          <div class="case"><div class="t">Dr. Avery · Lap hernia</div><div class="s">Mon</div></div>
+          <div class="me"><div class="avatar">S</div><div style="font-size:17px">Sean</div><ion-icon name="chevron-up" style="margin-left:auto;color:#64748B"></ion-icon></div>
+        </div>
+      </div>
+      <figcaption><b>4. Sidebar</b>Swipe from the left or tap ☰. New case, Library, To review (only when something waits), your cases, and your name at the bottom.</figcaption>
+    </figure>
+
+    <!-- 5. Name button -->
+    <figure>
+      <div class="phone">
+        <div class="status"><span>7:52</span><span>●●● 80%</span></div>
+        <div class="body"></div>
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="handle"></div>
+          <div class="who"><div class="avatar">S</div><div><div style="font-size:19px;font-weight:600">Sean</div><div style="color:#94A3B8;font-size:15px">RN · Circulator</div></div></div>
+          <div class="caption">Department</div>
+          <div class="group"><div class="li"><div class="tile"><ion-icon name="business-outline"></ion-icon></div><div class="grow"><div class="t">Main OR</div><div class="s">Sample General Hospital</div></div><ion-icon class="chev" name="chevron-forward"></ion-icon></div></div>
+          <div class="caption" style="margin-top:16px">Settings</div>
+          <div class="group">
+            <div class="li"><div class="tile"><ion-icon name="cloud-download-outline"></ion-icon></div><div class="grow"><div class="t">Check for updates</div><div class="s">v2.5.0, the latest</div></div></div>
+            <div class="li"><div class="tile" style="background:#F8717124;color:#F87171"><ion-icon name="log-out-outline"></ion-icon></div><div class="grow"><div class="t danger">Sign out</div></div></div>
+          </div>
+          <div class="caption" style="margin-top:16px">Admin <span class="admin-tag">only admins see this</span></div>
+          <div class="group">
+            <div class="li"><div class="tile"><ion-icon name="construct-outline"></ion-icon></div><div class="grow"><div class="t">Admin tools</div><div class="s">Full check, fault log, preview</div></div><ion-icon class="chev" name="chevron-forward"></ion-icon></div>
+          </div>
+        </div>
+      </div>
+      <figcaption><b>5. Your name</b>Department is set once and sits here. A regular nurse sees only Check for updates and Sign out. Admins also see Admin tools.</figcaption>
+    </figure>
+
+    <!-- 6. Scrub Mode -->
+    <figure>
+      <div class="phone">
+        <div class="status"><span>7:53</span><span>●●● 80%</span></div>
+        <div class="top"><div class="iconbtn"><ion-icon name="arrow-back"></ion-icon></div><div class="label"></div><div class="iconbtn"></div></div>
+        <div class="scrubhead"><div class="sur">Dr. Avery</div><div class="proc">Laparoscopic cholecystectomy</div></div>
+        <div class="phases"><div class="phase">Setup</div><div class="phase on">Incision</div><div class="phase">Main</div><div class="phase">Closure</div></div>
+        <div class="body" style="padding:8px 0 0">
+          <div class="group" style="margin:0 16px">
+            <div class="big"><div class="qty">1</div><div class="grow"><div class="t">Veress needle 120 mm</div><div class="s">A3 · Bin 2 <span class="badge open">Open</span></div></div></div>
+            <div class="big"><div class="qty">3</div><div class="grow"><div class="t">5 mm trocar</div><div class="s">A3 · Bin 4 <span class="badge open">Open</span></div></div></div>
+            <div class="big"><div class="qty">1</div><div class="grow"><div class="t">12 mm trocar</div><div class="s">A3 · Bin 5 <span class="badge open">Open</span></div></div></div>
+          </div>
+          <div class="note"><ion-icon name="information-circle-outline" style="font-size:20px;flex:none"></ion-icon>Reverse Trendelenburg, left tilt.</div>
+          <div class="spacer"></div>
+          <div class="dots"><i></i><i class="on"></i><i></i><i></i></div>
+        </div>
+      </div>
+      <figcaption><b>6. A card (Scrub Mode)</b>Full screen, big type. Swipe left or right through the phases. Quantity, shelf, and Open or Hold at a glance. The back arrow returns to the case.</figcaption>
+    </figure>
+
+  </div>
+</body>
+</html>
