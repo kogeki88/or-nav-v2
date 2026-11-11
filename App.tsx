@@ -20,6 +20,9 @@ import LibrarySheet, { Selection } from './src/features/library/LibrarySheet';
 import { makeCaseStore, memoryCaseRows } from './src/core/cases/caseStore';
 import { makeCaseLearning } from './src/core/cases/learn';
 import CaseSheet from './src/features/case/CaseSheet';
+import { supabaseFeedback } from './src/core/feedback/supabaseFeedback';
+import Feedback from './src/features/feedback/Feedback';
+import { feedbackPage, showFeedbackButton } from './src/features/feedback/logic';
 import { sqliteCaseStore } from './src/core/cases/sqliteCases';
 import { useCases } from './src/features/case/useCases';
 import { ShellState, firstName, timeGreeting } from './src/features/shell/logic';
@@ -250,6 +253,8 @@ function SignedIn({
   const deptCards = useMemo(() => lib.data.cards.filter((c) => c.department_id === lib.deptId), [lib.data.cards, lib.deptId]);
   const index = useMemo(() => wordSearch.index(deptItems, deptCards), [deptItems, deptCards]);
   const [selection, setSelection] = useState<Selection | null>(null);
+  const feedback = useMemo(() => supabaseFeedback(supabase, { appVersion: installedVersion, onFault: (e) => logFault('feedback', e) }), []);
+  const page = feedbackPage(shell.view, { sidebar: shell.sidebar, case: caseOpen, name: nameOpen, department: deptOpen, item: selection !== null });
 
   const { learnText, learnCard, setByHand } = cases;
   const send = useCallback(async () => {
@@ -378,6 +383,8 @@ function SignedIn({
       />
       {/* Solid strip behind the status bar, so scrolled content never runs under the clock. */}
       <View pointerEvents="none" style={[styles.statusStrip, { height: insets.top }]} />
+      {/* Admins only: drawn last, so it sits above every tab and panel. */}
+      {showFeedbackButton(user) && <Feedback sender={feedback} page={() => page} bottom={insets.bottom + COMPOSER_SPACE + S.md} />}
     </View>
   );
 }
