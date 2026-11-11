@@ -200,6 +200,7 @@ Order (each blocked by the one before): #11 new look → #12 sidebar and name sh
 
 - [ ] #11 … #17
 - #16 code done (2026-11-11): the app sends `case` once the case has a card (a case with only a surgeon or procedure sends none). The function finds the card in the department's own cards and adds one line, after the cached library block. Pushed and deployed 2026-11-11 (web editor, SHA-256 26094b… matches the tested join). Waits for: test phone check when the AI keys are in.
+- #17 code done (2026-11-11): motion (`src/ui/motion.ts`, `Rise.tsx`, greeting with heartbeat, sidebar stagger, reduce motion respected). Also fixed: a sent message lost its last word, because Android measured run-time-loaded Manrope with the system font. Manrope is now built into the app (`android/app/src/main/res/font/`, `MainApplication.kt`, `expo-font` plugin in `app.json`). Checked on the test phone (cloud debug build) and approved by Sean. Not checked: match-row and AI word fade (empty library, no AI keys on the test build). Waits for: push and tag v2.6.0 (Sean OKs).
 
 ## Status
 v2.5.0 on Sean's phone (2026-11-10): Brick 3 sound-alike search done, checked offline. Issues #6–#9 closed. AI omnibar still waits for keys.
