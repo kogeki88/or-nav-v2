@@ -1,7 +1,8 @@
-# Builds a DEBUG OR-Nav APK for the test phone (Android emulator, x86_64) in the cloud.
+# Builds a DEBUG OR-Nav APK in the cloud, for the emulator (x86_64) and Sean's real phone (arm64).
 # Why the cloud: on Sean's Windows PC the C++ build makes file paths longer than 260 characters.
 # Manual only. Never published to Releases. Signed with the public debug key, so it cannot update a real install.
-# The debug app has no JavaScript inside: it loads it from Metro on the PC (adb reverse tcp:8081 tcp:8081).
+# The JavaScript is packed inside, so the app runs on a phone with no PC. When Metro is reachable
+# (emulator with adb reverse tcp:8081 tcp:8081), the app loads live code from Metro instead.
 name: Debug APK (test phone)
 
 on:
@@ -29,6 +30,19 @@ jobs:
 
       - name: Install packages
         run: npm ci
+
+      - name: Write Supabase settings (.env)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then echo "Supabase secrets are missing"; exit 1; fi
+          printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=%s\n' "$SUPABASE_URL" "$SUPABASE_PUBLISHABLE_KEY" > .env
+
+      - name: Pack the JavaScript into the APK
+        run: |
+          mkdir -p android/app/src/main/assets
+          npx expo export:embed --platform android --entry-file index.ts --dev false --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
 
       - name: Build debug APK (phone and emulator)
         working-directory: android
