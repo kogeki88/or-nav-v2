@@ -3,7 +3,8 @@ import type { Card, Item } from './library';
 
 /**
  * How well a record matched, best first. Every typed word must match a word in the record;
- * the record's level is its weakest typed word. Sound-alike comes in a later ticket.
+ * the record's level is its weakest typed word. Typed words under 3 letters, and words with
+ * digits, match only exactly or by start of word, never by sound.
  * With no typed words, every record comes back as 'exact'.
  */
 export type MatchLevel = 'exact' | 'start' | 'sound';
