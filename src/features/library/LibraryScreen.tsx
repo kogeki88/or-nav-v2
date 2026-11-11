@@ -1,6 +1,6 @@
-// Library tab: search and browse your department's preference cards and items.
-import { useEffect, useMemo, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+// Library view: search and browse your department's preference cards and items.
+import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Badge, Banner, Button, Chips, EmptyState, Group, Icon, IconButton, ListRow, SearchField, SectionLabel, SkeletonRows } from '../../ui/kit';
 import { C, F, S, T } from '../../theme';
@@ -21,7 +21,10 @@ export default function LibraryScreen({
   bottomSpace,
   jobRole,
   openRequest,
+  header,
 }: {
+  /** Drawn above the list (the shell's back bar), inside this screen so its sheets cover it too. */
+  header?: ReactNode;
   lib: Library;
   /** The search port; the shell builds the engine. */
   search: SearchEngine;
@@ -55,6 +58,7 @@ export default function LibraryScreen({
 
   return (
     <View style={{ flex: 1 }} pointerEvents="box-none">
+      {header}
       <ScrollView
         style={{ flex: 1, marginBottom: bottomSpace }}
         contentContainerStyle={[styles.content, { paddingTop: topInset + S.lg }]}
@@ -69,13 +73,15 @@ export default function LibraryScreen({
           {lib.deptId && <IconButton name="plus" label="Suggest something new" onPress={() => setSelection({ type: 'new' })} color={C.onAccent} bg={C.accent} />}
         </View>
 
-        <Pressable accessibilityRole="button" accessibilityLabel={`Department: ${departmentLabel(lib.data, lib.deptId)}. Change`} onPress={() => setPickDept(true)} style={styles.dept} hitSlop={8}>
-          <Icon name="briefcase" size={18} />
-          <Text style={styles.deptText} numberOfLines={1}>
-            {departmentLabel(lib.data, lib.deptId)}
-          </Text>
-          <Icon name="chevron-down" size={18} />
-        </Pressable>
+        {/* Department is changed from the name sheet now; here it is only shown. */}
+        {lib.deptId && (
+          <View style={styles.dept}>
+            <Icon name="briefcase" size={18} color={C.text3} />
+            <Text style={styles.deptText} numberOfLines={1}>
+              {departmentLabel(lib.data, lib.deptId)}
+            </Text>
+          </View>
+        )}
 
         {lib.offline && <Banner text={`Offline — showing your saved copy${lib.data.loadedAt ? ` from ${timeAgo(lib.data.loadedAt)}` : ''}.`} />}
         {!lib.offline && lib.error !== '' && <Banner text={lib.error} tone="danger" icon="alert-circle" />}
@@ -171,5 +177,5 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: S.lg, paddingBottom: S.xxl, gap: S.sm },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   dept: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, alignSelf: 'flex-start', maxWidth: '100%' },
-  deptText: { fontFamily: F, color: C.accent, fontSize: 16, fontWeight: '600', flexShrink: 1 },
+  deptText: { fontFamily: F, color: C.text2, fontSize: 16, fontWeight: '500', flexShrink: 1 },
 });

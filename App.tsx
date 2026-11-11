@@ -9,15 +9,20 @@ import {
   SignedInUser,
   readSignedInUser,
   refreshSignedInUser,
+  signOut,
   watchSignedInUser,
 } from './src/auth/supabase';
 import { DEMO_USER_ID, demoSource } from './src/core/library/demoSource';
+import DepartmentSheet from './src/features/library/DepartmentSheet';
 import LibraryScreen from './src/features/library/LibraryScreen';
 import type { Selection } from './src/features/library/LibrarySheet';
+import { ShellState, caseTimeName, firstName } from './src/features/shell/logic';
+import NameSheet from './src/features/shell/NameSheet';
+import Shell from './src/features/shell/Shell';
 import OmniBar, { OMNI_BAR_SPACE } from './src/omnibar/OmniBar';
 import OmniSheet from './src/omnibar/OmniSheet';
 import { useOmnibar } from './src/omnibar/useOmnibar';
-import { toReview } from './src/features/library/logic';
+import { departmentLabel, toReview } from './src/features/library/logic';
 import { supabaseSource } from './src/core/library/supabaseSource';
 import { wordSearch } from './src/core/search/engine';
 import { useLibrary } from './src/features/library/useLibrary';
@@ -28,11 +33,10 @@ import { loadProfile, saveProfile } from './src/profile/profileStore';
 import ReviewScreen from './src/review/ReviewScreen';
 import { C, F, S, T } from './src/theme';
 import { IconTile } from './src/ui/kit';
-import TabBar, { TAB_BAR_HEIGHT, TabName } from './src/ui/TabBar';
 import { startFaultCapture } from './src/diag/capture';
 import { logFault } from './src/diag/faultStore';
-import { checkForUpdate, downloadAndInstall } from './src/updater';
-import MeScreen from './src/views/MeScreen';
+import { checkForUpdate, downloadAndInstall, installedVersion } from './src/updater';
+import AdminView from './src/views/AdminView';
 import UpdatePanel, { UpdatePhase, UpdateState } from './src/views/UpdatePanel';
 
 /** Demo mode: sample data, no sign-in. Only in a development run started with EXPO_PUBLIC_DEMO=1. */
@@ -88,8 +92,8 @@ function Main() {
   const [profile, setProfile] = useState<ProfileRow | null | undefined>(DEMO ? DEMO_PROFILE : undefined);
   const [previewing, setPreviewing] = useState(false);
   const [welcome, setWelcome] = useState('');
-  // Kept here so closing the setup-questions preview returns to the same tab (Me).
-  const [tab, setTab] = useState<TabName>('library');
+  // Kept here so closing the setup-questions preview returns to the same view (Admin tools).
+  const [shell, setShell] = useState<ShellState>({ view: 'main', sidebar: false });
 
   const userId = user?.id;
   useEffect(() => {
@@ -164,8 +168,8 @@ function Main() {
         profile={profile}
         update={update}
         welcome={welcome}
-        tab={tab}
-        setTab={setTab}
+        shell={shell}
+        setShell={setShell}
         onPreviewQuestionnaire={() => {
           setWelcome('');
           setPreviewing(true);
@@ -210,16 +214,16 @@ function SignedIn({
   profile,
   update,
   welcome,
-  tab,
-  setTab,
+  shell,
+  setShell,
   onPreviewQuestionnaire,
 }: {
   user: SignedInUser;
   profile: ProfileRow;
   update: UpdateState;
   welcome: string;
-  tab: TabName;
-  setTab: (t: TabName) => void;
+  shell: ShellState;
+  setShell: (s: ShellState) => void;
   onPreviewQuestionnaire: () => void;
 }) {
   const insets = useSafeAreaInsets();
@@ -227,44 +231,75 @@ function SignedIn({
   const lib = useLibrary(source, user.id, !DEMO);
   const omni = useOmnibar(lib);
   const [omniOpen, setOmniOpen] = useState(false);
-  // An item or card the assistant asked to open; the Library tab opens it in its sheet.
+  const [nameOpen, setNameOpen] = useState(false);
+  const [deptOpen, setDeptOpen] = useState(false);
+  // Until cases arrive (#14), the case is named by the time the app opened.
+  const caseName = useMemo(() => caseTimeName(new Date()), []);
+  // An item or card the assistant asked to open; the Library view opens it in its sheet.
   const [openRequest, setOpenRequest] = useState<{ selection: Selection; n: number } | null>(null);
+  // Forget it once the Library view closes, so reopening Library does not reopen the old item.
+  useEffect(() => {
+    if (shell.view !== 'library') setOpenRequest(null);
+  }, [shell.view]);
 
   const openSelection = useCallback(
     (selection: Selection) => {
       setOmniOpen(false);
-      setTab('library');
+      setShell({ view: 'library', sidebar: false });
       setOpenRequest((prev) => ({ selection, n: (prev?.n ?? 0) + 1 }));
     },
-    [setTab],
+    [setShell],
   );
 
-  // Tab content fills the whole screen and is drawn after the tab bar, so an open sheet's
-  // dim layer covers the tab bar too. Lists pad their bottom by the tab bar's height plus the omnibar.
-  const tabBarHeight = TAB_BAR_HEIGHT + Math.max(insets.bottom, S.sm);
-  const tabBarSpace = tabBarHeight + OMNI_BAR_SPACE;
+  const isAdmin = user.role === 'admin';
+  const person = { name: firstName(profile), fullName: profile.full_name, emoji: profile.avatar_emoji, role: profile.role };
+  const department = lib.deptId ? departmentLabel(lib.data, lib.deptId).split(' · ').pop() ?? '' : 'Choose';
+
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
-      <View style={styles.tabBar}>
-        <OmniBar onOpen={() => setOmniOpen(true)} busy={omni.busy} />
-        <TabBar value={tab} onChange={setTab} badge={toReview(lib.data, user.id).length} bottomInset={insets.bottom} />
-      </View>
-      <View style={styles.tabContent} pointerEvents="box-none">
-        {tab === 'library' && <LibraryScreen lib={lib} search={wordSearch} topInset={insets.top} bottomSpace={tabBarSpace} jobRole={profile.role} openRequest={openRequest} />}
-        {tab === 'review' && <ReviewScreen lib={lib} topInset={insets.top} bottomSpace={tabBarSpace} />}
-        {tab === 'me' && (
-          <MeScreen
-            user={user}
-            profile={profile}
-            update={update}
-            welcome={welcome}
-            topInset={insets.top}
-            bottomSpace={tabBarSpace}
-            onPreviewQuestionnaire={onPreviewQuestionnaire}
-          />
+      <Shell
+        state={shell}
+        onChange={setShell}
+        caseName={caseName}
+        waiting={toReview(lib.data, user.id).length}
+        person={person}
+        onPerson={() => setNameOpen(true)}
+        body={welcome !== '' ? <Text style={[T.callout, styles.welcome]}>{welcome}</Text> : null}
+        composer={<OmniBar onOpen={() => setOmniOpen(true)} busy={omni.busy} />}
+        composerHeight={OMNI_BAR_SPACE}
+        library={(header) => (
+          <LibraryScreen lib={lib} search={wordSearch} topInset={0} bottomSpace={insets.bottom} jobRole={profile.role} openRequest={openRequest} header={header} />
         )}
-      </View>
+        review={<ReviewScreen lib={lib} topInset={0} bottomSpace={insets.bottom} />}
+        admin={
+          <ScrollView contentContainerStyle={[styles.admin, { paddingBottom: insets.bottom + S.xxl }]}>
+            <Text style={T.largeTitle} accessibilityRole="header">
+              Admin tools
+            </Text>
+            <AdminView user={user} update={update} profile={profile} onPreviewQuestionnaire={onPreviewQuestionnaire} />
+          </ScrollView>
+        }
+      />
+      <NameSheet
+        open={nameOpen}
+        onClose={() => setNameOpen(false)}
+        person={person}
+        isAdmin={isAdmin}
+        department={department}
+        version={installedVersion()}
+        update={update}
+        onDepartment={() => {
+          setNameOpen(false);
+          setDeptOpen(true);
+        }}
+        onAdmin={() => {
+          setNameOpen(false);
+          setShell({ view: 'admin', sidebar: false });
+        }}
+        onSignOut={signOut}
+      />
+      <DepartmentSheet lib={lib} open={deptOpen} onClose={() => setDeptOpen(false)} jobRole={profile.role} />
       <OmniSheet
         open={omniOpen}
         onClose={() => setOmniOpen(false)}
@@ -273,7 +308,8 @@ function SignedIn({
         onOpenSelection={openSelection}
         onGoTo={(t) => {
           setOmniOpen(false);
-          setTab(t);
+          if (t === 'me') setNameOpen(true);
+          else setShell({ view: t, sidebar: false });
         }}
       />
       {/* Solid strip behind the status bar, so scrolled content never runs under the clock. */}
@@ -293,9 +329,7 @@ const styles = StyleSheet.create({
   top: { gap: S.md },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: S.md },
   bottom: { gap: S.lg },
-  tabBar: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   statusStrip: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: C.bg },
-  // Full screen and drawn after the tab bar. Lists stop above the bar (marginBottom), so the
-  // bar stays tappable; an open sheet is absolute and covers everything, bar included.
-  tabContent: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  welcome: { color: C.ok, paddingHorizontal: S.lg, paddingTop: S.lg },
+  admin: { paddingHorizontal: S.lg, gap: S.lg },
 });
