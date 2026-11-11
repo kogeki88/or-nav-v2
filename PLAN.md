@@ -190,8 +190,9 @@ Done means: the Library search box finds items by sound-alike spelling, offline;
 - [x] #7 search engine with a clear order in the Library box (`6c32c3c`); #8 sound-alike matching and the test word list (`e4f8eaa`)
 - [x] Typecheck; 75 Jest tests pass (2026-11-10)
 - [x] Green cloud build v2.5.0 (run 42930088261); `or-nav.apk` on Releases; signature 47:80:2B…39:08 matches; no secret key (only the library's "sb_secret_" label, joined to the icon name "reader-outline"; no "sk-ant-"); bundle holds the sound-alike search code
-- [ ] Sean: in-app update to v2.5.0
-- [ ] Sean: airplane mode, type "bovee" → Bovie pencil with its shelf
+- [x] Sean: in-app update to v2.5.0 (2026-11-10)
+- [x] Sean: airplane mode, Library search box, "bovee" → Bovie pencil, A1 · Bin 1 (2026-11-10)
+- Note: the "Ask OR-Nav" box's offline answer still uses its own plain word search (`src/omnibar/validate.ts`), so "bovee" finds nothing there. Possible later ticket.
 
 ## Status
-v2.5.0 built and on Releases (2026-11-10); waits for Sean's in-app update and the airplane-mode "bovee" check. Then Brick 3 is done (close issues #6–#9). AI omnibar still waits for keys.
+v2.5.0 on Sean's phone (2026-11-10): Brick 3 sound-alike search done, checked offline. Issues #6–#9 closed. AI omnibar still waits for keys.
