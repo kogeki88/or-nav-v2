@@ -194,5 +194,12 @@ Done means: the Library search box finds items by sound-alike spelling, offline;
 - [x] Sean: airplane mode, Library search box, "bovee" → Bovie pencil, A1 · Bin 1 (2026-11-10)
 - Note: the "Ask OR-Nav" box's offline answer still uses its own plain word search (`src/omnibar/validate.ts`), so "bovee" finds nothing there. Possible later ticket.
 
+## Part L — v2.6.0 one screen: one box, cases, sidebar, new look (spec #10, tickets #11–#17)
+Done means: see "Further Notes" in #10. Decisions: `design/REDESIGN-one-screen.md`. Approved picture: `design/mockups/one-screen.html` (version 3, with motion; Sean 2026-11-10).
+Order (each blocked by the one before): #11 new look → #12 sidebar and name sheet → #13 the one box → #14 cases → #15 the case learns → #16 AI gets the case (Sean deploys) → #17 motion pass and release (Sean checks). Brick 4 (Scrub Mode) is the next spec, after this.
+
+- [ ] #11 … #17
+
 ## Status
 v2.5.0 on Sean's phone (2026-11-10): Brick 3 sound-alike search done, checked offline. Issues #6–#9 closed. AI omnibar still waits for keys.
+Next: `/implement #11` in a fresh session (Part L).
