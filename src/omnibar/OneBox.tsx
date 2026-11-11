@@ -95,7 +95,8 @@ export function OneBoxBody({ omni, lib, index, text, greeting, notice, onOpen, o
       {caseCard && !typing && (
         <View style={styles.cardLine}>
           <Text style={[T.callout, { flex: 1 }]} numberOfLines={1}>
-            {`Preference card, ${caseCard.title}, ${caseCard.count} ${caseCard.count === 1 ? 'item' : 'items'}`}
+            {/* The count comes first, so a long card name is cut at its end and the count stays visible. */}
+            {`${caseCard.count} ${caseCard.count === 1 ? 'item' : 'items'} · ${caseCard.title}`}
           </Text>
           <Button kind="secondary" label="Open" icon="clipboard" onPress={() => open({ type: 'card', id: caseCard.id })} />
         </View>
