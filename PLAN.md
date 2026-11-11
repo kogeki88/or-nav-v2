@@ -184,5 +184,14 @@ Done means: faults are saved on the phone (newest 500, survive restart, work off
 - [x] Send report from Sean's phone (2026-11-10; emulator skipped, PC out of memory); row 1 read back: v2.4.0, 7 checks (all ok except fault log warn and omnibar "not set up yet"), 5 entries (airplane-mode "info" lines + omnibar 503)
 - [x] Green cloud build v2.4.0; Sean installed it through the in-app updater
 
+## Part K — v2.5.0 Brick 3: sound-alike search (spec #6, tickets #7–#9)
+Done means: the Library search box finds items by sound-alike spelling, offline; v2.5.0 is on Sean's phone through the in-app updater.
+
+- [x] #7 search engine with a clear order in the Library box (`6c32c3c`); #8 sound-alike matching and the test word list (`e4f8eaa`)
+- [x] Typecheck; 75 Jest tests pass (2026-11-10)
+- [x] Green cloud build v2.5.0 (run 42930088261); `or-nav.apk` on Releases; signature 47:80:2B…39:08 matches; no secret key (only the library's "sb_secret_" label, joined to the icon name "reader-outline"; no "sk-ant-"); bundle holds the sound-alike search code
+- [ ] Sean: in-app update to v2.5.0
+- [ ] Sean: airplane mode, type "bovee" → Bovie pencil with its shelf
+
 ## Status
-v2.4.0 on Sean's phone (2026-11-10): offline library checked in airplane mode; fault report reached Supabase. Ports-and-adapters move done (issues 1–5). AI omnibar waits for keys (Sean chose search first). Next: Brick 3, sound-alike search (spec + tickets on GitHub).
+v2.5.0 built and on Releases (2026-11-10); waits for Sean's in-app update and the airplane-mode "bovee" check. Then Brick 3 is done (close issues #6–#9). AI omnibar still waits for keys.
