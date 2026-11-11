@@ -52,7 +52,7 @@ describe('sendTurn', () => {
     const { sent, added } = await run('where is the bovie', context({ offline: true }), assistant);
     expect(calls).toHaveLength(0);
     expect(sent).toBe(false);
-    expect(added).toEqual([{ role: 'assistant', text: OFFLINE_LINE, tone: 'warn' }]);
+    expect(added).toEqual([{ role: 'assistant', text: OFFLINE_LINE, tone: 'warn', local: true }]);
     expect(OFFLINE_LINE).toBe('The AI needs internet. Your matches are still above.');
   });
 

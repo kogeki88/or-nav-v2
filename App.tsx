@@ -17,7 +17,10 @@ import { DEMO_USER_ID, demoSource } from './src/core/library/demoSource';
 import DepartmentSheet from './src/features/library/DepartmentSheet';
 import LibraryScreen from './src/features/library/LibraryScreen';
 import LibrarySheet, { Selection } from './src/features/library/LibrarySheet';
-import { ShellState, caseTimeName, firstName, timeGreeting } from './src/features/shell/logic';
+import { makeCaseStore, memoryCaseRows } from './src/core/cases/caseStore';
+import { sqliteCaseStore } from './src/core/cases/sqliteCases';
+import { useCases } from './src/features/case/useCases';
+import { ShellState, firstName, timeGreeting } from './src/features/shell/logic';
 import NameSheet from './src/features/shell/NameSheet';
 import Shell from './src/features/shell/Shell';
 import { COMPOSER_SPACE, Composer, OneBoxBody } from './src/omnibar/OneBox';
@@ -231,11 +234,11 @@ function SignedIn({
   const source = useMemo(() => (DEMO ? demoSource() : supabaseSource(user.id)), [user.id]);
   const lib = useLibrary(source, user.id, !DEMO);
   const assistant = useMemo(() => supabaseAssistant(supabase), []);
-  const omni = useOmnibar(lib, assistant);
+  const caseStore = useMemo(() => (DEMO ? makeCaseStore(memoryCaseRows()) : sqliteCaseStore(user.id)), [user.id]);
+  const cases = useCases(caseStore);
+  const omni = useOmnibar(lib, assistant, cases.thread);
   const [nameOpen, setNameOpen] = useState(false);
   const [deptOpen, setDeptOpen] = useState(false);
-  // Until cases arrive (#14), the case is named by the time the app opened.
-  const caseName = useMemo(() => caseTimeName(new Date()), []);
   // The one box: its text, this department's search index, and the item or card open in the sheet.
   const [text, setText] = useState('');
   const deptItems = useMemo(() => lib.data.items.filter((i) => i.department_id === lib.deptId), [lib.data.items, lib.deptId]);
@@ -259,7 +262,10 @@ function SignedIn({
       <Shell
         state={shell}
         onChange={setShell}
-        caseName={caseName}
+        caseName={cases.label}
+        cases={cases.list}
+        onCase={cases.switchTo}
+        onNewCase={cases.startNew}
         waiting={toReview(lib.data, user.id).length}
         person={person}
         onPerson={() => setNameOpen(true)}
@@ -276,6 +282,8 @@ function SignedIn({
               if (t === 'me') setNameOpen(true);
               else setShell({ view: t, sidebar: false });
             }}
+            pickUp={cases.pickUp}
+            onPickUp={cases.switchTo}
           />
         }
         composer={<Composer text={text} onChangeText={setText} onSend={send} busy={omni.busy} />}

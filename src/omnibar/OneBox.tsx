@@ -3,6 +3,7 @@
 import { ReactNode, useMemo, useRef } from 'react';
 import { ActivityIndicator, Keyboard, Pressable, ScrollView, type ScrollViewInstance, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import type { CaseListRow } from '../contracts/cases';
 import type { ChangeRequest } from '../contracts/library';
 import type { LibrarySearch } from '../contracts/search';
 import { itemIcon } from '../features/library/icons';
@@ -73,9 +74,12 @@ type BodyProps = {
   notice?: ReactNode;
   onOpen: (s: Selection) => void;
   onGoTo: (tab: GoTo['tab']) => void;
+  /** "Pick up a case" on an empty case: the most recent other cases. */
+  pickUp: CaseListRow[];
+  onPickUp: (caseId: string) => void;
 };
 
-export function OneBoxBody({ omni, lib, index, text, greeting, notice, onOpen, onGoTo }: BodyProps) {
+export function OneBoxBody({ omni, lib, index, text, greeting, notice, onOpen, onGoTo, pickUp, onPickUp }: BodyProps) {
   const scroll = useRef<ScrollViewInstance>(null);
   const matches = useMemo(() => boxMatches(text, index, lib.data, lib.deptId), [text, index, lib.data, lib.deptId]);
   const typing = text.trim() !== '';
@@ -93,6 +97,27 @@ export function OneBoxBody({ omni, lib, index, text, greeting, notice, onOpen, o
             <View style={styles.greeting}>
               <Text style={styles.greetText}>{greeting[0]}</Text>
               <Text style={[styles.greetText, { color: C.text3 }]}>{greeting[1]}</Text>
+            </View>
+          )}
+          {!typing && pickUp.length > 0 && (
+            <View style={styles.pickUp}>
+              <Text style={styles.pickUpHead} accessibilityRole="header">
+                Pick up a case
+              </Text>
+              {pickUp.map((c) => (
+                <Pressable
+                  key={c.id}
+                  onPress={() => onPickUp(c.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Pick up ${c.label}, ${c.when}`}
+                  style={({ pressed }) => [styles.pickUpRow, pressed && { backgroundColor: C.fill }]}
+                >
+                  <Text style={styles.matchTitle} numberOfLines={1}>
+                    {c.label}
+                  </Text>
+                  <Text style={styles.pickUpWhen}>{c.when}</Text>
+                </Pressable>
+              ))}
             </View>
           )}
         </View>
@@ -273,6 +298,10 @@ const styles = StyleSheet.create({
   send: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   greeting: { marginTop: 52, paddingHorizontal: 20 },
   greetText: { fontFamily: F, color: C.text, fontSize: 30, lineHeight: 36, fontWeight: '600' },
+  pickUp: { marginTop: 'auto', paddingHorizontal: S.sm, paddingBottom: S.xs },
+  pickUpHead: { fontFamily: F, color: C.text3, fontSize: 15, fontWeight: '500', paddingHorizontal: S.md, paddingBottom: S.xs },
+  pickUpRow: { flexDirection: 'row', alignItems: 'center', gap: S.md, minHeight: 56, paddingHorizontal: S.md, borderRadius: 12 },
+  pickUpWhen: { fontFamily: F, color: C.text3, fontSize: 14 },
   thread: { paddingHorizontal: S.lg, paddingTop: S.lg, paddingBottom: S.lg, gap: S.lg },
   thinking: { flexDirection: 'row', alignItems: 'center', gap: S.sm },
   matches: { flexGrow: 0, flexShrink: 1, paddingHorizontal: S.sm },

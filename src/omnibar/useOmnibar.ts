@@ -1,7 +1,9 @@
-// The one box's conversation, in memory only: every Send goes to the assistant (see conversation.ts).
+// The one box's conversation: the current case's messages (see useCases). Every Send goes to the
+// assistant (see conversation.ts). A reply that comes after a switch still lands in its own case.
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import type { Assistant } from '../contracts/assistant';
+import type { CaseMessage, CaseThread } from '../contracts/cases';
 import { logFault } from '../diag/faultStore';
 import type { Library } from '../features/library/useLibrary';
 import { DraftState, NewMessage, OmniMessage, sendTurn } from './conversation';
@@ -9,62 +11,63 @@ import { Draft, draftToChange } from './validate';
 
 export type { DraftState, OmniMessage } from './conversation';
 
-export function useOmnibar(lib: Library, assistant: Assistant) {
-  const [messages, setMessages] = useState<OmniMessage[]>([]);
-  const [busy, setBusy] = useState(false);
-  const nextId = useRef(1);
+function nextId(list: CaseMessage[]): number {
+  return list.reduce((max, m) => Math.max(max, m.id), 0) + 1;
+}
+
+export function useOmnibar(lib: Library, assistant: Assistant, thread: CaseThread) {
+  // Cases waiting for an answer, so each case has its own "Thinking…".
+  const [busyIds, setBusyIds] = useState<string[]>([]);
+  const update = useRef(thread.update);
+  update.current = thread.update;
+  const caseId = thread.id;
+  // Messages in a case were checked against the library when they arrived (OneBox checks ids again).
+  const messages = thread.messages as OmniMessage[];
+  const busy = caseId !== null && busyIds.includes(caseId);
   const deptId = lib.deptId;
 
   const staff = useMemo(() => lib.data.cards.filter((c) => c.department_id === deptId).map((c) => c.surgeon), [lib.data.cards, deptId]);
   const myDeptIds = useMemo(() => lib.mine.map((m) => m.department.id), [lib.mine]);
 
-  const add = useCallback((m: NewMessage) => {
-    const msg = { ...m, id: nextId.current++ };
-    setMessages((prev) => [...prev, msg]);
-  }, []);
-
   /** Returns false when nothing was sent, so the box keeps the text. */
   const send = useCallback(
     async (raw: string): Promise<boolean> => {
-      if (busy) return false;
-      setBusy(true);
+      if (caseId === null || busy) return false;
+      const add = (m: NewMessage) => update.current(caseId, (prev) => [...prev, { ...m, id: nextId(prev) }]);
+      setBusyIds((ids) => [...ids, caseId]);
       try {
         return await sendTurn(raw, { deptId, offline: lib.offline, staff, history: messages, data: lib.data, myDeptIds }, assistant, add);
       } finally {
-        setBusy(false);
+        setBusyIds((ids) => ids.filter((id) => id !== caseId));
       }
     },
-    [add, assistant, busy, deptId, lib.data, lib.offline, messages, myDeptIds, staff],
+    [assistant, busy, caseId, deptId, lib.data, lib.offline, messages, myDeptIds, staff],
   );
-
-  const setDraft = useCallback((msgId: number, index: number, state: DraftState, error?: string) => {
-    setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, drafts: { ...m.drafts, [index]: { state, error } } } : m)));
-  }, []);
 
   /** "Send for review": the draft becomes a normal suggestion; a colleague still has to approve it. */
   const sendDraft = useCallback(
     async (msgId: number, index: number, draft: Draft) => {
-      if (!deptId) return;
+      if (!deptId || caseId === null) return;
+      const setDraft = (state: DraftState, error?: string) =>
+        update.current(caseId, (prev) => prev.map((m) => (m.id === msgId ? { ...m, drafts: { ...m.drafts, [index]: { state, error } } } : m)));
       const change = draftToChange(draft, lib.data, deptId);
       if (!change) {
-        setDraft(msgId, index, 'error', 'This no longer matches the library. Ask again.');
+        setDraft('error', 'This no longer matches the library. Ask again.');
         return;
       }
-      setDraft(msgId, index, 'sending');
+      setDraft('sending');
       try {
         await lib.propose(change);
-        setDraft(msgId, index, 'sent');
+        setDraft('sent');
       } catch (e) {
         logFault('omnibar', e);
-        setDraft(msgId, index, 'error', e instanceof Error ? e.message : String(e));
+        setDraft('error', e instanceof Error ? e.message : String(e));
       }
     },
-    [deptId, lib, setDraft],
+    [caseId, deptId, lib],
   );
 
-  const clear = useCallback(() => setMessages([]), []);
-
-  return { messages, busy, send, sendDraft, clear };
+  return { messages, busy, send, sendDraft };
 }
 
 export type Omnibar = ReturnType<typeof useOmnibar>;

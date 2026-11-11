@@ -1,16 +1,9 @@
-// The shell's plain rules (no React): names, which rows show, and what Android Back closes first.
+// The shell's plain rules (no React): greetings, which rows show, and what Android Back closes first.
 
 /** What fills the screen: the main screen, or a full-screen view over it. */
 export type ShellView = 'main' | 'library' | 'review' | 'admin';
 
 export type ShellState = { view: ShellView; sidebar: boolean };
-
-/** A case with no surgeon or procedure yet is named by its start time: "Case 7:42". */
-export function caseTimeName(start: Date): string {
-  const h = start.getHours() % 12 || 12;
-  const m = String(start.getMinutes()).padStart(2, '0');
-  return `Case ${h}:${m}`;
-}
 
 export function firstName(p: { nickname: string | null; full_name: string }): string {
   return p.nickname?.trim() || p.full_name.trim().split(/\s+/)[0] || 'You';

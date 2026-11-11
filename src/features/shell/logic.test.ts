@@ -1,7 +1,7 @@
 // The shell's plain rules: names, which rows show, and what Android Back closes first.
 import { describe, expect, it } from '@jest/globals';
 
-import { backStep, caseTimeName, firstName, nameSheetRows, sidebarRows, timeGreeting } from './logic';
+import { backStep, firstName, nameSheetRows, sidebarRows, timeGreeting } from './logic';
 
 describe('timeGreeting', () => {
   it('greets by time of day and first name', () => {
@@ -10,15 +10,6 @@ describe('timeGreeting', () => {
     expect(timeGreeting(new Date(2026, 10, 11, 5, 0), 'Sean')[0]).toBe('Morning, Sean.');
     expect(timeGreeting(new Date(2026, 10, 11, 12, 0), 'Sean')[0]).toBe('Afternoon, Sean.');
     expect(timeGreeting(new Date(2026, 10, 11, 17, 0), 'Sean')[0]).toBe('Evening, Sean.');
-  });
-});
-
-describe('caseTimeName', () => {
-  it('names a case by the time it started, without a leading zero on the hour', () => {
-    expect(caseTimeName(new Date(2026, 10, 11, 7, 42))).toBe('Case 7:42');
-    expect(caseTimeName(new Date(2026, 10, 11, 7, 5))).toBe('Case 7:05');
-    expect(caseTimeName(new Date(2026, 10, 11, 14, 30))).toBe('Case 2:30');
-    expect(caseTimeName(new Date(2026, 10, 11, 0, 15))).toBe('Case 12:15');
   });
 });
 

@@ -5,6 +5,7 @@ import { ReactNode, useEffect, useRef, useState } from 'react';
 import { BackHandler, Keyboard, Platform, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import type { CaseListRow } from '../../contracts/cases';
 import { C, F, S } from '../../theme';
 import { IconButton } from '../../ui/kit';
 import { ShellState, backStep, sidebarRows } from './logic';
@@ -16,6 +17,10 @@ type Props = {
   state: ShellState;
   onChange: (s: ShellState) => void;
   caseName: string;
+  /** Recent cases for the sidebar, the current one marked. */
+  cases: CaseListRow[];
+  onCase: (caseId: string) => void;
+  onNewCase: () => void;
   /** Suggestions waiting for this nurse's review: the To review row and the dot on ☰. */
   waiting: number;
   person: { name: string; fullName: string; emoji: string | null };
@@ -31,7 +36,7 @@ type Props = {
   admin: ReactNode;
 };
 
-export default function Shell({ state, onChange, caseName, waiting, person, onPerson, body, composer, composerHeight, library, review, admin }: Props) {
+export default function Shell({ state, onChange, caseName, cases, onCase, onNewCase, waiting, person, onPerson, body, composer, composerHeight, library, review, admin }: Props) {
   const insets = useSafeAreaInsets();
   const live = useRef({ state, onChange });
   live.current = { state, onChange };
@@ -81,8 +86,7 @@ export default function Shell({ state, onChange, caseName, waiting, person, onPe
         <Text style={styles.caseLabel} numberOfLines={1} accessibilityLabel={`Current case: ${caseName}`}>
           {caseName}
         </Text>
-        {/* New case: does nothing yet (ticket #14 adds cases). */}
-        <IconButton name="edit" label="New case" onPress={() => {}} bg="transparent" color={C.text} />
+        <IconButton name="edit" label="New case" onPress={onNewCase} bg="transparent" color={C.text} />
       </View>
 
       <View style={styles.body}>{body}</View>
@@ -93,7 +97,15 @@ export default function Shell({ state, onChange, caseName, waiting, person, onPe
         onOpen={() => set({ sidebar: true })}
         onClose={() => set({ sidebar: false })}
         rows={sidebarRows(waiting)}
-        onRow={(key) => onChange({ sidebar: false, view: key === 'new' ? state.view : key })}
+        onRow={(key) => {
+          onChange({ sidebar: false, view: key === 'new' ? 'main' : key });
+          if (key === 'new') onNewCase();
+        }}
+        cases={cases}
+        onCase={(id) => {
+          onChange({ sidebar: false, view: 'main' });
+          onCase(id);
+        }}
         person={person}
         onPerson={() => {
           set({ sidebar: false });

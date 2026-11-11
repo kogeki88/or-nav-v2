@@ -42,6 +42,17 @@ CREATE TABLE fault_log (
   message TEXT NOT NULL, detail TEXT, app_version TEXT NOT NULL);
 `,
   },
+  {
+    // Cases (src/core/cases): the one box's conversations, on the phone only, per user. Not a library table.
+    version: 3,
+    sql: `
+CREATE TABLE cases (
+  id TEXT PRIMARY KEY NOT NULL, user_id TEXT NOT NULL, created_at TEXT NOT NULL, last_used_at TEXT NOT NULL,
+  surgeon TEXT, procedure TEXT, card_id TEXT, set_by_nurse INTEGER NOT NULL DEFAULT 0,
+  messages TEXT NOT NULL DEFAULT '[]');
+CREATE INDEX cases_user_last_used ON cases (user_id, last_used_at);
+`,
+  },
 ];
 
 export const LATEST_VERSION = MIGRATIONS[MIGRATIONS.length - 1].version;

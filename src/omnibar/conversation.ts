@@ -1,22 +1,17 @@
 // One Send in the one box: checks, scrubs on the phone, then always asks the assistant. Offline it asks nothing.
 // Plain TypeScript (Jest-tested); useOmnibar holds the messages.
 import type { Assistant, AssistantTurn } from '../contracts/assistant';
+import type { CaseDraftState, CaseMessage } from '../contracts/cases';
 import type { LibraryData } from '../contracts/library';
 import type { Engine, OmniAction } from '../../supabase/functions/omnibar/schema';
 import { describeRemoved, scrub } from '../../supabase/functions/omnibar/scrub';
 import { validActions } from './validate';
 
-export type DraftState = 'ready' | 'sending' | 'sent' | 'error';
+export type DraftState = CaseDraftState;
 
-export type OmniMessage = {
-  id: number;
-  role: 'user' | 'assistant';
-  text: string;
-  /** Under a user message: what the scrubber removed. Under an answer: an error note. */
-  note?: string;
-  tone?: 'warn' | 'danger';
+/** A case message (contracts/cases) whose actions were checked against the library. */
+export type OmniMessage = Omit<CaseMessage, 'actions' | 'engine'> & {
   actions?: OmniAction[];
-  drafts?: Record<number, { state: DraftState; error?: string }>;
   /** Set when the free backup AI answered instead of Claude. */
   engine?: Engine;
 };
@@ -43,17 +38,17 @@ export async function sendTurn(raw: string, ctx: TurnContext, assistant: Assista
   const text = raw.trim();
   if (!text) return false;
   if (!ctx.deptId) {
-    add({ role: 'assistant', text: NO_DEPARTMENT, tone: 'warn' });
+    add({ role: 'assistant', text: NO_DEPARTMENT, tone: 'warn', local: true });
     return false;
   }
   if (ctx.offline) {
-    add({ role: 'assistant', text: OFFLINE_LINE, tone: 'warn' });
+    add({ role: 'assistant', text: OFFLINE_LINE, tone: 'warn', local: true });
     return false;
   }
 
   const clean = scrub(text, ctx.staff);
   if (!clean.ok) {
-    add({ role: 'assistant', text: clean.reason, tone: 'danger', note: 'Nothing was sent.' });
+    add({ role: 'assistant', text: clean.reason, tone: 'danger', note: 'Nothing was sent.', local: true });
     return false;
   }
 
@@ -65,7 +60,7 @@ export async function sendTurn(raw: string, ctx: TurnContext, assistant: Assista
 
   const reply = await assistant.ask({ message: clean.text, history, department_id: ctx.deptId });
   if (reply.kind === 'offline') {
-    add({ role: 'assistant', text: OFFLINE_LINE, tone: 'warn' });
+    add({ role: 'assistant', text: OFFLINE_LINE, tone: 'warn', local: true });
   } else if (reply.kind === 'error') {
     add({ role: 'assistant', text: reply.message, tone: 'danger' });
   } else {

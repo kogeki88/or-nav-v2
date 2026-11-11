@@ -2,9 +2,10 @@
 // closes by a tap on the dim area, a swipe back to the left, or Android Back (see Shell).
 // Built-in Animated + PanResponder only. Reduce motion: it appears and goes without sliding.
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, PanResponder, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { AccessibilityInfo, Animated, PanResponder, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import type { CaseListRow } from '../../contracts/cases';
 import { C, F, R, S, T } from '../../theme';
 import { Avatar, Icon, IconName } from '../../ui/kit';
 import type { SidebarRow } from './logic';
@@ -19,6 +20,9 @@ type Props = {
   onClose: () => void;
   rows: SidebarRow[];
   onRow: (key: SidebarRow['key']) => void;
+  /** Recent cases, the current one marked; a tap switches to it. */
+  cases: CaseListRow[];
+  onCase: (caseId: string) => void;
   person: { name: string; fullName: string; emoji: string | null };
   onPerson: () => void;
   /** Where the edge strip starts and stops, so it never covers the top bar or the box. */
@@ -26,7 +30,7 @@ type Props = {
   edgeBottom: number;
 };
 
-export default function Sidebar({ open, onOpen, onClose, rows, onRow, person, onPerson, edgeTop, edgeBottom }: Props) {
+export default function Sidebar({ open, onOpen, onClose, rows, onRow, cases, onCase, person, onPerson, edgeTop, edgeBottom }: Props) {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const W = Math.min(300, Math.round(width * 0.82));
@@ -129,7 +133,24 @@ export default function Sidebar({ open, onOpen, onClose, rows, onRow, person, on
               Cases
             </Text>
 
-            <View style={{ flex: 1 }} />
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 2 }}>
+              {cases.map((c) => (
+                <Pressable
+                  key={c.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${c.label}, ${c.when}${c.current ? ', current case' : ''}`}
+                  accessibilityState={{ selected: c.current }}
+                  onPress={() => onCase(c.id)}
+                  style={({ pressed }) => [styles.case, c.current && styles.caseCurrent, pressed && { backgroundColor: C.fill }]}
+                >
+                  {c.current && <View style={styles.caseDot} />}
+                  <Text style={[styles.caseText, c.current && styles.caseTextCurrent]} numberOfLines={1}>
+                    {c.label}
+                  </Text>
+                  <Text style={styles.caseWhen}>{c.when}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
 
             <Pressable accessibilityRole="button" accessibilityLabel={`${person.name}. Your settings`} onPress={onPerson} style={({ pressed }) => [styles.me, pressed && { backgroundColor: C.fill }]}>
               <Avatar emoji={person.emoji} name={person.fullName} size={36} />
@@ -163,6 +184,12 @@ const styles = StyleSheet.create({
   navText: { fontFamily: F, color: C.text, fontSize: 16, fontWeight: '500', flex: 1 },
   count: { fontFamily: F, color: C.warn, fontSize: 15, fontWeight: '700' },
   heading: { ...T.callout, fontSize: 14, color: C.text3, fontWeight: '500', paddingTop: S.xl, paddingBottom: 6, paddingHorizontal: 18 },
+  case: { minHeight: 46, borderRadius: 23, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 18 },
+  caseCurrent: { backgroundColor: C.fill },
+  caseDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: C.accent },
+  caseText: { fontFamily: F, color: C.text2, fontSize: 16, flex: 1 },
+  caseTextCurrent: { color: C.text, fontWeight: '600' },
+  caseWhen: { fontFamily: F, color: C.text3, fontSize: 13 },
   me: { minHeight: 56, borderRadius: 28, flexDirection: 'row', alignItems: 'center', gap: S.md, paddingHorizontal: 10 },
   meName: { fontFamily: F, color: C.text, fontSize: 16, fontWeight: '600', flex: 1 },
 });
