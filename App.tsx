@@ -1,3 +1,4 @@
+import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, AppState, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -25,7 +26,7 @@ import Questionnaire from './src/profile/Questionnaire';
 import type { ProfileRow } from './src/profile/profile';
 import { loadProfile, saveProfile } from './src/profile/profileStore';
 import ReviewScreen from './src/review/ReviewScreen';
-import { C, S, T } from './src/theme';
+import { C, F, S, T } from './src/theme';
 import { IconTile } from './src/ui/kit';
 import TabBar, { TAB_BAR_HEIGHT, TabName } from './src/ui/TabBar';
 import { startFaultCapture } from './src/diag/capture';
@@ -52,6 +53,22 @@ const DEMO_PROFILE: ProfileRow = {
 startFaultCapture();
 
 export default function App() {
+  // Manrope, one family with four weights (DESIGN.md). If it fails to load, the system font is used.
+  const [fontsLoaded, fontError] = useFonts([
+    {
+      fontFamily: F,
+      fontDefinitions: [
+        { path: require('./assets/fonts/Manrope-Regular.ttf'), weight: 400 },
+        { path: require('./assets/fonts/Manrope-Medium.ttf'), weight: 500 },
+        { path: require('./assets/fonts/Manrope-SemiBold.ttf'), weight: 600 },
+        { path: require('./assets/fonts/Manrope-Bold.ttf'), weight: 700 },
+      ],
+    },
+  ]);
+  useEffect(() => {
+    if (fontError) logFault('crash', fontError, 'warn');
+  }, [fontError]);
+  if (!fontsLoaded && !fontError) return null;
   return (
     <SafeAreaProvider>
       <Main />

@@ -14,7 +14,7 @@ import {
   ViewStyle,
 } from 'react-native';
 
-import { C, R, S, T, ui } from '../theme';
+import { C, F, R, S, T, ui } from '../theme';
 
 export type IconName = ComponentProps<typeof Feather>['name'];
 
@@ -148,7 +148,7 @@ export function Avatar({ emoji, name, size = 64 }: { emoji?: string | null; name
     .join('');
   return (
     <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]} accessibilityElementsHidden importantForAccessibility="no">
-      <Text style={{ fontSize: emoji ? size * 0.5 : size * 0.36, color: C.accent, fontWeight: '700' }}>{emoji || initials}</Text>
+      <Text style={{ fontFamily: F, fontSize: emoji ? size * 0.5 : size * 0.36, color: C.accent, fontWeight: '700' }}>{emoji || initials}</Text>
     </View>
   );
 }
@@ -432,7 +432,7 @@ export function Field({
 
 const styles = StyleSheet.create({
   badge: { minHeight: 24, paddingHorizontal: 8, borderRadius: 8, justifyContent: 'center', alignSelf: 'center' },
-  badgeText: { fontSize: 13, fontWeight: '700' },
+  badgeText: { fontFamily: F, fontSize: 13, fontWeight: '700' },
   ghost: { minHeight: 48, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: S.sm, paddingHorizontal: S.md },
   iconBtn: { minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
   avatar: { backgroundColor: C.accentSoft, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: C.line },
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
   segTrack: { flexDirection: 'row', backgroundColor: C.surface, borderRadius: R.control + 2, padding: 4, gap: 4, borderWidth: 1, borderColor: C.line },
   seg: { flex: 1, minHeight: 48, borderRadius: R.control - 2, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: S.sm },
   segOn: { backgroundColor: C.accent },
-  segText: { color: C.text2, fontSize: 16, fontWeight: '700' },
+  segText: { fontFamily: F, color: C.text2, fontSize: 16, fontWeight: '700' },
   track: { flex: 1, height: 8, borderRadius: 4, backgroundColor: C.line, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: 4, backgroundColor: C.accent },
   iconBtnInner: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
@@ -451,16 +451,16 @@ const styles = StyleSheet.create({
   divider: { position: 'absolute', top: 0, left: 68, right: 0, height: StyleSheet.hairlineWidth * 2, backgroundColor: C.line },
   rowText: { flex: 1, gap: 2 },
   search: { flexDirection: 'row', alignItems: 'center', minHeight: 52, backgroundColor: C.surface, borderRadius: R.control, paddingLeft: S.md, borderWidth: 1, borderColor: C.line },
-  searchInput: { flex: 1, color: C.text, fontSize: 17, paddingHorizontal: S.sm, minHeight: 52 },
+  searchInput: { flex: 1, fontFamily: F, color: C.text, fontSize: 17, paddingHorizontal: S.sm, minHeight: 52 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: S.sm },
   chip: { minHeight: 44, paddingHorizontal: S.lg, borderRadius: R.control, backgroundColor: C.surface, borderWidth: 1, borderColor: C.line, justifyContent: 'center' },
   chipOn: { backgroundColor: C.accentSoft, borderColor: C.accent },
-  chipText: { color: C.text, fontSize: 16, fontWeight: '600' },
+  chipText: { fontFamily: F, color: C.text, fontSize: 16, fontWeight: '600' },
   chipTextOn: { color: C.accent },
   bar: { height: 14, borderRadius: 7, backgroundColor: C.line },
   empty: { alignItems: 'center', gap: S.md, paddingVertical: S.xxl, paddingHorizontal: S.xl },
   banner: { flexDirection: 'row', alignItems: 'center', gap: S.sm, padding: S.md, borderRadius: R.control },
   inputWrap: { flexDirection: 'row', alignItems: 'center', borderRadius: R.control, backgroundColor: C.surface, borderWidth: 1, borderColor: C.line },
-  input: { flex: 1, minHeight: 52, color: C.text, fontSize: 17, paddingHorizontal: S.lg },
+  input: { flex: 1, minHeight: 52, fontFamily: F, color: C.text, fontSize: 17, paddingHorizontal: S.lg },
   inputMulti: { minHeight: 96, paddingTop: S.md, textAlignVertical: 'top' },
 });

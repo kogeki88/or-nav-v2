@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { BackHandler, StyleSheet, Text, View } from 'react-native';
 
-import { C, R, S, T } from '../theme';
+import { C, F, R, S, T } from '../theme';
 import { Banner, Button, Field, Icon, PressScale } from '../ui/kit';
 import {
   DEPARTMENTS,
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   chipOn: { borderColor: C.accent, backgroundColor: C.accentSoft },
-  chipText: { color: C.text, fontSize: 17, fontWeight: '600' },
+  chipText: { fontFamily: F, color: C.text, fontSize: 17, fontWeight: '600' },
   chipTextOn: { color: C.accent },
   emojiGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: S.sm },
   emoji: {

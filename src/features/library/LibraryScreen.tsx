@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Badge, Banner, Button, Chips, EmptyState, Group, Icon, IconButton, ListRow, SearchField, SectionLabel, SkeletonRows } from '../../ui/kit';
-import { C, S, T } from '../../theme';
+import { C, F, S, T } from '../../theme';
 import DepartmentSheet from './DepartmentSheet';
 import { itemIcon } from './icons';
 import LibrarySheet, { Selection } from './LibrarySheet';
@@ -171,5 +171,5 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: S.lg, paddingBottom: S.xxl, gap: S.sm },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   dept: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, alignSelf: 'flex-start', maxWidth: '100%' },
-  deptText: { color: C.accent, fontSize: 16, fontWeight: '600', flexShrink: 1 },
+  deptText: { fontFamily: F, color: C.accent, fontSize: 16, fontWeight: '600', flexShrink: 1 },
 });

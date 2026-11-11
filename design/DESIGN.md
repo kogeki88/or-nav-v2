@@ -21,7 +21,7 @@ Rules: one quiet green, only for the main action. Yellow only for waiting or Hol
 Older names in `theme.ts` (surface, raised, line, ok) point at these colors so older screens keep working.
 
 ## Type
-Planned: Manrope 400 / 500 / 600 / 700, bundled in `assets/fonts` and loaded with `expo-font`; numbers use tabular figures. Until the font files are added, the system font (Roboto on Android) is used.
+Manrope 400 / 500 / 600 / 700 (OFL licence), bundled in `assets/fonts` and loaded in `App.tsx` with `useFonts` as one family, `F` in `theme.ts`; pick the weight with fontWeight. Every text style sets `fontFamily: F`. Numbers use tabular figures. If the font fails to load, the system font is used.
 | Style | Size / line | Weight |
 | --- | --- | --- |
 | largeTitle | 32 / 38 | 700 |
@@ -65,4 +65,4 @@ Tap targets 48x48 dp minimum with 8 between. Main actions in the lower two-third
 ## Change log
 - 2026-11-08: created (calm clinical, Linear / Apple Health, dark only, Ionicons).
 - 2026-11-08: whole-app polish (Sean): sign-in, setup questions and Me moved onto the kit; sentence case everywhere. Rule: never change the color of a rounded view in place on Android (it loses its corners); mount a fresh view instead.
-- 2026-11-10: version 3 look (spec #10, ticket #11): calm, quiet, alive; new colors; Feather icons; plain rows with no card or border; icon tiles lose their square. Manrope waits for the font files.
+- 2026-11-10: version 3 look (spec #10, ticket #11): calm, quiet, alive; new colors; Feather icons; plain rows with no card or border; icon tiles lose their square. Manrope added the same day (Sean approved the download).

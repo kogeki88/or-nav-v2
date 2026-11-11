@@ -10,7 +10,7 @@ import { logFault, readFaults } from '../diag/faultStore';
 import { runFullCheck, sendReport } from '../diag/fullCheck';
 import ProfileCard from '../profile/ProfileCard';
 import type { ProfileRow } from '../profile/profile';
-import { C, S } from '../theme';
+import { C, F, S } from '../theme';
 import { Button, DetailRow, Group, SectionLabel } from '../ui/kit';
 import { installedBuild, installedVersion } from '../updater';
 import UpdatePanel, { UpdateState } from './UpdatePanel';
@@ -204,7 +204,7 @@ export default function AdminView({ user, update, profile, onPreviewQuestionnair
       <View style={{ gap: S.md, marginTop: S.lg }}>
         <Button kind="primary" icon="activity" label="Run full check" busy={checking} onPress={fullCheck} />
         <Button kind="secondary" icon="upload-cloud" label="Send report" busy={sending} onPress={send} />
-        {sendNote && <Text style={{ color: sendNote.ok ? C.ok : C.danger, fontSize: 15, lineHeight: 20 }}>{sendNote.text}</Text>}
+        {sendNote && <Text style={{ fontFamily: F, color: sendNote.ok ? C.ok : C.danger, fontSize: 15, lineHeight: 20 }}>{sendNote.text}</Text>}
         {__DEV__ && <Button kind="ghost" icon="droplet" label="Add test fault" onPress={testFault} />}
       </View>
 

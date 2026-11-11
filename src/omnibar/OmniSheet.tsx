@@ -7,7 +7,7 @@ import type { Selection } from '../features/library/LibrarySheet';
 import { cardSubtitle, departmentLabel, itemLocation, requestTitle, reviewRows } from '../features/library/logic';
 import type { ChangeRequest } from '../contracts/library';
 import type { Library } from '../features/library/useLibrary';
-import { C, R, S, T } from '../theme';
+import { C, F, R, S, T } from '../theme';
 import BottomSheet from '../ui/BottomSheet';
 import { Badge, Button, Group, Icon, IconButton, IconTile, ListRow, PressScale } from '../ui/kit';
 import type { TabName } from '../ui/TabBar';
@@ -226,16 +226,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: C.line,
     color: C.text,
+    fontFamily: F,
     fontSize: 17,
     paddingHorizontal: S.lg,
     paddingVertical: 14,
   },
   send: { width: 52, height: 52, alignItems: 'center', justifyContent: 'center' },
   privacy: { flexDirection: 'row', alignItems: 'center', gap: S.xs },
-  privacyText: { color: C.text3, fontSize: 13, flex: 1 },
+  privacyText: { fontFamily: F, color: C.text3, fontSize: 13, flex: 1 },
   userWrap: { alignItems: 'flex-end', gap: S.xs },
   user: { maxWidth: '85%', backgroundColor: C.accentSoft, borderRadius: R.card, borderBottomRightRadius: 4, paddingHorizontal: S.lg, paddingVertical: S.md },
-  note: { color: C.text3, fontSize: 13 },
+  note: { fontFamily: F, color: C.text3, fontSize: 13 },
   assistant: { alignSelf: 'flex-start', maxWidth: '92%', backgroundColor: C.surface, borderWidth: 1, borderColor: C.line, borderRadius: R.card, borderBottomLeftRadius: 4, padding: S.lg, gap: S.sm },
   draft: { backgroundColor: C.surface, borderWidth: 1, borderColor: C.accent, borderRadius: R.card, padding: S.lg, gap: S.sm },
   draftTop: { flexDirection: 'row' },

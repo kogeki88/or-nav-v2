@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { SignedInUser } from '../auth/supabase';
 import type { ProfileRow } from '../profile/profile';
-import { C, R, S, T } from '../theme';
+import { C, F, R, S, T } from '../theme';
 import { Avatar, Segmented } from '../ui/kit';
 import AdminView from './AdminView';
 import RegularView from './RegularView';
@@ -91,5 +91,5 @@ const styles = StyleSheet.create({
     borderColor: C.line,
   },
   adminTag: { alignSelf: 'flex-start', backgroundColor: C.accentSoft, borderRadius: 8, paddingHorizontal: 8, minHeight: 24, justifyContent: 'center' },
-  adminText: { color: C.accent, fontSize: 13, fontWeight: '700' },
+  adminText: { fontFamily: F, color: C.accent, fontSize: 13, fontWeight: '700' },
 });

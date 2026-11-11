@@ -44,15 +44,18 @@ export const S = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
 /** Corner radius. */
 export const R = { control: 12, card: 16, sheet: 28 };
 
-/** Type scale (system font until the Manrope files are bundled). */
+/** Font family: Manrope 400 / 500 / 600 / 700 from assets/fonts, loaded in App.tsx. Pick the weight with fontWeight. */
+export const F = 'Manrope';
+
+/** Type scale. Numbers use tabular figures so they line up. */
 export const T = StyleSheet.create({
-  largeTitle: { color: C.text, fontSize: 32, lineHeight: 38, fontWeight: '700' },
-  title: { color: C.text, fontSize: 24, lineHeight: 30, fontWeight: '700' },
-  headline: { color: C.text, fontSize: 19, lineHeight: 24, fontWeight: '600' },
-  body: { color: C.text, fontSize: 17, lineHeight: 24 },
-  bodyStrong: { color: C.text, fontSize: 17, lineHeight: 24, fontWeight: '600' },
-  callout: { color: C.text2, fontSize: 16, lineHeight: 22 },
-  caption: { color: C.text2, fontSize: 13, lineHeight: 18, fontWeight: '600', letterSpacing: 0.6, textTransform: 'uppercase' },
+  largeTitle: { fontFamily: F, color: C.text, fontSize: 32, lineHeight: 38, fontWeight: '700' },
+  title: { fontFamily: F, color: C.text, fontSize: 24, lineHeight: 30, fontWeight: '700' },
+  headline: { fontFamily: F, color: C.text, fontSize: 19, lineHeight: 24, fontWeight: '600' },
+  body: { fontFamily: F, color: C.text, fontSize: 17, lineHeight: 24, fontWeight: '400', fontVariant: ['tabular-nums'] },
+  bodyStrong: { fontFamily: F, color: C.text, fontSize: 17, lineHeight: 24, fontWeight: '600', fontVariant: ['tabular-nums'] },
+  callout: { fontFamily: F, color: C.text2, fontSize: 16, lineHeight: 22, fontWeight: '400', fontVariant: ['tabular-nums'] },
+  caption: { fontFamily: F, color: C.text2, fontSize: 13, lineHeight: 18, fontWeight: '600', letterSpacing: 0.6, textTransform: 'uppercase' },
 });
 
 export const ui = StyleSheet.create({
@@ -66,7 +69,7 @@ export const ui = StyleSheet.create({
     gap: S.sm,
     paddingHorizontal: S.lg,
   },
-  primaryText: { color: C.onAccent, fontSize: 18, fontWeight: '700' },
+  primaryText: { fontFamily: F, color: C.onAccent, fontSize: 18, fontWeight: '700' },
   secondary: {
     minHeight: 56,
     borderRadius: 14,
@@ -78,14 +81,14 @@ export const ui = StyleSheet.create({
     gap: S.sm,
     paddingHorizontal: S.lg,
   },
-  secondaryText: { color: C.accent, fontSize: 18, fontWeight: '600' },
+  secondaryText: { fontFamily: F, color: C.accent, fontSize: 18, fontWeight: '600' },
   dim: { opacity: 0.6 },
   card: { backgroundColor: C.fill, borderRadius: R.card, paddingHorizontal: 20, paddingVertical: 8 },
   // Lists are plain rows: no card, no border (version 3).
   group: {},
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', minHeight: 48, gap: 12 },
-  rowLabel: { color: C.text2, fontSize: 17 },
-  rowValue: { color: C.text, fontSize: 17, fontWeight: '600', flexShrink: 1, textAlign: 'right' },
+  rowLabel: { fontFamily: F, color: C.text2, fontSize: 17 },
+  rowValue: { fontFamily: F, color: C.text, fontSize: 17, fontWeight: '600', flexShrink: 1, textAlign: 'right' },
   // Icon tiles keep their size so rows line up, but lose the tinted square.
   iconTile: {
     width: 40,

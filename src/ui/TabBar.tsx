@@ -1,7 +1,7 @@
 // Bottom tab bar: Library, To review, Me. Sits above the phone's own navigation bar.
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { C, S } from '../theme';
+import { C, F, S } from '../theme';
 import { Icon, IconName } from './kit';
 
 export type TabName = 'library' | 'review' | 'me';
@@ -52,9 +52,9 @@ export default function TabBar({ value, onChange, badge, bottomInset }: { value:
 const styles = StyleSheet.create({
   bar: { flexDirection: 'row', backgroundColor: C.bg, borderTopWidth: 1, borderTopColor: C.line, paddingTop: S.xs },
   tab: { flex: 1, minHeight: 56, alignItems: 'center', justifyContent: 'center', gap: 2 },
-  label: { color: C.text3, fontSize: 13, fontWeight: '600' },
+  label: { fontFamily: F, color: C.text3, fontSize: 13, fontWeight: '600' },
   pill: { width: 56, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   pillOn: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 15, backgroundColor: C.accentSoft },
   badge: { position: 'absolute', top: -6, right: 2, minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 5, backgroundColor: C.warn, alignItems: 'center', justifyContent: 'center' },
-  badgeText: { color: C.bg, fontSize: 12, fontWeight: '800' },
+  badgeText: { fontFamily: F, color: C.bg, fontSize: 12, fontWeight: '700' },
 });

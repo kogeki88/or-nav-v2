@@ -1,7 +1,7 @@
 // The omnibar: a fixed "Ask OR-Nav" bar above the tab bar, on every tab, in thumb reach. Tap → chat sheet.
 import { StyleSheet, Text, View } from 'react-native';
 
-import { C, R, S } from '../theme';
+import { C, F, R, S } from '../theme';
 import { Icon, PressScale } from '../ui/kit';
 
 export const OMNI_BAR_SPACE = 52 + S.sm * 2;
@@ -33,5 +33,5 @@ const styles = StyleSheet.create({
     gap: S.md,
     paddingHorizontal: S.lg,
   },
-  text: { flex: 1, color: C.text3, fontSize: 17 },
+  text: { flex: 1, fontFamily: F, color: C.text3, fontSize: 17 },
 });
