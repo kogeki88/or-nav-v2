@@ -2,7 +2,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import { ComponentProps, ReactNode, useEffect, useRef, useState } from 'react';
 import {
-  AccessibilityInfo,
   ActivityIndicator,
   Animated,
   Pressable,
@@ -15,6 +14,7 @@ import {
 } from 'react-native';
 
 import { C, F, R, S, T, ui } from '../theme';
+import { POP_SCALE, useReduceMotion } from './motion';
 
 export type IconName = ComponentProps<typeof Feather>['name'];
 
@@ -62,6 +62,7 @@ export function PressScale({
   accessibilityLabel,
   accessibilityState,
   accessibilityRole = 'button',
+  pop = false,
 }: {
   children: ReactNode;
   onPress?: () => void;
@@ -70,15 +71,14 @@ export function PressScale({
   accessibilityLabel?: string;
   accessibilityState?: { busy?: boolean; disabled?: boolean; selected?: boolean };
   accessibilityRole?: 'button' | 'tab';
+  /** A stronger press with a bounce back, for the main actions (Send, Open). */
+  pop?: boolean;
 }) {
   const scale = useRef(new Animated.Value(1)).current;
-  const reduce = useRef(false);
-  useEffect(() => {
-    AccessibilityInfo.isReduceMotionEnabled().then((r) => (reduce.current = r));
-  }, []);
+  const reduce = useReduceMotion();
   const to = (v: number) => {
-    if (reduce.current) return;
-    Animated.spring(scale, { toValue: v, speed: 40, bounciness: v === 1 ? 6 : 0, useNativeDriver: true }).start();
+    if (reduce) return;
+    Animated.spring(scale, { toValue: v, speed: 40, bounciness: v === 1 ? (pop ? 12 : 6) : 0, useNativeDriver: true }).start();
   };
   // The style (including flex) goes on the pressable itself, so it lays out like a plain View.
   return (
@@ -87,7 +87,7 @@ export function PressScale({
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled, ...accessibilityState }}
       onPress={disabled ? undefined : onPress}
-      onPressIn={() => !disabled && to(0.97)}
+      onPressIn={() => !disabled && to(pop ? POP_SCALE : 0.97)}
       onPressOut={() => to(1)}
       style={[style, { transform: [{ scale }] }]}
     >
@@ -107,6 +107,7 @@ export function Button({
   disabled = false,
   tone,
   style,
+  pop,
 }: {
   label: string;
   icon?: IconName;
@@ -116,12 +117,14 @@ export function Button({
   disabled?: boolean;
   tone?: 'danger';
   style?: StyleProp<ViewStyle>;
+  pop?: boolean;
 }) {
   const color = kind === 'primary' ? C.onAccent : tone === 'danger' ? C.danger : C.accent;
   const base = kind === 'primary' ? ui.primary : kind === 'secondary' ? ui.secondary : styles.ghost;
   return (
     <PressScale
       onPress={onPress}
+      pop={pop}
       disabled={busy || disabled}
       accessibilityState={{ busy }}
       style={[base, tone === 'danger' && kind === 'secondary' && { borderColor: C.danger }, (busy || disabled) && ui.dim, style]}
@@ -313,20 +316,18 @@ export function Chips<T extends string>({ options, value, onChange }: { options:
 /** Loading placeholder: grey rows that gently pulse (still when reduce motion is on). */
 export function SkeletonRows({ count = 3 }: { count?: number }) {
   const pulse = useRef(new Animated.Value(0.5)).current;
+  const reduce = useReduceMotion();
   useEffect(() => {
-    let loop: Animated.CompositeAnimation | null = null;
-    AccessibilityInfo.isReduceMotionEnabled().then((reduce) => {
-      if (reduce) return;
-      loop = Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
-          Animated.timing(pulse, { toValue: 0.5, duration: 700, useNativeDriver: true }),
-        ]),
-      );
-      loop.start();
-    });
-    return () => loop?.stop();
-  }, [pulse]);
+    if (reduce) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0.5, duration: 700, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [pulse, reduce]);
   return (
     <Group>
       {Array.from({ length: count }, (_, i) => (

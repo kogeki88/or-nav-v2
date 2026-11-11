@@ -69,7 +69,7 @@ export function useOmnibar(lib: Library, assistant: Assistant, thread: CaseThrea
     [caseId, deptId, lib],
   );
 
-  return { messages, busy, send, sendDraft };
+  return { caseId, messages, busy, send, sendDraft };
 }
 
 export type Omnibar = ReturnType<typeof useOmnibar>;

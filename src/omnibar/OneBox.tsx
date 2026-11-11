@@ -1,6 +1,6 @@
 // The one box on the main screen: the composer at the bottom, and above it the greeting, the
 // conversation with the AI, and the matches while typing. Matches come from the search port.
-import { ReactNode, useMemo, useRef } from 'react';
+import { ReactNode, useEffect, useMemo, useRef } from 'react';
 import { ActivityIndicator, Keyboard, Pressable, ScrollView, type ScrollViewInstance, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { CaseListRow } from '../contracts/cases';
@@ -11,9 +11,12 @@ import type { Selection } from '../features/library/LibrarySheet';
 import { departmentLabel, requestTitle, reviewRows } from '../features/library/logic';
 import type { Library } from '../features/library/useLibrary';
 import { C, F, S, T } from '../theme';
-import { Badge, Button, Icon, IconName } from '../ui/kit';
+import { Badge, Button, Icon, IconName, PressScale } from '../ui/kit';
+import { GAP, revealTime, staggerDelay } from '../ui/motion';
+import { FadeWords, Rise } from '../ui/Rise';
 import type { GoTo, OmniAction } from '../../supabase/functions/omnibar/schema';
-import { answerRows, boxMatches, shelfBin } from './boxLogic';
+import { FreshBase, answerRows, boxMatches, freshBase, shelfBin } from './boxLogic';
+import { Greeting, INTRO_MS, LightPool } from './Greeting';
 import type { OmniMessage, Omnibar } from './useOmnibar';
 import { Draft, draftToChange } from './validate';
 
@@ -48,16 +51,16 @@ export function Composer({ text, onChangeText, onSend, busy }: { text: string; o
             <Icon name="mic" size={22} color={C.text3} />
           </View>
         )}
-        <Pressable
+        <PressScale
+          pop
           onPress={onSend}
           disabled={!on}
-          accessibilityRole="button"
           accessibilityLabel={busy ? 'Sending' : 'Send to the AI'}
-          accessibilityState={{ disabled: !on, busy }}
+          accessibilityState={{ busy }}
           style={[styles.send, { backgroundColor: on ? C.accent : C.fill2 }]}
         >
           {busy ? <ActivityIndicator color={C.text3} /> : <Icon name="arrow-up" size={22} color={on ? C.onAccent : C.text3} />}
-        </Pressable>
+        </PressScale>
       </View>
     </View>
   );
@@ -89,45 +92,55 @@ export function OneBoxBody({ omni, lib, index, text, greeting, notice, onOpen, o
     Keyboard.dismiss();
     onOpen(s);
   };
+  // Only messages that arrive while the case is open animate; a reopened case stays still.
+  const base = useRef<FreshBase | null>(null);
+  base.current = freshBase(base.current, omni.caseId, omni.messages);
+  const fresh = (m: OmniMessage) => m.id > base.current!.maxId;
+  // The greeting plays its intro once per case.
+  const introPlayed = useRef(new Set<string>());
+  const showGreeting = omni.caseId !== null && omni.messages.length === 0 && !typing;
+  const playIntro = omni.caseId !== null && !introPlayed.current.has(omni.caseId);
+  useEffect(() => {
+    if (showGreeting && omni.caseId) introPlayed.current.add(omni.caseId);
+  }, [showGreeting, omni.caseId]);
 
   return (
     <View style={{ flex: 1 }}>
       {caseCard && !typing && (
-        <View style={styles.cardLine}>
+        <Rise style={styles.cardLine}>
           <Text style={[T.callout, { flex: 1 }]} numberOfLines={1}>
             {/* The count comes first, so a long card name is cut at its end and the count stays visible. */}
             {`${caseCard.count} ${caseCard.count === 1 ? 'item' : 'items'} · ${caseCard.title}`}
           </Text>
-          <Button kind="secondary" label="Open" icon="clipboard" onPress={() => open({ type: 'card', id: caseCard.id })} />
-        </View>
+          <Button kind="secondary" pop label="Open" icon="clipboard" onPress={() => open({ type: 'card', id: caseCard.id })} />
+        </Rise>
       )}
       {omni.messages.length === 0 ? (
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, overflow: 'hidden' }}>
+          {showGreeting && <LightPool key={`pool-${omni.caseId}`} play={playIntro} />}
           {notice}
-          {!typing && (
-            <View style={styles.greeting}>
-              <Text style={styles.greetText}>{greeting[0]}</Text>
-              <Text style={[styles.greetText, { color: C.text3 }]}>{greeting[1]}</Text>
-            </View>
-          )}
-          {!typing && pickUp.length > 0 && (
-            <View style={styles.pickUp}>
-              <Text style={styles.pickUpHead} accessibilityRole="header">
-                Pick up a case
-              </Text>
-              {pickUp.map((c) => (
-                <Pressable
-                  key={c.id}
-                  onPress={() => onPickUp(c.id)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Pick up ${c.label}, ${c.when}`}
-                  style={({ pressed }) => [styles.pickUpRow, pressed && { backgroundColor: C.fill }]}
-                >
-                  <Text style={styles.matchTitle} numberOfLines={1}>
-                    {c.label}
-                  </Text>
-                  <Text style={styles.pickUpWhen}>{c.when}</Text>
-                </Pressable>
+          {showGreeting && <Greeting key={`greet-${omni.caseId}`} lines={greeting} play={playIntro} />}
+          {showGreeting && pickUp.length > 0 && (
+            <View key={`pick-${omni.caseId}`} style={styles.pickUp}>
+              <Rise play={playIntro} delay={INTRO_MS}>
+                <Text style={styles.pickUpHead} accessibilityRole="header">
+                  Pick up a case
+                </Text>
+              </Rise>
+              {pickUp.map((c, i) => (
+                <Rise key={c.id} play={playIntro} delay={INTRO_MS + staggerDelay(i + 1, GAP.cases)}>
+                  <Pressable
+                    onPress={() => onPickUp(c.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Pick up ${c.label}, ${c.when}`}
+                    style={({ pressed }) => [styles.pickUpRow, pressed && { backgroundColor: C.fill }]}
+                  >
+                    <Text style={styles.matchTitle} numberOfLines={1}>
+                      {c.label}
+                    </Text>
+                    <Text style={styles.pickUpWhen}>{c.when}</Text>
+                  </Pressable>
+                </Rise>
               ))}
             </View>
           )}
@@ -141,7 +154,7 @@ export function OneBoxBody({ omni, lib, index, text, greeting, notice, onOpen, o
           onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: true })}
         >
           {omni.messages.map((m) => (
-            <Message key={m.id} m={m} lib={lib} omni={omni} onOpen={open} onGoTo={onGoTo} />
+            <Message key={m.id} m={m} fresh={fresh(m)} lib={lib} omni={omni} onOpen={open} onGoTo={onGoTo} />
           ))}
           {omni.busy && (
             <View style={styles.thinking}>
@@ -156,12 +169,16 @@ export function OneBoxBody({ omni, lib, index, text, greeting, notice, onOpen, o
         <ScrollView style={styles.matches} contentContainerStyle={{ paddingBottom: S.xs }} keyboardShouldPersistTaps="handled">
           {matches.items.length + matches.cards.length === 0 && <Text style={styles.groupHead}>No matches. Send to ask the AI.</Text>}
           {matches.items.length > 0 && <Text style={styles.groupHead}>{matches.items.length === 1 ? 'Item' : 'Items'}</Text>}
-          {matches.items.map((it) => (
-            <MatchRow key={it.id} icon={itemIcon(it.category)} title={it.name} right={shelfBin(it) || 'No location yet'} strong onPress={() => open({ type: 'item', id: it.id })} />
+          {matches.items.map((it, i) => (
+            <Rise key={it.id} delay={staggerDelay(i, GAP.matches)}>
+              <MatchRow icon={itemIcon(it.category)} title={it.name} right={shelfBin(it) || 'No location yet'} strong onPress={() => open({ type: 'item', id: it.id })} />
+            </Rise>
           ))}
           {matches.cards.length > 0 && <Text style={styles.groupHead}>On these cards</Text>}
-          {matches.cards.map((c) => (
-            <MatchRow key={c.id} icon="clipboard" title={c.procedure} right={c.surgeon} onPress={() => open({ type: 'card', id: c.id })} />
+          {matches.cards.map((c, i) => (
+            <Rise key={c.id} delay={staggerDelay(matches.items.length + i, GAP.matches)}>
+              <MatchRow icon="clipboard" title={c.procedure} right={c.surgeon} onPress={() => open({ type: 'card', id: c.id })} />
+            </Rise>
           ))}
         </ScrollView>
       )}
@@ -183,46 +200,70 @@ function MatchRow({ icon, title, right, strong, onPress }: { icon: IconName; tit
   );
 }
 
-function Message({ m, lib, omni, onOpen, onGoTo }: { m: OmniMessage; lib: Library; omni: Omnibar; onOpen: (s: Selection) => void; onGoTo: (t: GoTo['tab']) => void }) {
+function Message({
+  m,
+  fresh,
+  lib,
+  omni,
+  onOpen,
+  onGoTo,
+}: {
+  m: OmniMessage;
+  /** True when it arrived while the case was open: it animates in. */
+  fresh: boolean;
+  lib: Library;
+  omni: Omnibar;
+  onOpen: (s: Selection) => void;
+  onGoTo: (t: GoTo['tab']) => void;
+}) {
   if (m.role === 'user') {
     return (
-      <View style={styles.userWrap}>
+      <Rise play={fresh} style={styles.userWrap}>
         <View style={styles.user}>
           <Text style={T.body}>{m.text}</Text>
         </View>
         {m.note ? <Text style={styles.note}>{m.note}</Text> : null}
-      </View>
+      </Rise>
     );
   }
   const color = m.tone === 'danger' ? C.danger : m.tone === 'warn' ? C.warn : C.text;
   const actions = m.actions ?? [];
   const rows = answerRows(actions, lib.data);
+  // The rows and buttons rise once the words are in.
+  const after = revealTime(m.text);
   return (
     <View style={{ gap: S.sm }}>
       {m.engine === 'backup' ? <Badge label="Backup AI" tone="neutral" /> : null}
-      <Text style={[styles.answer, { color }]}>{m.text}</Text>
-      {m.note ? <Text style={styles.note}>{m.note}</Text> : null}
+      <FadeWords text={m.text} color={color} style={styles.answer} play={fresh} />
+      {m.note ? (
+        <Rise play={fresh} delay={after}>
+          <Text style={styles.note}>{m.note}</Text>
+        </Rise>
+      ) : null}
       {rows.length > 0 && (
         <View>
-          {rows.map((r, i) =>
-            r.kind === 'card' ? (
-              <AnswerRow key={`c${r.card.id}`} first={i === 0} icon="clipboard" title={r.card.procedure} sub={r.card.surgeon} onPress={() => onOpen({ type: 'card', id: r.card.id })} />
-            ) : (
-              <AnswerRow
-                key={`i${r.item.id}`}
-                first={i === 0}
-                icon={itemIcon(r.item.category)}
-                title={r.item.name}
-                sub={shelfBin(r.item) || 'No location yet'}
-                tag={r.tag}
-                onPress={() => onOpen({ type: 'item', id: r.item.id })}
-              />
-            ),
-          )}
+          {rows.map((r, i) => (
+            <Rise key={r.kind === 'card' ? `c${r.card.id}` : `i${r.item.id}`} play={fresh} delay={after + staggerDelay(i, GAP.matches)}>
+              {r.kind === 'card' ? (
+                <AnswerRow first={i === 0} icon="clipboard" title={r.card.procedure} sub={r.card.surgeon} onPress={() => onOpen({ type: 'card', id: r.card.id })} />
+              ) : (
+                <AnswerRow
+                  first={i === 0}
+                  icon={itemIcon(r.item.category)}
+                  title={r.item.name}
+                  sub={shelfBin(r.item) || 'No location yet'}
+                  tag={r.tag}
+                  onPress={() => onOpen({ type: 'item', id: r.item.id })}
+                />
+              )}
+            </Rise>
+          ))}
         </View>
       )}
       {actions.map((a, i) => (
-        <OtherAction key={i} a={a} index={i} m={m} lib={lib} omni={omni} onGoTo={onGoTo} />
+        <Rise key={i} play={fresh} delay={after + staggerDelay(rows.length + i, GAP.matches)}>
+          <OtherAction a={a} index={i} m={m} lib={lib} omni={omni} onGoTo={onGoTo} />
+        </Rise>
       ))}
     </View>
   );
@@ -308,8 +349,6 @@ const styles = StyleSheet.create({
   mic: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   send: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   cardLine: { flexDirection: 'row', alignItems: 'center', gap: S.sm, paddingHorizontal: 20, paddingTop: S.sm },
-  greeting: { marginTop: 52, paddingHorizontal: 20 },
-  greetText: { fontFamily: F, color: C.text, fontSize: 30, lineHeight: 36, fontWeight: '600' },
   pickUp: { marginTop: 'auto', paddingHorizontal: S.sm, paddingBottom: S.xs },
   pickUpHead: { fontFamily: F, color: C.text3, fontSize: 15, fontWeight: '500', paddingHorizontal: S.md, paddingBottom: S.xs },
   pickUpRow: { flexDirection: 'row', alignItems: 'center', gap: S.md, minHeight: 56, paddingHorizontal: S.md, borderRadius: 12 },

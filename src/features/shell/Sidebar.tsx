@@ -2,12 +2,14 @@
 // closes by a tap on the dim area, a swipe back to the left, or Android Back (see Shell).
 // Built-in Animated + PanResponder only. Reduce motion: it appears and goes without sliding.
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, PanResponder, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Animated, PanResponder, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { CaseListRow } from '../../contracts/cases';
 import { C, F, R, S, T } from '../../theme';
 import { Avatar, Icon, IconName } from '../../ui/kit';
+import { GAP, SPRING, staggerDelay, useReduceMotion } from '../../ui/motion';
+import { Rise } from '../../ui/Rise';
 import { BreathingDot } from './CaseLabel';
 import type { SidebarRow } from './logic';
 
@@ -37,20 +39,14 @@ export default function Sidebar({ open, onOpen, onClose, rows, onRow, cases, onC
   const W = Math.min(300, Math.round(width * 0.82));
   const x = useRef(new Animated.Value(-W)).current;
   const [shown, setShown] = useState(open);
-  const [reduceMotion, setReduceMotion] = useState(false);
+  const reduceMotion = useReduceMotion();
   const live = useRef({ W, onOpen, onClose });
   live.current = { W, onOpen, onClose };
-
-  useEffect(() => {
-    AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
-    return () => sub.remove();
-  }, []);
 
   const settle = (to: number, done?: () => void) => {
     const anim = reduceMotion
       ? Animated.timing(x, { toValue: to, duration: 0, useNativeDriver: true })
-      : Animated.spring(x, { toValue: to, damping: 24, stiffness: 220, mass: 0.9, useNativeDriver: true });
+      : Animated.spring(x, { toValue: to, ...SPRING, useNativeDriver: true });
     anim.start(({ finished }) => finished && done?.());
   };
 
@@ -94,6 +90,8 @@ export default function Sidebar({ open, onOpen, onClose, rows, onRow, cases, onC
     }),
   ).current;
 
+  // Rows rise in from the left, one after another, each time the sidebar opens.
+  const rise = (i: number) => staggerDelay(i, GAP.sidebar);
   const dim = x.interpolate({ inputRange: [-W, 0], outputRange: [0, 0.65], extrapolate: 'clamp' });
 
   return (
@@ -109,56 +107,62 @@ export default function Sidebar({ open, onOpen, onClose, rows, onRow, cases, onC
             accessibilityLabel="Sidebar"
             style={[styles.drawer, { width: W, paddingTop: insets.top + S.lg, paddingBottom: insets.bottom + S.md, transform: [{ translateX: x }] }]}
           >
-            {rows.map((r) =>
-              r.key === 'new' ? (
-                <Pressable key={r.key} accessibilityRole="button" onPress={() => onRow(r.key)} style={({ pressed }) => [styles.newCase, pressed && { backgroundColor: C.fill }]}>
-                  <Icon name={ROW_ICON[r.key]} size={20} color={C.text} />
-                  <Text style={styles.newCaseText}>{r.label}</Text>
-                </Pressable>
-              ) : (
-                <Pressable
-                  key={r.key}
-                  accessibilityRole="button"
-                  accessibilityLabel={r.count ? `${r.label}, ${r.count} waiting` : r.label}
-                  onPress={() => onRow(r.key)}
-                  style={({ pressed }) => [styles.nav, pressed && { backgroundColor: C.fill }]}
-                >
-                  <Icon name={ROW_ICON[r.key]} size={20} color={C.text2} />
-                  <Text style={styles.navText}>{r.label}</Text>
-                  {r.count ? <Text style={styles.count}>{r.count}</Text> : null}
-                </Pressable>
-              ),
-            )}
+            {rows.map((r, i) => (
+              <Rise key={r.key} from="left" delay={rise(i)}>
+                {r.key === 'new' ? (
+                  <Pressable accessibilityRole="button" onPress={() => onRow(r.key)} style={({ pressed }) => [styles.newCase, pressed && { backgroundColor: C.fill }]}>
+                    <Icon name={ROW_ICON[r.key]} size={20} color={C.text} />
+                    <Text style={styles.newCaseText}>{r.label}</Text>
+                  </Pressable>
+                ) : (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={r.count ? `${r.label}, ${r.count} waiting` : r.label}
+                    onPress={() => onRow(r.key)}
+                    style={({ pressed }) => [styles.nav, pressed && { backgroundColor: C.fill }]}
+                  >
+                    <Icon name={ROW_ICON[r.key]} size={20} color={C.text2} />
+                    <Text style={styles.navText}>{r.label}</Text>
+                    {r.count ? <Text style={styles.count}>{r.count}</Text> : null}
+                  </Pressable>
+                )}
+              </Rise>
+            ))}
 
-            <Text style={styles.heading} accessibilityRole="header">
-              Cases
-            </Text>
+            <Rise from="left" delay={rise(rows.length)}>
+              <Text style={styles.heading} accessibilityRole="header">
+                Cases
+              </Text>
+            </Rise>
 
             <ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 2 }}>
-              {cases.map((c) => (
-                <Pressable
-                  key={c.id}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${c.label}, ${c.when}${c.current ? ', current case' : ''}`}
-                  accessibilityState={{ selected: c.current }}
-                  onPress={() => onCase(c.id)}
-                  style={({ pressed }) => [styles.case, c.current && styles.caseCurrent, pressed && { backgroundColor: C.fill }]}
-                >
-                  {c.current && <BreathingDot known={c.known} reduceMotion={reduceMotion} size={6} />}
-                  <Text style={[styles.caseText, c.current && styles.caseTextCurrent]} numberOfLines={1}>
-                    {c.label}
-                  </Text>
-                  <Text style={styles.caseWhen}>{c.when}</Text>
-                </Pressable>
+              {cases.map((c, i) => (
+                <Rise key={c.id} from="left" delay={rise(rows.length + 1 + i)}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`${c.label}, ${c.when}${c.current ? ', current case' : ''}`}
+                    accessibilityState={{ selected: c.current }}
+                    onPress={() => onCase(c.id)}
+                    style={({ pressed }) => [styles.case, c.current && styles.caseCurrent, pressed && { backgroundColor: C.fill }]}
+                  >
+                    {c.current && <BreathingDot known={c.known} reduceMotion={reduceMotion} size={6} />}
+                    <Text style={[styles.caseText, c.current && styles.caseTextCurrent]} numberOfLines={1}>
+                      {c.label}
+                    </Text>
+                    <Text style={styles.caseWhen}>{c.when}</Text>
+                  </Pressable>
+                </Rise>
               ))}
             </ScrollView>
 
-            <Pressable accessibilityRole="button" accessibilityLabel={`${person.name}. Your settings`} onPress={onPerson} style={({ pressed }) => [styles.me, pressed && { backgroundColor: C.fill }]}>
-              <Avatar emoji={person.emoji} name={person.fullName} size={36} />
-              <Text style={styles.meName} numberOfLines={1}>
-                {person.name}
-              </Text>
-            </Pressable>
+            <Rise from="left" delay={rise(rows.length + 1 + cases.length)}>
+              <Pressable accessibilityRole="button" accessibilityLabel={`${person.name}. Your settings`} onPress={onPerson} style={({ pressed }) => [styles.me, pressed && { backgroundColor: C.fill }]}>
+                <Avatar emoji={person.emoji} name={person.fullName} size={36} />
+                <Text style={styles.meName} numberOfLines={1}>
+                  {person.name}
+                </Text>
+              </Pressable>
+            </Rise>
           </Animated.View>
         </View>
       )}

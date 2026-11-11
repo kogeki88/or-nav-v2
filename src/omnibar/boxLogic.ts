@@ -33,7 +33,18 @@ export function boxMatches(text: string, index: LibrarySearch, data: LibraryData
   return { items, cards: cards.slice(0, MAX_ROWS) };
 }
 
-export type AnswerRow = { kind: 'card'; card: Card } | { kind: 'item'; item: Item; tag: 'open' | 'hold' | null };
+export type FreshBase = { caseId: string | null; maxId: number };
+
+/**
+ * Messages with an id above `maxId` arrived while the case was open, so they animate. Messages that
+ * were already there when the case opened (or was opened again) stay still.
+ */
+export function freshBase(prev: FreshBase | null, caseId: string | null, messages: { id: number }[]): FreshBase {
+  if (prev && prev.caseId === caseId) return prev;
+  return { caseId, maxId: messages.reduce((max, m) => Math.max(max, m.id), 0) };
+}
+
+export type AnswerRow ={ kind: 'card'; card: Card } | { kind: 'item'; item: Item; tag: 'open' | 'hold' | null };
 
 /**
  * Tappable rows under an AI answer: its cards, then its items. An item gets Open or Hold when a

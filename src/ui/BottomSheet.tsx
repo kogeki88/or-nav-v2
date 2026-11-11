@@ -5,7 +5,6 @@
 // The parent must cover the whole screen (see SignedIn in App.tsx) so the dim layer covers the tab bar.
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import {
-  AccessibilityInfo,
   Animated,
   BackHandler,
   Keyboard,
@@ -21,6 +20,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { C, R, S } from '../theme';
+import { EASE, FADE_MS, SPRING, useReduceMotion } from './motion';
 
 type Props = {
   open: boolean;
@@ -40,7 +40,7 @@ export default function BottomSheet({ open, onClose, header, children, footer, l
   const { height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [mounted, setMounted] = useState(open);
-  const [reduceMotion, setReduceMotion] = useState(false);
+  const reduceMotion = useReduceMotion();
   const y = useRef(new Animated.Value(height)).current;
   const fade = useRef(new Animated.Value(0)).current;
   const closeRef = useRef(onClose);
@@ -62,26 +62,20 @@ export default function BottomSheet({ open, onClose, header, children, footer, l
   }, []);
 
   useEffect(() => {
-    AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
-    return () => sub.remove();
-  }, []);
-
-  useEffect(() => {
     if (open) {
       setMounted(true);
       y.setValue(reduceMotion ? 0 : height);
       Animated.parallel([
         reduceMotion
           ? Animated.timing(y, { toValue: 0, duration: 0, useNativeDriver: true })
-          : Animated.spring(y, { toValue: 0, damping: 26, stiffness: 260, mass: 0.9, useNativeDriver: true }),
-        Animated.timing(fade, { toValue: 1, duration: 220, useNativeDriver: true }),
+          : Animated.spring(y, { toValue: 0, ...SPRING, useNativeDriver: true }),
+        Animated.timing(fade, { toValue: 1, duration: FADE_MS, useNativeDriver: true }),
       ]).start();
     } else if (mounted) {
       Animated.parallel([
         reduceMotion
           ? Animated.timing(y, { toValue: 0, duration: 0, useNativeDriver: true })
-          : Animated.timing(y, { toValue: height, duration: 220, useNativeDriver: true }),
+          : Animated.timing(y, { toValue: height, duration: FADE_MS, easing: EASE, useNativeDriver: true }),
         Animated.timing(fade, { toValue: 0, duration: 200, useNativeDriver: true }),
       ]).start(() => setMounted(false));
     }
@@ -94,9 +88,9 @@ export default function BottomSheet({ open, onClose, header, children, footer, l
       onPanResponderMove: (_, g) => y.setValue(Math.max(0, g.dy)),
       onPanResponderRelease: (_, g) => {
         if (g.dy > 120 || g.vy > 1.1) closeRef.current();
-        else Animated.spring(y, { toValue: 0, damping: 24, stiffness: 300, useNativeDriver: true }).start();
+        else Animated.spring(y, { toValue: 0, ...SPRING, useNativeDriver: true }).start();
       },
-      onPanResponderTerminate: () => Animated.spring(y, { toValue: 0, useNativeDriver: true }).start(),
+      onPanResponderTerminate: () => Animated.spring(y, { toValue: 0, ...SPRING, useNativeDriver: true }).start(),
     }),
   ).current;
 

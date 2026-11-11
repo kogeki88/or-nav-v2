@@ -21,7 +21,7 @@ Rules: one quiet green, only for the main action. Yellow only for waiting or Hol
 Older names in `theme.ts` (surface, raised, line, ok) point at these colors so older screens keep working.
 
 ## Type
-Manrope 400 / 500 / 600 / 700 (OFL licence), bundled in `assets/fonts` and loaded in `App.tsx` with `useFonts` as one family, `F` in `theme.ts`; pick the weight with fontWeight. Every text style sets `fontFamily: F`. Numbers use tabular figures. If the font fails to load, the system font is used.
+Manrope 400 / 500 / 600 / 700 (OFL licence), bundled in `assets/fonts`. On Android it is built into the app (`android/app/src/main/res/font/xml_manrope.xml`, registered in `MainApplication.kt`; `expo-font` plugin in `app.json`), because a font loaded only at run time was measured with the system font and cut off the last word of short text. `useFonts` in `App.tsx` still loads it for Expo Go and skips it when it is built in. One family, `F` in `theme.ts`; pick the weight with fontWeight. Every text style sets `fontFamily: F`. Numbers use tabular figures. If the font fails to load, the system font is used.
 | Style | Size / line | Weight |
 | --- | --- | --- |
 | largeTitle | 32 / 38 | 700 |

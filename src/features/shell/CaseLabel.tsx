@@ -4,28 +4,15 @@
 // cross-fades and one faint green ring goes out once. Reduce motion: no breathing, no ring; the
 // text only fades. Built-in Animated only.
 import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 
 import { C, F } from '../../theme';
+import { EASE, useReduceMotion } from '../../ui/motion';
 
 const PILL = 36;
 const BREATH_MS = 1600; // each half of the 3.2 s breath
 const RING_MS = 1100;
 const RING_GROW = 12; // the ring goes out this far around the label
-
-export function useReduceMotion(): boolean {
-  const [reduce, setReduce] = useState(false);
-  useEffect(() => {
-    let live = true;
-    AccessibilityInfo.isReduceMotionEnabled().then((r) => live && setReduce(r));
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduce);
-    return () => {
-      live = false;
-      sub.remove();
-    };
-  }, []);
-  return reduce;
-}
 
 /** Grey when the case is unknown; green and breathing once it is known (still when motion is reduced). */
 export function BreathingDot({ known, reduceMotion, size = 7 }: { known: boolean; reduceMotion: boolean; size?: number }) {
@@ -83,7 +70,7 @@ export default function CaseLabel({ label, known, learned, onPress }: Props) {
   useEffect(() => {
     if (learned === firstLearned.current || reduceMotion) return;
     ring.setValue(0);
-    Animated.timing(ring, { toValue: 1, duration: RING_MS, easing: Easing.bezier(0.2, 0.8, 0.2, 1), useNativeDriver: true }).start();
+    Animated.timing(ring, { toValue: 1, duration: RING_MS, easing: EASE, useNativeDriver: true }).start();
   }, [learned, reduceMotion, ring]);
 
   const ringStyle = {

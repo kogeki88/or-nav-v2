@@ -3,7 +3,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import type { Card, CardItem, Item, LibraryData } from '../contracts/library';
 import { wordSearch } from '../core/search/engine';
-import { answerRows, boxMatches, shelfBin } from './boxLogic';
+import { answerRows, boxMatches, freshBase, shelfBin } from './boxLogic';
 
 const item = (id: string, name: string, shelf: string | null, sub: string | null, dept = 'd1'): Item => ({
   id,
@@ -102,5 +102,28 @@ describe('answerRows', () => {
       data,
     );
     expect(rows.map((r) => (r.kind === 'card' ? r.card.id : r.item.id))).toEqual(['c-lap', 'i-bovie']);
+  });
+});
+
+describe('freshBase (which messages animate)', () => {
+  const msgs = (...ids: number[]) => ids.map((id) => ({ id }));
+
+  it('does not animate the old messages of a case that just opened', () => {
+    const base = freshBase(null, 'case-a', msgs(1, 2, 3));
+    expect(base).toEqual({ caseId: 'case-a', maxId: 3 });
+  });
+
+  it('animates every message of a new, empty case', () => {
+    expect(freshBase(null, 'case-new', msgs()).maxId).toBe(0);
+  });
+
+  it('keeps the same line while the case stays open, so new messages animate', () => {
+    const base = freshBase(null, 'case-a', msgs(1));
+    expect(freshBase(base, 'case-a', msgs(1, 2, 3))).toBe(base);
+  });
+
+  it('starts again when another case opens, so going back does not replay', () => {
+    const base = freshBase(null, 'case-a', msgs(1));
+    expect(freshBase(base, 'case-b', msgs(1, 2))).toEqual({ caseId: 'case-b', maxId: 2 });
   });
 });
