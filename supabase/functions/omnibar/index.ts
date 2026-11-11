@@ -6,16 +6,15 @@ import Anthropic from 'npm:@anthropic-ai/sdk@1.3.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.119.0';
 
 import { scrub } from './scrub.ts';
-import type { OmniRequest, OmniTurn } from './schema.ts';
+import { UUID, type OmniRequest, type OmniTurn } from './schema.ts';
 import { DEFAULT_BACKUP_MODEL, DEFAULT_MODEL, answerWithFallback, askClaude, askGroq, type Ask } from './core.ts';
-import { libraryContext } from './prompt.ts';
+import { caseNote, libraryContext, readCase } from './prompt.ts';
 
 const DAILY_LIMIT = Number(Deno.env.get('OMNIBAR_DAILY_LIMIT') ?? '50');
 const MODEL = Deno.env.get('OMNIBAR_MODEL') ?? DEFAULT_MODEL;
 const BACKUP_MODEL = Deno.env.get('OMNIBAR_BACKUP_MODEL') ?? DEFAULT_BACKUP_MODEL;
 const MAX_MESSAGE = 1000;
 const MAX_HISTORY = 10;
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -44,7 +43,8 @@ function readBody(raw: unknown): OmniRequest | null {
       turns.push({ role: t.role, text: t.text });
     }
   }
-  return { message: b.message, history: turns, department_id: b.department_id };
+  // `case` is optional: old app versions do not send it, and an odd one is dropped, not refused.
+  return { message: b.message, history: turns, department_id: b.department_id, case: readCase(b.case) };
 }
 
 Deno.serve(async (req) => {
@@ -136,9 +136,10 @@ Deno.serve(async (req) => {
   const backup: Ask | null = groqKey ? (o) => askGroq(groqKey, BACKUP_MODEL, o) : null;
 
   try {
-    const { answer, engine } = await answerWithFallback(claude, backup, { context, history: alternating, message: clean.text }, (event) =>
-      console.log(`omnibar: ${event}`),
-    );
+    // The case's card must be one of this department's cards; any other card_id is ignored.
+    const note = caseNote(body.case, cards.data ?? []);
+    const opts = { context, caseNote: note, history: alternating, message: clean.text };
+    const { answer, engine } = await answerWithFallback(claude, backup, opts, (event) => console.log(`omnibar: ${event}`));
     console.log(`omnibar: ${engine}, ${answer.actions.length} actions`);
     return json(200, { ...answer, engine, removed: clean.removed });
   } catch {

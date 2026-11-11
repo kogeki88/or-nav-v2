@@ -199,6 +199,7 @@ Done means: see "Further Notes" in #10. Decisions: `design/REDESIGN-one-screen.m
 Order (each blocked by the one before): #11 new look → #12 sidebar and name sheet → #13 the one box → #14 cases → #15 the case learns → #16 AI gets the case (Sean deploys) → #17 motion pass and release (Sean checks). Brick 4 (Scrub Mode) is the next spec, after this.
 
 - [ ] #11 … #17
+- #16 code done (2026-11-11): the app sends `case` once the case has a card (a case with only a surgeon or procedure sends none). The function finds the card in the department's own cards and adds one line, after the cached library block. Waits for: push, Sean deploys the joined file (Part I way), test phone check when the AI keys are in.
 
 ## Status
 v2.5.0 on Sean's phone (2026-11-10): Brick 3 sound-alike search done, checked offline. Issues #6–#9 closed. AI omnibar still waits for keys.

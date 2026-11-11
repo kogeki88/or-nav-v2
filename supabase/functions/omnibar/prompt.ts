@@ -1,4 +1,6 @@
-// System prompt and library context for the omnibar. Kept stable (no dates, sorted lists) so prompt caching works.
+// System prompt, library context and the case line for the omnibar. Kept stable (no dates, sorted lists) so prompt caching works.
+// readCase sits here (not in index.ts) so Jest can test it: index.ts starts the server when loaded.
+import { UUID, type OmniCase } from './schema.ts';
 
 export const SYSTEM_PROMPT = `You are the assistant inside OR-Nav, an app for operating room nurses (scrub and circulator).
 Nurses type short, fast OR talk on a phone, often with typos and shorthand. Work out what they mean and answer for the app.
@@ -40,6 +42,31 @@ CVOR = cardiovascular OR; Main OR = general OR; PACU = recovery; circ = circulat
 Surgeon references: "Avery's", "Dr A", "Patel" mean the surgeon on the card; match by surname.`;
 
 type Row = Record<string, unknown>;
+
+/** A short text or null; undefined means the value is not valid. */
+const textOrNull = (v: unknown) => (v === null || v === undefined ? null : typeof v === 'string' && v.length <= 200 ? v : undefined);
+
+/** The optional `case` field. Missing (old app versions) or odd: undefined, and the message is still answered. */
+export function readCase(raw: unknown): OmniCase | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const c = raw as Record<string, unknown>;
+  const surgeon = textOrNull(c.surgeon);
+  const procedure = textOrNull(c.procedure);
+  if (surgeon === undefined || procedure === undefined) return undefined;
+  if (typeof c.card_id !== 'string' || !UUID.test(c.card_id)) return undefined;
+  return { surgeon, procedure, card_id: c.card_id };
+}
+
+/**
+ * One line for the prompt: the case's card and that "his card", "the closure" and so on mean it.
+ * Empty when there is no case or its card is not in this department. The words come from the card, not the phone.
+ */
+export function caseNote(c: OmniCase | null | undefined, cards: Row[]): string {
+  if (!c?.card_id) return '';
+  const card = cards.find((k) => k.id === c.card_id);
+  if (!card) return '';
+  return `The nurse is working on this case: card:${card.id} ${card.procedure} | ${card.surgeon}. "His card", "her card", "the card", "the closure", "the setup" and the other phases mean this card, unless the nurse names another one.`;
+}
 
 /** The department's library as compact lines for the model (ids included, sorted, no timestamps). */
 export function libraryContext(opts: {

@@ -2,8 +2,9 @@
 import { describe, expect, it } from '@jest/globals';
 
 import type { Assistant, AssistantReply, AssistantRequest } from '../contracts/assistant';
+import type { Case } from '../contracts/cases';
 import type { Card, Item, LibraryData } from '../contracts/library';
-import { NewMessage, OFFLINE_LINE, TurnContext, sendTurn } from './conversation';
+import { NewMessage, OFFLINE_LINE, TurnContext, caseForAssistant, sendTurn } from './conversation';
 
 const bovie: Item = { id: 'i-bovie', department_id: 'd1', name: 'Bovie pencil', category: null, shelf: 'A1', sub_location: 'Bin 1', synonyms: [], notes: null, photo_path: null, version: 1 };
 const lap: Card = { id: 'c-lap', department_id: 'd1', surgeon: 'Avery', procedure: 'Lap chole', specialty: null, notes: null, version: 1 };
@@ -31,6 +32,21 @@ async function run(text: string, ctx: TurnContext, assistant: Assistant) {
   return { sent, added };
 }
 
+describe('caseForAssistant', () => {
+  const blank: Case = { id: 'k1', surgeon: null, procedure: null, cardId: null, setByNurse: false, messages: [], createdAt: '', lastUsedAt: '' };
+  it('gives the case card', () => {
+    expect(caseForAssistant({ ...blank, surgeon: 'Avery', procedure: 'Lap chole', cardId: 'c-lap' })).toEqual({
+      surgeon: 'Avery',
+      procedure: 'Lap chole',
+      card_id: 'c-lap',
+    });
+  });
+  it('is null when the case has no card yet', () => {
+    expect(caseForAssistant(blank)).toBeNull();
+    expect(caseForAssistant(null)).toBeNull();
+  });
+});
+
 describe('sendTurn', () => {
   it('sends a plain item word to the assistant (no guessing between item and question)', async () => {
     const { assistant, calls } = fakeAssistant();
@@ -39,6 +55,19 @@ describe('sendTurn', () => {
     expect(sent).toBe(true);
     expect(added.map((m) => m.role)).toEqual(['user', 'assistant']);
     expect(added[1]).toMatchObject({ text: 'A1, bin 1.', actions: [{ type: 'open_item', item_id: 'i-bovie' }] });
+  });
+
+  it('sends the case with the question when the case is known', async () => {
+    const { assistant, calls } = fakeAssistant();
+    const known = { surgeon: 'Avery', procedure: 'Lap chole', card_id: 'c-lap' };
+    await run("what's on his closure?", context({ case: known }), assistant);
+    expect(calls[0].case).toEqual(known);
+  });
+
+  it('sends no case field when the case is unknown', async () => {
+    const { assistant, calls } = fakeAssistant();
+    await run('bovie', context({ case: null }), assistant);
+    expect('case' in calls[0]).toBe(false);
   });
 
   it('sends a question to the assistant too', async () => {

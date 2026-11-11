@@ -1,7 +1,7 @@
 // One Send in the one box: checks, scrubs on the phone, then always asks the assistant. Offline it asks nothing.
 // Plain TypeScript (Jest-tested); useOmnibar holds the messages.
-import type { Assistant, AssistantTurn } from '../contracts/assistant';
-import type { CaseDraftState, CaseMessage } from '../contracts/cases';
+import type { Assistant, AssistantCase, AssistantTurn } from '../contracts/assistant';
+import type { Case, CaseDraftState, CaseMessage } from '../contracts/cases';
 import type { LibraryData } from '../contracts/library';
 import type { Engine, OmniAction } from '../../supabase/functions/omnibar/schema';
 import { describeRemoved, scrub } from '../../supabase/functions/omnibar/scrub';
@@ -31,7 +31,15 @@ export type TurnContext = {
   history: OmniMessage[];
   data: LibraryData;
   myDeptIds: string[];
+  /** The case's card, sent with the question. Null or missing when the case is unknown. */
+  case?: AssistantCase | null;
 };
+
+/** The case as the assistant gets it: only once it has a card (the server checks the card again). */
+export function caseForAssistant(c: Case | null): AssistantCase | null {
+  if (!c?.cardId) return null;
+  return { surgeon: c.surgeon, procedure: c.procedure, card_id: c.cardId };
+}
 
 /** Adds messages through `add` as they are ready. Returns true when the box can be cleared. */
 export async function sendTurn(raw: string, ctx: TurnContext, assistant: Assistant, add: (m: NewMessage) => void): Promise<boolean> {
@@ -58,7 +66,7 @@ export async function sendTurn(raw: string, ctx: TurnContext, assistant: Assista
     .map((m) => ({ role: m.role, text: m.text }));
   add({ role: 'user', text: clean.text, note: clean.removed.length ? `Removed for privacy: ${describeRemoved(clean.removed)}.` : undefined });
 
-  const reply = await assistant.ask({ message: clean.text, history, department_id: ctx.deptId });
+  const reply = await assistant.ask({ message: clean.text, history, department_id: ctx.deptId, ...(ctx.case ? { case: ctx.case } : {}) });
   if (reply.kind === 'offline') {
     add({ role: 'assistant', text: OFFLINE_LINE, tone: 'warn', local: true });
   } else if (reply.kind === 'error') {

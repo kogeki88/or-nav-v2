@@ -115,6 +115,9 @@ export function useCases(store: CaseStore, learning: CaseLearning) {
     [change, current],
   );
 
+  /** The newest copy of the current case, so a Send right after learning sends what it just learned. */
+  const caseNow = useCallback(() => (currentId.current ? known.current.get(currentId.current) ?? null : null), []);
+
   const now = new Date();
   const row = (c: Case): CaseListRow => ({ id: c.id, label: store.label(c), when: store.when(c, now), current: c.id === current?.id, known: isKnown(c) });
   const others = recent.filter((c) => c.id !== current?.id);
@@ -124,7 +127,7 @@ export function useCases(store: CaseStore, learning: CaseLearning) {
   const label = current ? store.label(current) : '';
   const knownNow = current ? isKnown(current) : false;
 
-  return { current, label, known: knownNow, learned, list, pickUp, thread, startNew, switchTo, learnCard, learnText, setByHand };
+  return { current, caseNow, label, known: knownNow, learned, list, pickUp, thread, startNew, switchTo, learnCard, learnText, setByHand };
 }
 
 export type Cases = ReturnType<typeof useCases>;

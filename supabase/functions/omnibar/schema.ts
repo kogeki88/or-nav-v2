@@ -115,5 +115,10 @@ export const ANSWER_SCHEMA = obj({
 /** One turn of the chat, as the app sends it (already scrubbed). */
 export type OmniTurn = { role: 'user' | 'assistant'; text: string };
 
-/** The request body the app sends to the omnibar function. */
-export type OmniRequest = { message: string; history: OmniTurn[]; department_id: string };
+/** The shape of a database id (department, card). */
+export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** The case the nurse is working on. */
+export type OmniCase = { surgeon: string | null; procedure: string | null; card_id: string | null };
+/** The request body the app sends to the omnibar function. case: optional; old app versions do not send it. */
+export type OmniRequest = { message: string; history: OmniTurn[]; department_id: string; case?: OmniCase };

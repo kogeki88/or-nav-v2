@@ -240,7 +240,7 @@ function SignedIn({
   const assistant = useMemo(() => supabaseAssistant(supabase), []);
   const caseStore = useMemo(() => (DEMO ? makeCaseStore(memoryCaseRows()) : sqliteCaseStore(user.id)), [user.id]);
   const cases = useCases(caseStore, caseLearning);
-  const omni = useOmnibar(lib, assistant, cases.thread);
+  const omni = useOmnibar(lib, assistant, cases.thread, cases.caseNow);
   const [nameOpen, setNameOpen] = useState(false);
   const [deptOpen, setDeptOpen] = useState(false);
   const [caseOpen, setCaseOpen] = useState(false);

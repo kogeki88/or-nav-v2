@@ -3,8 +3,11 @@
 
 export type AssistantTurn = { role: 'user' | 'assistant'; text: string };
 
-/** The message is already scrubbed on the phone. */
-export type AssistantRequest = { message: string; history: AssistantTurn[]; department_id: string };
+/** The case the nurse is working on, so "his card" or "the closure" mean its card. */
+export type AssistantCase = { surgeon: string | null; procedure: string | null; card_id: string | null };
+
+/** The message is already scrubbed on the phone. No `case` field when the case is unknown. */
+export type AssistantRequest = { message: string; history: AssistantTurn[]; department_id: string; case?: AssistantCase };
 
 export type AssistantReply =
   /** backup = the free backup AI answered instead of Claude. */

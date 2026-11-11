@@ -9,7 +9,8 @@ export const DEFAULT_MODEL = 'claude-haiku-5-5';
 export const DEFAULT_BACKUP_MODEL = 'openai/gpt-oss-120b';
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-export type AskOpts = { context: string; history: OmniTurn[]; message: string };
+/** caseNote: the case line (see prompt.ts). It goes after the cached library, so a case change keeps the cache. */
+export type AskOpts = { context: string; caseNote?: string; history: OmniTurn[]; message: string };
 export type Ask = (opts: AskOpts) => Promise<OmniAnswer>;
 
 const NOT_UNDERSTOOD: OmniAnswer = { reply: 'Sorry, I could not understand that. Try saying it another way.', actions: [] };
@@ -36,6 +37,7 @@ export async function askClaude(client: Anthropic, model: string, opts: AskOpts)
       { type: 'text', text: SYSTEM_PROMPT },
       // The library changes rarely, so it is cached between messages.
       { type: 'text', text: opts.context, cache_control: { type: 'ephemeral' } },
+      ...(opts.caseNote ? [{ type: 'text' as const, text: opts.caseNote }] : []),
     ],
     messages,
     output_config: { format: { type: 'json_schema', schema: ANSWER_SCHEMA } },
@@ -51,7 +53,7 @@ export function groqBody(model: string, opts: AskOpts) {
   return {
     model,
     messages: [
-      { role: 'system', content: `${SYSTEM_PROMPT}\n\n${opts.context}` },
+      { role: 'system', content: [SYSTEM_PROMPT, opts.context, opts.caseNote].filter(Boolean).join('\n\n') },
       ...opts.history.map((t) => ({ role: t.role, content: t.text })),
       { role: 'user', content: opts.message },
     ],
