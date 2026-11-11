@@ -1,5 +1,5 @@
 // Library view: search and browse your department's preference cards and items.
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Badge, Banner, Button, Chips, EmptyState, Group, Icon, IconButton, ListRow, SearchField, SectionLabel, SkeletonRows } from '../../ui/kit';
@@ -20,7 +20,6 @@ export default function LibraryScreen({
   topInset,
   bottomSpace,
   jobRole,
-  openRequest,
   header,
 }: {
   /** Drawn above the list (the shell's back bar), inside this screen so its sheets cover it too. */
@@ -31,17 +30,11 @@ export default function LibraryScreen({
   topInset: number;
   bottomSpace: number;
   jobRole: string | null;
-  /** From the omnibar: open this item or card (n changes on every request). */
-  openRequest?: { selection: Selection; n: number } | null;
 }) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const [selection, setSelection] = useState<Selection | null>(null);
   const [pickDept, setPickDept] = useState(false);
-
-  useEffect(() => {
-    if (openRequest) setSelection(openRequest.selection);
-  }, [openRequest]);
 
   const deptItems = useMemo(() => lib.data.items.filter((i) => i.department_id === lib.deptId), [lib.data.items, lib.deptId]);
   const deptCards = useMemo(() => lib.data.cards.filter((c) => c.department_id === lib.deptId), [lib.data.cards, lib.deptId]);

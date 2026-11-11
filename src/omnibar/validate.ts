@@ -1,36 +1,7 @@
 // Checks what the AI returned against the phone's own copy, and turns drafts into review requests.
 // Pure TypeScript (Node-tested). Never trusts an id from the AI: unknown ids drop the action.
 import type { DraftCard, DraftCardLine, DraftItem, OmniAction } from '../../supabase/functions/omnibar/schema';
-import type { Card, Item, LibraryData, NewChange } from '../contracts/library';
-
-// The offline plain search, kept as it was when the Library box moved to the search engine
-// (ticket #7): every typed word starts a word in name, category, shelf, bin or other names.
-const norm = (s: string | null | undefined) =>
-  (s ?? '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
-
-function matches(query: string, ...hay: (string | null | undefined)[]): boolean {
-  const q = norm(query).split(' ').filter(Boolean);
-  if (q.length === 0) return true;
-  const words = hay.flatMap((h) => norm(h).split(' ')).filter(Boolean);
-  return q.every((part) => words.some((w) => w.startsWith(part)));
-}
-
-function searchItems(items: Item[], query: string): Item[] {
-  return items
-    .filter((i) => matches(query, i.name, i.category, i.shelf, i.sub_location, ...i.synonyms))
-    .sort((a, b) => a.name.localeCompare(b.name));
-}
-
-function searchCards(cards: Card[], query: string): Card[] {
-  return cards
-    .filter((c) => matches(query, c.surgeon, c.procedure, c.specialty))
-    .sort((a, b) => a.procedure.localeCompare(b.procedure) || a.surgeon.localeCompare(b.surgeon));
-}
+import type { LibraryData, NewChange } from '../contracts/library';
 
 export type Draft = DraftItem | DraftCard | DraftCardLine;
 
@@ -130,25 +101,3 @@ export function draftToChange(d: Draft, data: LibraryData, deptId: string): NewC
   return { department_id: deptId, kind: d.kind, target: 'card_item', target_id: line.id, data: d.kind === 'remove' ? {} : fields, base_version: null };
 }
 
-/** Offline answer: plain search of the phone copy. */
-const FILLER = new Set(
-  'where whats what which is are the a an find show me my get i need we do does did use uses using for on in at of to please can you tell about with have has any our there'.split(' '),
-);
-
-export function localAnswer(question: string, data: LibraryData, deptId: string): { reply: string; actions: OmniAction[] } {
-  const query = question
-    .toLowerCase()
-    .replace(/[?.!,']/g, ' ')
-    .split(/\s+/)
-    .filter((w) => w && !FILLER.has(w))
-    .join(' ');
-  const items = searchItems(data.items.filter((i) => i.department_id === deptId), query).slice(0, 8);
-  const cards = searchCards(data.cards.filter((c) => c.department_id === deptId), query).slice(0, 5);
-  if (items.length + cards.length === 0) {
-    return { reply: "You're offline, so the assistant can't answer. No saved items or cards match those words.", actions: [] };
-  }
-  return {
-    reply: "You're offline, so here are plain search matches from your saved copy.",
-    actions: [{ type: 'show_results', item_ids: items.map((i) => i.id), card_ids: cards.map((c) => c.id) }],
-  };
-}

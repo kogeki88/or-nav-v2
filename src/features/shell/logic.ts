@@ -16,6 +16,13 @@ export function firstName(p: { nickname: string | null; full_name: string }): st
   return p.nickname?.trim() || p.full_name.trim().split(/\s+/)[0] || 'You';
 }
 
+/** The greeting on an empty main screen: morning from 5:00, afternoon from 12:00, evening from 17:00. */
+export function timeGreeting(now: Date, name: string): [string, string] {
+  const h = now.getHours();
+  const part = h >= 5 && h < 12 ? 'Morning' : h >= 12 && h < 17 ? 'Afternoon' : 'Evening';
+  return [`${part}, ${name}.`, 'What do you need?'];
+}
+
 export type SidebarRow = { key: 'new' | 'library' | 'review'; label: string; count?: number };
 
 /** To review shows only when something waits for this nurse. */

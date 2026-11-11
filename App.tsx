@@ -10,19 +10,20 @@ import {
   readSignedInUser,
   refreshSignedInUser,
   signOut,
+  supabase,
   watchSignedInUser,
 } from './src/auth/supabase';
 import { DEMO_USER_ID, demoSource } from './src/core/library/demoSource';
 import DepartmentSheet from './src/features/library/DepartmentSheet';
 import LibraryScreen from './src/features/library/LibraryScreen';
-import type { Selection } from './src/features/library/LibrarySheet';
-import { ShellState, caseTimeName, firstName } from './src/features/shell/logic';
+import LibrarySheet, { Selection } from './src/features/library/LibrarySheet';
+import { ShellState, caseTimeName, firstName, timeGreeting } from './src/features/shell/logic';
 import NameSheet from './src/features/shell/NameSheet';
 import Shell from './src/features/shell/Shell';
-import OmniBar, { OMNI_BAR_SPACE } from './src/omnibar/OmniBar';
-import OmniSheet from './src/omnibar/OmniSheet';
+import { COMPOSER_SPACE, Composer, OneBoxBody } from './src/omnibar/OneBox';
 import { useOmnibar } from './src/omnibar/useOmnibar';
 import { departmentLabel, toReview } from './src/features/library/logic';
+import { supabaseAssistant } from './src/core/assistant/supabaseAssistant';
 import { supabaseSource } from './src/core/library/supabaseSource';
 import { wordSearch } from './src/core/search/engine';
 import { useLibrary } from './src/features/library/useLibrary';
@@ -229,27 +230,24 @@ function SignedIn({
   const insets = useSafeAreaInsets();
   const source = useMemo(() => (DEMO ? demoSource() : supabaseSource(user.id)), [user.id]);
   const lib = useLibrary(source, user.id, !DEMO);
-  const omni = useOmnibar(lib);
-  const [omniOpen, setOmniOpen] = useState(false);
+  const assistant = useMemo(() => supabaseAssistant(supabase), []);
+  const omni = useOmnibar(lib, assistant);
   const [nameOpen, setNameOpen] = useState(false);
   const [deptOpen, setDeptOpen] = useState(false);
   // Until cases arrive (#14), the case is named by the time the app opened.
   const caseName = useMemo(() => caseTimeName(new Date()), []);
-  // An item or card the assistant asked to open; the Library view opens it in its sheet.
-  const [openRequest, setOpenRequest] = useState<{ selection: Selection; n: number } | null>(null);
-  // Forget it once the Library view closes, so reopening Library does not reopen the old item.
-  useEffect(() => {
-    if (shell.view !== 'library') setOpenRequest(null);
-  }, [shell.view]);
+  // The one box: its text, this department's search index, and the item or card open in the sheet.
+  const [text, setText] = useState('');
+  const deptItems = useMemo(() => lib.data.items.filter((i) => i.department_id === lib.deptId), [lib.data.items, lib.deptId]);
+  const deptCards = useMemo(() => lib.data.cards.filter((c) => c.department_id === lib.deptId), [lib.data.cards, lib.deptId]);
+  const index = useMemo(() => wordSearch.index(deptItems, deptCards), [deptItems, deptCards]);
+  const [selection, setSelection] = useState<Selection | null>(null);
 
-  const openSelection = useCallback(
-    (selection: Selection) => {
-      setOmniOpen(false);
-      setShell({ view: 'library', sidebar: false });
-      setOpenRequest((prev) => ({ selection, n: (prev?.n ?? 0) + 1 }));
-    },
-    [setShell],
-  );
+  const send = useCallback(async () => {
+    const value = text;
+    // Clear the box only when the message went out and the nurse has not typed something new.
+    if (await omni.send(value)) setText((cur) => (cur === value ? '' : cur));
+  }, [omni, text]);
 
   const isAdmin = user.role === 'admin';
   const person = { name: firstName(profile), fullName: profile.full_name, emoji: profile.avatar_emoji, role: profile.role };
@@ -265,12 +263,24 @@ function SignedIn({
         waiting={toReview(lib.data, user.id).length}
         person={person}
         onPerson={() => setNameOpen(true)}
-        body={welcome !== '' ? <Text style={[T.callout, styles.welcome]}>{welcome}</Text> : null}
-        composer={<OmniBar onOpen={() => setOmniOpen(true)} busy={omni.busy} />}
-        composerHeight={OMNI_BAR_SPACE}
-        library={(header) => (
-          <LibraryScreen lib={lib} search={wordSearch} topInset={0} bottomSpace={insets.bottom} jobRole={profile.role} openRequest={openRequest} header={header} />
-        )}
+        body={
+          <OneBoxBody
+            omni={omni}
+            lib={lib}
+            index={index}
+            text={text}
+            greeting={timeGreeting(new Date(), person.name)}
+            notice={welcome !== '' ? <Text style={[T.callout, styles.welcome]}>{welcome}</Text> : null}
+            onOpen={setSelection}
+            onGoTo={(t) => {
+              if (t === 'me') setNameOpen(true);
+              else setShell({ view: t, sidebar: false });
+            }}
+          />
+        }
+        composer={<Composer text={text} onChangeText={setText} onSend={send} busy={omni.busy} />}
+        composerHeight={COMPOSER_SPACE}
+        library={(header) => <LibraryScreen lib={lib} search={wordSearch} topInset={0} bottomSpace={insets.bottom} jobRole={profile.role} header={header} />}
         review={<ReviewScreen lib={lib} topInset={0} bottomSpace={insets.bottom} />}
         admin={
           <ScrollView contentContainerStyle={[styles.admin, { paddingBottom: insets.bottom + S.xxl }]}>
@@ -300,18 +310,8 @@ function SignedIn({
         onSignOut={signOut}
       />
       <DepartmentSheet lib={lib} open={deptOpen} onClose={() => setDeptOpen(false)} jobRole={profile.role} />
-      <OmniSheet
-        open={omniOpen}
-        onClose={() => setOmniOpen(false)}
-        omni={omni}
-        lib={lib}
-        onOpenSelection={openSelection}
-        onGoTo={(t) => {
-          setOmniOpen(false);
-          if (t === 'me') setNameOpen(true);
-          else setShell({ view: t, sidebar: false });
-        }}
-      />
+      {/* Items and cards tapped in the one box open here, over the main screen. */}
+      <LibrarySheet lib={lib} selection={selection} onSelect={setSelection} onClose={() => setSelection(null)} />
       {/* Solid strip behind the status bar, so scrolled content never runs under the clock. */}
       <View pointerEvents="none" style={[styles.statusStrip, { height: insets.top }]} />
     </View>

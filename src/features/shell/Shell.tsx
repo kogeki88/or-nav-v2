@@ -1,8 +1,8 @@
 // The signed-in shell: one main screen with a top bar (☰, case label, new case) and the box at
 // the bottom; the sidebar; and Library, To review and Admin tools as full-screen views over it.
 // Screens from other features come in from App.tsx as ready-made pieces (a feature never imports another).
-import { ReactNode, useEffect, useRef } from 'react';
-import { BackHandler, StyleSheet, Text, View } from 'react-native';
+import { ReactNode, useEffect, useRef, useState } from 'react';
+import { BackHandler, Keyboard, Platform, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { C, F, S } from '../../theme';
@@ -47,6 +47,21 @@ export default function Shell({ state, onChange, caseName, waiting, person, onPe
     return () => sub.remove();
   }, [state.view, state.sidebar]);
 
+  // Keep the box above the keyboard. In edge-to-edge mode Android does not shrink the window, so the
+  // keyboard's top edge (from its event) is compared with this screen's own height (measured below).
+  const [keyboardTop, setKeyboardTop] = useState<number | null>(null);
+  const [frame, setFrame] = useState(0);
+  useEffect(() => {
+    const show = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', (e) => setKeyboardTop(e.endCoordinates.screenY));
+    const hide = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setKeyboardTop(null));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+  const keyboard = keyboardTop !== null && frame > 0 ? frame - keyboardTop : 0;
+  const composerBottom = Math.max(insets.bottom, keyboard);
+
   const set = (patch: Partial<ShellState>) => onChange({ ...state, ...patch });
   const goBack = () => set({ view: 'main' });
 
@@ -57,7 +72,7 @@ export default function Shell({ state, onChange, caseName, waiting, person, onPe
   );
 
   return (
-    <View style={styles.screen}>
+    <View style={styles.screen} onLayout={(e) => setFrame(e.nativeEvent.layout.height)}>
       <View style={[styles.topBar, { paddingTop: insets.top, height: insets.top + TOP_BAR_HEIGHT }]}>
         <View>
           <IconButton name="menu" label={waiting ? `Open the sidebar. ${waiting} to review` : 'Open the sidebar'} onPress={() => set({ sidebar: true })} bg="transparent" color={C.text} />
@@ -71,7 +86,7 @@ export default function Shell({ state, onChange, caseName, waiting, person, onPe
       </View>
 
       <View style={styles.body}>{body}</View>
-      <View style={{ paddingBottom: insets.bottom }}>{composer}</View>
+      <View style={{ paddingBottom: composerBottom }}>{composer}</View>
 
       <Sidebar
         open={state.sidebar}
