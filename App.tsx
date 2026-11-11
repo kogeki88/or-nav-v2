@@ -30,6 +30,9 @@ import { useOmnibar } from './src/omnibar/useOmnibar';
 import { departmentLabel, toReview } from './src/features/library/logic';
 import { supabaseAssistant } from './src/core/assistant/supabaseAssistant';
 import { supabaseSource } from './src/core/library/supabaseSource';
+import { supabaseFeedback } from './src/core/feedback/supabaseFeedback';
+import FeedbackButton from './src/features/feedback/FeedbackButton';
+import { pageName, showFeedbackButton } from './src/features/feedback/logic';
 import { wordSearch } from './src/core/search/engine';
 import { useLibrary } from './src/features/library/useLibrary';
 import { greeting } from './src/profile/ProfileCard';
@@ -250,6 +253,7 @@ function SignedIn({
   const deptCards = useMemo(() => lib.data.cards.filter((c) => c.department_id === lib.deptId), [lib.data.cards, lib.deptId]);
   const index = useMemo(() => wordSearch.index(deptItems, deptCards), [deptItems, deptCards]);
   const [selection, setSelection] = useState<Selection | null>(null);
+  const feedback = useMemo(() => supabaseFeedback(supabase), []);
 
   const { learnText, learnCard, setByHand } = cases;
   const send = useCallback(async () => {
@@ -378,6 +382,22 @@ function SignedIn({
       />
       {/* Solid strip behind the status bar, so scrolled content never runs under the clock. */}
       <View pointerEvents="none" style={[styles.statusStrip, { height: insets.top }]} />
+      {/* Admins only (ticket #19): the report form, above the panels. */}
+      {showFeedbackButton({ isAdmin, signedIn: true, demo: DEMO }) && (
+        <FeedbackButton
+          page={pageName({
+            view: shell.view,
+            sidebar: shell.sidebar,
+            caseOpen,
+            nameOpen,
+            deptOpen,
+            libraryOpen: selection !== null,
+          })}
+          appVersion={installedVersion()}
+          port={feedback}
+          bottom={insets.bottom + COMPOSER_SPACE + S.sm}
+        />
+      )}
     </View>
   );
 }

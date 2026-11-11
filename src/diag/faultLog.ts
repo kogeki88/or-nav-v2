@@ -4,7 +4,7 @@
 import { scrub } from '../../supabase/functions/omnibar/scrub';
 
 export type FaultLevel = 'error' | 'warn' | 'info';
-export type FaultArea = 'crash' | 'signin' | 'sync' | 'database' | 'update' | 'omnibar' | 'test';
+export type FaultArea = 'crash' | 'signin' | 'sync' | 'database' | 'update' | 'omnibar' | 'feedback' | 'test';
 
 export type FaultEntry = {
   at: string;

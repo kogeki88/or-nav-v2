@@ -200,6 +200,22 @@ Order (each blocked by the one before): #11 new look → #12 sidebar and name sh
 
 - [ ] #11 … #17
 
+## Part M — Feedback 1: floating button and text report, online (spec #18, ticket #19) (2026-11-11)
+Done means: an admin sees a "Send feedback" button, sends a typed report to Supabase, and the report reads back in the table. Online only; the offline outbox is ticket #20.
+Files:
+- `supabase/migrations/0005_feedback_reports.sql` (new table, RLS: admins insert and read their own; nobody updates or deletes). Sean pastes it into the Supabase SQL editor by hand.
+- `src/contracts/feedback.ts` (new, types only), `src/core/feedback/supabaseFeedback.ts`, `uuid.ts`, `feedback.test.ts` (new)
+- `src/features/feedback/logic.ts`, `logic.test.ts`, `FeedbackButton.tsx` (new)
+- `src/diag/faultLog.ts` (area `feedback`), `App.tsx` (button shown in the signed-in shell, admins only, not demo)
+Choices to confirm: the message is not run through the scrubber (Sean's typed text, admin only); button sits bottom-right above the composer; 2000-character limit; 15 s timeout.
+Checks:
+- [x] Typecheck passes (2026-11-11)
+- [x] Jest 148 of 148 pass, 13 suites (2026-11-11), including: one id per form reused on retry; a duplicate-id answer counts as sent; logs only error code and message, never details
+- [x] Code review: Spec and Standards agents; no hard violations; fixed log detail leak, duplicate on retry, stale send after reopen
+- [ ] Sean: paste `0005_feedback_reports.sql` into the Supabase SQL editor; check the policies
+- [ ] Emulator check (button hidden while the form is open; sheet not covered); not done yet
+- [ ] Green cloud build and in-app update (after the ticket group is done)
+
 ## Status
 v2.5.0 on Sean's phone (2026-11-10): Brick 3 sound-alike search done, checked offline. Issues #6–#9 closed. AI omnibar still waits for keys.
 Next: `/implement #11` in a fresh session (Part L).
