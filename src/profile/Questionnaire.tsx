@@ -89,7 +89,7 @@ export default function Questionnaire({ preview = false, onSave, onClose }: Prop
 
   return (
     <View style={styles.wrap}>
-      {preview && <Banner text="Preview — answers are not saved." tone="accent" icon="eye-outline" />}
+      {preview && <Banner text="Preview — answers are not saved." tone="accent" icon="eye" />}
 
       <View style={styles.dots} accessibilityLabel={`Step ${step + 1} of ${STEP_COUNT}`}>
         {STEP_TITLES.map((t, i) => (
@@ -168,13 +168,13 @@ export default function Questionnaire({ preview = false, onSave, onClose }: Prop
         </>
       )}
 
-      {problem !== '' && <Banner text={problem} tone="danger" icon="alert-circle-outline" />}
+      {problem !== '' && <Banner text={problem} tone="danger" icon="alert-circle" />}
 
       <View style={styles.nav}>
-        {step > 0 && <Button kind="secondary" label="Back" icon="chevron-back" onPress={back} disabled={saving} style={{ flex: 1 }} />}
+        {step > 0 && <Button kind="secondary" label="Back" icon="chevron-left" onPress={back} disabled={saving} style={{ flex: 1 }} />}
         <Button
           label={last ? (preview ? 'Finish preview' : 'Finish') : 'Next'}
-          icon={last ? 'checkmark' : undefined}
+          icon={last ? 'check' : undefined}
           onPress={next}
           busy={saving}
           style={{ flex: step > 0 ? 1.4 : 1 }}
@@ -204,7 +204,7 @@ function Chips(props: {
         const on = props.value === o;
         return (
           <PressScale key={o} accessibilityState={{ selected: on }} onPress={() => props.onChange(on && props.toggle ? '' : o)} style={[styles.chip, on && styles.chipOn]}>
-            {on && <Icon name="checkmark" size={18} />}
+            {on && <Icon name="check" size={18} />}
             <Text style={[styles.chipText, on && styles.chipTextOn]}>{props.labels?.[o] ?? o}</Text>
           </PressScale>
         );

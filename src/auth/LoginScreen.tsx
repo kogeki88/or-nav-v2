@@ -68,7 +68,7 @@ export default function LoginScreen() {
         <Text style={T.callout}>{mode === 'signIn' ? 'Welcome back.' : 'It takes a minute. You stay signed in offline.'}</Text>
       </View>
 
-      {!authConfigured && <Banner text="This build has no account settings. Install the next update." tone="danger" icon="alert-circle-outline" />}
+      {!authConfigured && <Banner text="This build has no account settings. Install the next update." tone="danger" icon="alert-circle" />}
 
       <Field
         label="Email"
@@ -96,9 +96,9 @@ export default function LoginScreen() {
         onSubmit={submit}
       />
 
-      {message !== '' && <Banner text={message} tone={isError ? 'danger' : 'accent'} icon={isError ? 'alert-circle-outline' : 'mail-outline'} />}
+      {message !== '' && <Banner text={message} tone={isError ? 'danger' : 'accent'} icon={isError ? 'alert-circle' : 'mail'} />}
 
-      <Button label={mode === 'signIn' ? 'Sign in' : 'Create account'} icon={mode === 'signIn' ? 'log-in-outline' : 'person-add-outline'} busy={busy} disabled={!authConfigured} onPress={submit} />
+      <Button label={mode === 'signIn' ? 'Sign in' : 'Create account'} icon={mode === 'signIn' ? 'log-in' : 'user-plus'} busy={busy} disabled={!authConfigured} onPress={submit} />
 
       <Button kind="ghost" label={mode === 'signIn' ? 'New here? Create an account' : 'Have an account? Sign in'} onPress={switchMode} />
     </View>

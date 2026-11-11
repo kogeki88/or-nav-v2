@@ -10,9 +10,9 @@ export type TabName = 'library' | 'review' | 'me';
 export const TAB_BAR_HEIGHT = 61;
 
 const TABS: { key: TabName; label: string; icon: IconName; iconOn: IconName }[] = [
-  { key: 'library', label: 'Library', icon: 'library-outline', iconOn: 'library' },
-  { key: 'review', label: 'To review', icon: 'checkmark-done-circle-outline', iconOn: 'checkmark-done-circle' },
-  { key: 'me', label: 'Me', icon: 'person-circle-outline', iconOn: 'person-circle' },
+  { key: 'library', label: 'Library', icon: 'book-open', iconOn: 'book-open' },
+  { key: 'review', label: 'To review', icon: 'check-square', iconOn: 'check-square' },
+  { key: 'me', label: 'Me', icon: 'user', iconOn: 'user' },
 ];
 
 export default function TabBar({ value, onChange, badge, bottomInset }: { value: TabName; onChange: (t: TabName) => void; badge: number; bottomInset: number }) {

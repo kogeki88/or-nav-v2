@@ -63,8 +63,8 @@ export default function MeScreen({ user, profile, update, welcome, topInset, bot
             saveView(v);
           }}
           options={[
-            { key: 'regular', label: 'Regular view', icon: 'person-outline' },
-            { key: 'admin', label: 'Admin view', icon: 'construct-outline' },
+            { key: 'regular', label: 'Regular view', icon: 'user' },
+            { key: 'admin', label: 'Admin view', icon: 'tool' },
           ]}
         />
       )}

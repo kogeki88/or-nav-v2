@@ -27,20 +27,20 @@ export default function DepartmentSheet({ lib, open, onClose, jobRole }: { lib: 
 
   const header = (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.md }}>
-      <IconTile name="business-outline" size={48} />
+      <IconTile name="briefcase" size={48} />
       <View style={{ flex: 1 }}>
         <Text style={T.title} accessibilityRole="header">
           Departments
         </Text>
         <Text style={T.callout}>You see only the departments you join.</Text>
       </View>
-      <IconButton name="close" label="Close" onPress={onClose} />
+      <IconButton name="x" label="Close" onPress={onClose} />
     </View>
   );
 
   return (
     <BottomSheet open={open} onClose={onClose} header={header} label="Departments">
-      {problem !== '' && <Banner text={problem} tone="danger" icon="alert-circle-outline" />}
+      {problem !== '' && <Banner text={problem} tone="danger" icon="alert-circle" />}
 
       {lib.mine.length > 0 && (
         <View>
@@ -52,11 +52,11 @@ export default function DepartmentSheet({ lib, open, onClose, jobRole }: { lib: 
                 <ListRow
                   key={department.id}
                   first={i === 0}
-                  icon="medkit-outline"
+                  icon="activity"
                   title={department.name}
                   subtitle={hospital?.name}
                   label={`${department.name}, ${hospital?.name ?? ''}${on ? ', selected' : ''}`}
-                  right={on ? <Icon name="checkmark-circle" color={C.accent} size={24} /> : <View style={{ width: 24 }} />}
+                  right={on ? <Icon name="check-circle" color={C.accent} size={24} /> : <View style={{ width: 24 }} />}
                   onPress={() => {
                     lib.setDept(department.id);
                     onClose();
@@ -79,7 +79,7 @@ export default function DepartmentSheet({ lib, open, onClose, jobRole }: { lib: 
                 <ListRow
                   key={d.id}
                   first={i === 0}
-                  icon="add-circle-outline"
+                  icon="plus-circle"
                   title={d.name}
                   subtitle={h.name}
                   right={<Button label="Join" kind="ghost" busy={busyId === d.id} onPress={() => join(d.id)} />}

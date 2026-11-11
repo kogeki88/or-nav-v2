@@ -163,7 +163,7 @@ function Main() {
       <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + S.xxl, paddingBottom: insets.bottom + S.xl }]} keyboardShouldPersistTaps="handled">
         <View style={styles.top}>
           <View style={styles.brandRow}>
-            <IconTile name="navigate" size={48} />
+            <IconTile name="navigation" size={48} />
             <Text style={T.largeTitle}>OR-Nav</Text>
           </View>
           <Text style={[T.body, { color: C.text2 }]}>

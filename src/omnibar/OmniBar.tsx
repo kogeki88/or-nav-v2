@@ -10,7 +10,7 @@ export default function OmniBar({ onOpen, busy }: { onOpen: () => void; busy: bo
   return (
     <View style={styles.wrap}>
       <PressScale onPress={onOpen} accessibilityRole="button" accessibilityLabel="Ask OR-Nav. Opens the assistant" style={styles.bar}>
-        <Icon name="sparkles" size={20} />
+        <Icon name="zap" size={20} />
         <Text style={styles.text} numberOfLines={1}>
           {busy ? 'Thinking…' : 'Ask OR-Nav: “where’s the bovie?”'}
         </Text>

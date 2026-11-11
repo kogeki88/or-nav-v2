@@ -16,11 +16,11 @@ export default function RegularView({ update, profile }: { update: UpdateState; 
 
       <SectionLabel text="App" />
       <Group style={{ paddingHorizontal: S.lg }}>
-        <DetailRow first icon="phone-portrait-outline" label="Version" value={installedVersion()} />
+        <DetailRow first icon="smartphone" label="Version" value={installedVersion()} />
       </Group>
       <View style={{ gap: S.md, marginTop: S.md }}>
         <UpdatePanel update={update} primary={false} />
-        <Button kind="ghost" tone="danger" icon="log-out-outline" label="Sign out" onPress={signOut} />
+        <Button kind="ghost" tone="danger" icon="log-out" label="Sign out" onPress={signOut} />
       </View>
     </View>
   );

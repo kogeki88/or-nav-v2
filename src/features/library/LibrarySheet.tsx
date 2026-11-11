@@ -86,13 +86,13 @@ export default function LibrarySheet({ lib, selection, onSelect, onClose }: { li
   // ---------- Header ----------
   let header = null;
   if (mode === 'sent') {
-    header = <SheetTitle icon="checkmark-circle" iconColor={C.ok} iconBg={C.okSoft} title="Sent for review" subtitle={where} onClose={onClose} />;
+    header = <SheetTitle icon="check-circle" iconColor={C.ok} iconBg={C.okSoft} title="Sent for review" subtitle={where} onClose={onClose} />;
   } else if (shown?.type === 'new') {
-    header = <SheetTitle icon="add" title="Suggest something new" subtitle={where} onClose={onClose} />;
+    header = <SheetTitle icon="plus" title="Suggest something new" subtitle={where} onClose={onClose} />;
   } else if (mode === 'edit') {
     header = (
       <SheetTitle
-        icon="create-outline"
+        icon="edit-2"
         title={isNew ? (target === 'item' ? 'New item' : 'New preference card') : 'Suggest an edit'}
         subtitle={isNew ? where : item?.name ?? (card ? `${card.procedure} · ${card.surgeon}` : '')}
         onClose={onClose}
@@ -101,9 +101,9 @@ export default function LibrarySheet({ lib, selection, onSelect, onClose }: { li
   } else if (item) {
     header = <SheetTitle icon={itemIcon(item.category)} title={item.name} subtitle={item.category ?? 'Item'} onClose={onClose} />;
   } else if (card) {
-    header = <SheetTitle icon="clipboard-outline" title={card.procedure} subtitle={cardSubtitle(card)} onClose={onClose} />;
+    header = <SheetTitle icon="clipboard" title={card.procedure} subtitle={cardSubtitle(card)} onClose={onClose} />;
   } else {
-    header = <SheetTitle icon="help-circle-outline" title="Not found" subtitle="It may have been removed." onClose={onClose} />;
+    header = <SheetTitle icon="help-circle" title="Not found" subtitle="It may have been removed." onClose={onClose} />;
   }
 
   // ---------- Footer (the one main action) ----------
@@ -113,14 +113,14 @@ export default function LibrarySheet({ lib, selection, onSelect, onClose }: { li
   } else if (mode === 'edit') {
     footer = (
       <>
-        <Button label="Send for review" icon="paper-plane-outline" onPress={send} busy={busy} />
+        <Button label="Send for review" icon="send" onPress={send} busy={busy} />
         <Button label="Cancel" kind="ghost" onPress={() => (isNew ? onClose() : setMode('view'))} />
       </>
     );
   } else if (row) {
     footer = (
       <>
-        <Button label="Suggest an edit" icon="create-outline" onPress={() => setMode('edit')} />
+        <Button label="Suggest an edit" icon="edit-2" onPress={() => setMode('edit')} />
         <Text style={styles.footHint}>A colleague in {where} reviews it before it changes.</Text>
       </>
     );
@@ -137,12 +137,12 @@ export default function LibrarySheet({ lib, selection, onSelect, onClose }: { li
 
       {mode === 'view' && shown?.type === 'new' && (
         <View style={{ gap: S.md }}>
-          <Choice icon="cube-outline" title="Item" body="A supply or instrument and where it lives." onPress={() => onSelect({ type: 'new-item' })} />
-          <Choice icon="clipboard-outline" title="Preference card" body="A surgeon's setup for one procedure." onPress={() => onSelect({ type: 'new-card' })} />
+          <Choice icon="box" title="Item" body="A supply or instrument and where it lives." onPress={() => onSelect({ type: 'new-item' })} />
+          <Choice icon="clipboard" title="Preference card" body="A surgeon's setup for one procedure." onPress={() => onSelect({ type: 'new-card' })} />
         </View>
       )}
 
-      {mode === 'view' && pending.length > 0 && <Banner text={`${pending.length === 1 ? 'A change is' : `${pending.length} changes are`} waiting for review.`} icon="time-outline" />}
+      {mode === 'view' && pending.length > 0 && <Banner text={`${pending.length === 1 ? 'A change is' : `${pending.length} changes are`} waiting for review.`} icon="clock" />}
 
       {mode === 'view' && item && <ItemBody lib={lib} item={item} onSelect={onSelect} />}
       {mode === 'view' && card && <CardBody lib={lib} card={card} onSelect={onSelect} />}
@@ -163,7 +163,7 @@ export default function LibrarySheet({ lib, selection, onSelect, onClose }: { li
               changed={!isNew && f.key in changes}
             />
           ))}
-          {problem !== '' && <Banner text={problem} tone="danger" icon="alert-circle-outline" />}
+          {problem !== '' && <Banner text={problem} tone="danger" icon="alert-circle" />}
         </View>
       )}
     </BottomSheet>
@@ -184,7 +184,7 @@ function SheetTitle({ icon, title, subtitle, onClose, iconColor, iconBg }: { ico
           </Text>
         ) : null}
       </View>
-      <IconButton name="close" label="Close" onPress={onClose} />
+      <IconButton name="x" label="Close" onPress={onClose} />
     </View>
   );
 }
@@ -197,7 +197,7 @@ function Choice({ icon, title, body, onPress }: { icon: Parameters<typeof IconTi
         <Text style={T.headline}>{title}</Text>
         <Text style={T.callout}>{body}</Text>
       </View>
-      <Icon name="chevron-forward" color={C.text3} />
+      <Icon name="chevron-right" color={C.text3} />
     </PressScale>
   );
 }
@@ -216,7 +216,7 @@ function ItemBody({ lib, item, onSelect }: { lib: Library; item: Item; onSelect:
   return (
     <>
       <View style={styles.hero}>
-        <Icon name="location-outline" color={C.accent} size={22} />
+        <Icon name="map-pin" color={C.accent} size={22} />
         <View style={{ flex: 1 }}>
           <Text style={T.caption}>Where to find it</Text>
           <Text style={T.headline}>{itemLocation(item)}</Text>
@@ -232,7 +232,7 @@ function ItemBody({ lib, item, onSelect }: { lib: Library; item: Item; onSelect:
       ) : (
         <Group>
           {cards.map((c, i) => (
-            <ListRow key={c.id} first={i === 0} icon="clipboard-outline" title={c.procedure} subtitle={cardSubtitle(c)} onPress={() => onSelect({ type: 'card', id: c.id })} />
+            <ListRow key={c.id} first={i === 0} icon="clipboard" title={c.procedure} subtitle={cardSubtitle(c)} onPress={() => onSelect({ type: 'card', id: c.id })} />
           ))}
         </Group>
       )}
@@ -247,7 +247,7 @@ function CardBody({ lib, card, onSelect }: { lib: Library; card: Card; onSelect:
     <>
       {card.notes ? (
         <View style={styles.hero}>
-          <Icon name="chatbubble-ellipses-outline" color={C.accent} size={22} />
+          <Icon name="message-square" color={C.accent} size={22} />
           <Text style={[T.body, { flex: 1 }]}>{card.notes}</Text>
         </View>
       ) : null}

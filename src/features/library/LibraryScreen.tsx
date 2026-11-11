@@ -66,11 +66,11 @@ export default function LibraryScreen({
           <Text style={T.largeTitle} accessibilityRole="header">
             Library
           </Text>
-          {lib.deptId && <IconButton name="add" label="Suggest something new" onPress={() => setSelection({ type: 'new' })} color={C.bg} bg={C.accent} />}
+          {lib.deptId && <IconButton name="plus" label="Suggest something new" onPress={() => setSelection({ type: 'new' })} color={C.onAccent} bg={C.accent} />}
         </View>
 
         <Pressable accessibilityRole="button" accessibilityLabel={`Department: ${departmentLabel(lib.data, lib.deptId)}. Change`} onPress={() => setPickDept(true)} style={styles.dept} hitSlop={8}>
-          <Icon name="business-outline" size={18} />
+          <Icon name="briefcase" size={18} />
           <Text style={styles.deptText} numberOfLines={1}>
             {departmentLabel(lib.data, lib.deptId)}
           </Text>
@@ -78,7 +78,7 @@ export default function LibraryScreen({
         </Pressable>
 
         {lib.offline && <Banner text={`Offline — showing your saved copy${lib.data.loadedAt ? ` from ${timeAgo(lib.data.loadedAt)}` : ''}.`} />}
-        {!lib.offline && lib.error !== '' && <Banner text={lib.error} tone="danger" icon="alert-circle-outline" />}
+        {!lib.offline && lib.error !== '' && <Banner text={lib.error} tone="danger" icon="alert-circle" />}
 
         {!noDept && (
           <View style={{ gap: S.md, marginTop: S.sm }}>
@@ -103,20 +103,20 @@ export default function LibraryScreen({
 
         {noDept && (
           <EmptyState
-            icon="business-outline"
+            icon="briefcase"
             title="Join your department"
             body="Pick your hospital and department to see its preference cards and supplies."
-            action={<Button label="Choose department" icon="add" onPress={() => setPickDept(true)} style={{ alignSelf: 'stretch' }} />}
+            action={<Button label="Choose department" icon="plus" onPress={() => setPickDept(true)} style={{ alignSelf: 'stretch' }} />}
           />
         )}
 
-        {nothing && query !== '' && <EmptyState icon="search-outline" title={`No matches for “${query}”`} body="Try another spelling, or a shorter word." />}
+        {nothing && query !== '' && <EmptyState icon="search" title={`No matches for “${query}”`} body="Try another spelling, or a shorter word." />}
         {nothing && query === '' && (
           <EmptyState
-            icon="library-outline"
+            icon="book-open"
             title="Start this department's library"
             body="Suggest the first item or preference card. A colleague reviews it before it appears."
-            action={<Button label="Suggest something" icon="add" onPress={() => setSelection({ type: 'new' })} style={{ alignSelf: 'stretch' }} />}
+            action={<Button label="Suggest something" icon="plus" onPress={() => setSelection({ type: 'new' })} style={{ alignSelf: 'stretch' }} />}
           />
         )}
 
@@ -128,7 +128,7 @@ export default function LibraryScreen({
                 <ListRow
                   key={c.id}
                   first={i === 0}
-                  icon="clipboard-outline"
+                  icon="clipboard"
                   title={c.procedure}
                   subtitle={cardSubtitle(c)}
                   right={pendingFor(lib.data.requests, 'card', c.id).length ? <Badge label="Pending" tone="warn" /> : undefined}

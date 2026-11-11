@@ -32,7 +32,7 @@ export default function UpdatePanel({ update, primary, quiet }: { update: Update
 
       <Button
         kind={quiet ? 'ghost' : primary ? 'primary' : 'secondary'}
-        icon={busy ? undefined : 'refresh-outline'}
+        icon={busy ? undefined : 'refresh-cw'}
         disabled={busy}
         onPress={update.run}
         label={update.phase === 'checking' ? 'Checking…' : update.phase === 'downloading' ? `Downloading ${pct}%` : 'Check for updates'}

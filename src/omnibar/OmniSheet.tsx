@@ -37,15 +37,15 @@ export default function OmniSheet({ open, onClose, omni, lib, onOpenSelection, o
 
   const header = (
     <View style={styles.header}>
-      <IconTile name="sparkles" />
+      <IconTile name="zap" />
       <View style={{ flex: 1 }}>
         <Text style={T.headline}>Ask OR-Nav</Text>
         <Text style={T.callout} numberOfLines={1}>
           {departmentLabel(lib.data, lib.deptId)}
         </Text>
       </View>
-      {omni.messages.length > 0 && <IconButton name="trash-outline" label="Clear the chat" onPress={omni.clear} />}
-      <IconButton name="close" label="Close" onPress={onClose} />
+      {omni.messages.length > 0 && <IconButton name="trash-2" label="Clear the chat" onPress={omni.clear} />}
+      <IconButton name="x" label="Close" onPress={onClose} />
     </View>
   );
 
@@ -74,7 +74,7 @@ export default function OmniSheet({ open, onClose, omni, lib, onOpenSelection, o
         )}
       </View>
       <View style={styles.privacy}>
-        <Icon name="shield-checkmark-outline" size={16} color={C.text3} />
+        <Icon name="shield" size={16} color={C.text3} />
         <Text style={styles.privacyText}>No patient information. Changes go to a colleague for review.</Text>
       </View>
     </>
@@ -86,7 +86,7 @@ export default function OmniSheet({ open, onClose, omni, lib, onOpenSelection, o
         <View style={{ gap: S.sm }}>
           <Text style={T.callout}>Ask in your own words. OR shorthand is fine. Try:</Text>
           {EXAMPLES.map((e) => (
-            <ListRow key={e} first icon="chatbubble-outline" title={e} onPress={() => submit(e)} />
+            <ListRow key={e} first icon="message-circle" title={e} onPress={() => submit(e)} />
           ))}
         </View>
       )}
@@ -150,7 +150,7 @@ function ActionView({
       <Group>
         {cardIds.map((id, i) => {
           const c = card(id);
-          return c ? <ListRow key={id} first={i === 0} icon="clipboard-outline" title={c.procedure} subtitle={cardSubtitle(c)} onPress={() => onOpenSelection({ type: 'card', id })} /> : null;
+          return c ? <ListRow key={id} first={i === 0} icon="clipboard" title={c.procedure} subtitle={cardSubtitle(c)} onPress={() => onOpenSelection({ type: 'card', id })} /> : null;
         })}
         {itemIds.map((id, i) => {
           const it = item(id);
@@ -167,7 +167,7 @@ function ActionView({
     return (
       <Button
         kind="secondary"
-        icon={active ? 'checkmark' : 'business-outline'}
+        icon={active ? 'check' : 'briefcase'}
         label={active ? `Now in ${departmentLabel(lib.data, a.department_id)}` : `Switch to ${departmentLabel(lib.data, a.department_id)}`}
         disabled={active}
         onPress={() => lib.setDept(a.department_id)}
@@ -176,7 +176,7 @@ function ActionView({
   }
 
   if (a.type === 'go_to') {
-    return <Button kind="secondary" icon="arrow-forward" label={`Open ${TAB_LABEL[a.tab]}`} onPress={() => onGoTo(a.tab)} />;
+    return <Button kind="secondary" icon="arrow-right" label={`Open ${TAB_LABEL[a.tab]}`} onPress={() => onGoTo(a.tab)} />;
   }
 
   return <DraftView draft={a} index={index} m={m} lib={lib} omni={omni} />;
@@ -208,7 +208,7 @@ function DraftView({ draft, index, m, lib, omni }: { draft: Draft; index: number
       {state.state === 'sent' ? (
         <Text style={T.callout}>A colleague in this department reviews it before it changes.</Text>
       ) : (
-        <Button kind="secondary" icon="paper-plane-outline" label="Send for review" busy={state.state === 'sending'} onPress={() => omni.sendDraft(m.id, index, draft)} />
+        <Button kind="secondary" icon="send" label="Send for review" busy={state.state === 'sending'} onPress={() => omni.sendDraft(m.id, index, draft)} />
       )}
     </View>
   );

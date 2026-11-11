@@ -12,9 +12,9 @@ export default function ProfileCard({ profile }: { profile: ProfileRow }) {
     : null;
   const rows = (
     [
-      ['heart-outline', 'Favorite specialty', profile.favorite_specialty],
-      ['time-outline', 'Years in the OR', years],
-      ['musical-notes-outline', 'Walk-up song', profile.walkup_song],
+      ['heart', 'Favorite specialty', profile.favorite_specialty],
+      ['clock', 'Years in the OR', years],
+      ['music', 'Walk-up song', profile.walkup_song],
     ] as const
   ).filter(([, , v]) => v);
   if (rows.length === 0) return null;

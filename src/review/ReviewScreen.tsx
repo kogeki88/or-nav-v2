@@ -35,7 +35,7 @@ export default function ReviewScreen({ lib, topInset, bottomSpace }: { lib: Libr
           <SectionLabel text="Waiting for you" right={String(waiting.length)} />
           {waiting.length === 0 ? (
             <Group>
-              <EmptyState icon="checkmark-done-outline" title="All caught up" body="When a colleague suggests a change in your departments, it shows up here." />
+              <EmptyState icon="check-square" title="All caught up" body="When a colleague suggests a change in your departments, it shows up here." />
             </Group>
           ) : (
             <View style={{ gap: S.md }}>
@@ -54,7 +54,7 @@ export default function ReviewScreen({ lib, topInset, bottomSpace }: { lib: Libr
                 <ListRow
                   key={r.id}
                   first={i === 0}
-                  icon={r.status === 'approved' ? 'checkmark-circle-outline' : r.status === 'rejected' ? 'close-circle-outline' : 'time-outline'}
+                  icon={r.status === 'approved' ? 'check-circle' : r.status === 'rejected' ? 'x-circle' : 'clock'}
                   title={requestTitle(lib.data, r)}
                   subtitle={`${departmentLabel(lib.data, r.department_id).split(' · ').pop()} · ${timeAgo(r.created_at)}`}
                   right={<StatusBadge status={r.status} />}
@@ -107,27 +107,27 @@ function ReviewCard({ lib, r }: { lib: Library; r: ChangeRequest }) {
             <Text style={[T.caption, { color: C.text3 }]}>{row.label}</Text>
             {r.kind !== 'add' && <Text style={[T.callout, styles.before]}>{row.before}</Text>}
             <View style={{ flexDirection: 'row', gap: S.sm, alignItems: 'flex-start' }}>
-              {r.kind !== 'add' && <Icon name="arrow-forward" size={18} color={C.accent} />}
+              {r.kind !== 'add' && <Icon name="arrow-right" size={18} color={C.accent} />}
               <Text style={[T.body, { flex: 1 }]}>{row.after}</Text>
             </View>
           </View>
         ))}
       </View>
 
-      {problem !== '' && <Banner text={problem} tone="danger" icon="alert-circle-outline" />}
+      {problem !== '' && <Banner text={problem} tone="danger" icon="alert-circle" />}
 
       {confirmReject ? (
         <View style={{ gap: S.sm }}>
           <Text style={T.callout}>Reject this change? It won't be applied.</Text>
           <View style={styles.actions}>
             <Button label="Keep it" kind="ghost" onPress={() => setConfirmReject(false)} style={{ flex: 1 }} />
-            <Button label="Reject" kind="secondary" tone="danger" icon="close" busy={busy === 'reject'} onPress={() => decide('reject')} style={{ flex: 1 }} />
+            <Button label="Reject" kind="secondary" tone="danger" icon="x" busy={busy === 'reject'} onPress={() => decide('reject')} style={{ flex: 1 }} />
           </View>
         </View>
       ) : (
         <View style={styles.actions}>
           <Button label="Reject" kind="ghost" tone="danger" onPress={() => setConfirmReject(true)} style={{ flex: 1 }} />
-          <Button label="Approve" kind="secondary" icon="checkmark" busy={busy === 'approve'} onPress={() => decide('approve')} style={{ flex: 1.4 }} />
+          <Button label="Approve" kind="secondary" icon="check" busy={busy === 'approve'} onPress={() => decide('approve')} style={{ flex: 1.4 }} />
         </View>
       )}
     </View>

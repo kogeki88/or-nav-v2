@@ -1,5 +1,5 @@
 // Shared building blocks from design/DESIGN.md. Screens compose these; they never restyle them.
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Feather from '@expo/vector-icons/Feather';
 import { ComponentProps, ReactNode, useEffect, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
@@ -16,13 +16,13 @@ import {
 
 import { C, R, S, T, ui } from '../theme';
 
-export type IconName = ComponentProps<typeof Ionicons>['name'];
+export type IconName = ComponentProps<typeof Feather>['name'];
 
 export function Icon({ name, size = 22, color = C.accent }: { name: IconName; size?: number; color?: string }) {
-  return <Ionicons name={name} size={size} color={color} accessibilityElementsHidden importantForAccessibility="no" />;
+  return <Feather name={name} size={size} color={color} accessibilityElementsHidden importantForAccessibility="no" />;
 }
 
-export function IconTile({ name, color = C.accent, bg = C.accentSoft, size = 40 }: { name: IconName; color?: string; bg?: string; size?: number }) {
+export function IconTile({ name, color = C.accent, bg = 'transparent', size = 40 }: { name: IconName; color?: string; bg?: string; size?: number }) {
   return (
     <View style={[ui.iconTile, { backgroundColor: bg, width: size, height: size }]}>
       <Icon name={name} color={color} size={Math.round(size * 0.55)} />
@@ -117,7 +117,7 @@ export function Button({
   tone?: 'danger';
   style?: StyleProp<ViewStyle>;
 }) {
-  const color = kind === 'primary' ? C.bg : tone === 'danger' ? C.danger : C.accent;
+  const color = kind === 'primary' ? C.onAccent : tone === 'danger' ? C.danger : C.accent;
   const base = kind === 'primary' ? ui.primary : kind === 'secondary' ? ui.secondary : styles.ghost;
   return (
     <PressScale
@@ -178,8 +178,8 @@ export function Segmented<T extends string>({ options, value, onChange }: { opti
         const on = o.key === value;
         return (
           <PressScale key={o.key} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => onChange(o.key)} style={[styles.seg, on && styles.segOn]}>
-            {o.icon && <Icon name={o.icon} size={18} color={on ? C.bg : C.text2} />}
-            <Text style={[styles.segText, on && { color: C.bg }]}>{o.label}</Text>
+            {o.icon && <Icon name={o.icon} size={18} color={on ? C.onAccent : C.text2} />}
+            <Text style={[styles.segText, on && { color: C.onAccent }]}>{o.label}</Text>
           </PressScale>
         );
       })}
@@ -246,7 +246,7 @@ export function ListRow({
       accessibilityRole={onPress ? 'button' : undefined}
       accessibilityLabel={label ?? [title, subtitle].filter(Boolean).join(', ')}
       onPress={onPress}
-      style={({ pressed }) => [styles.row, pressed && onPress && { backgroundColor: C.raised }]}
+      style={({ pressed }) => [styles.row, pressed && onPress && { backgroundColor: C.fill }]}
     >
       {!first && <View style={styles.divider} />}
       {icon && <IconTile name={icon} />}
@@ -261,7 +261,7 @@ export function ListRow({
         ) : null}
       </View>
       {right}
-      {onPress && !right && <Icon name="chevron-forward" color={C.text3} size={20} />}
+      {onPress && !right && <Icon name="chevron-right" color={C.text3} size={20} />}
     </Pressable>
   );
 }
@@ -281,7 +281,7 @@ export function SearchField({ value, onChange, placeholder }: { value: string; o
         autoCapitalize="none"
         accessibilityLabel="Search"
       />
-      {value !== '' && <IconButton name="close" label="Clear search" onPress={() => onChange('')} bg="transparent" color={C.text3} />}
+      {value !== '' && <IconButton name="x" label="Clear search" onPress={() => onChange('')} bg="transparent" color={C.text3} />}
     </View>
   );
 }
@@ -332,7 +332,7 @@ export function SkeletonRows({ count = 3 }: { count?: number }) {
       {Array.from({ length: count }, (_, i) => (
         <Animated.View key={i} style={[styles.row, { opacity: pulse }]} accessibilityLabel={i === 0 ? 'Loading' : undefined}>
           {i > 0 && <View style={styles.divider} />}
-          <View style={[ui.iconTile, { backgroundColor: C.line }]} />
+          <View style={[ui.iconTile, { backgroundColor: C.fill, borderRadius: R.control }]} />
           <View style={styles.rowText}>
             <View style={[styles.bar, { width: '62%' }]} />
             <View style={[styles.bar, { width: '38%', height: 12 }]} />
@@ -355,7 +355,7 @@ export function EmptyState({ icon, title, body, action }: { icon: IconName; titl
   );
 }
 
-export function Banner({ text, tone = 'warn', icon = 'cloud-offline-outline' }: { text: string; tone?: Tone; icon?: IconName }) {
+export function Banner({ text, tone = 'warn', icon = 'cloud-off' }: { text: string; tone?: Tone; icon?: IconName }) {
   const t = TONE[tone];
   return (
     <View style={[styles.banner, { backgroundColor: t.bg }]} accessibilityRole="alert">
@@ -423,7 +423,7 @@ export function Field({
           returnKeyType={onSubmit ? 'go' : undefined}
         />
         {secret && (
-          <IconButton name={shown ? 'eye-off-outline' : 'eye-outline'} label={shown ? 'Hide password' : 'Show password'} onPress={() => setShown((s) => !s)} bg="transparent" color={C.text2} />
+          <IconButton name={shown ? 'eye-off' : 'eye'} label={shown ? 'Hide password' : 'Show password'} onPress={() => setShown((s) => !s)} bg="transparent" color={C.text2} />
         )}
       </View>
     </View>
