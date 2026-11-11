@@ -1,5 +1,6 @@
 // The cases port: each conversation in the one box is a case, saved on the phone only (never synced).
 // A case keeps only what went to the AI (already scrubbed) and what came back. See src/core/cases/.
+import type { Card } from './library';
 
 export type CaseDraftState = 'ready' | 'sending' | 'sent' | 'error';
 
@@ -34,8 +35,21 @@ export type Case = {
   messages: CaseMessage[];
 };
 
-/** A case as one line in a list: the sidebar and "Pick up a case". */
-export type CaseListRow = { id: string; label: string; when: string; current: boolean };
+/** A case as one line in a list: the sidebar and "Pick up a case". `known`: the surgeon or procedure is set. */
+export type CaseListRow = { id: string; label: string; when: string; current: boolean; known: boolean };
+
+/**
+ * How a case learns its surgeon, procedure and card, quietly: never a pop-up or a question.
+ * Each call gives back the same case object when nothing changes. See src/core/cases/learn.ts.
+ */
+export interface CaseLearning {
+  /** Opening a preference card sets the case to that card. */
+  fromCard(c: Case, card: Card): Case;
+  /** A sent message whose words name exactly one of these cards (surgeon and procedure) sets it. */
+  fromText(c: Case, text: string, cards: Card[]): Case;
+  /** The nurse picks a card herself (then learning never changes it), or null to clear the case. */
+  byHand(c: Case, card: Card | null): Case;
+}
 
 /** The current case's conversation, as the one box sees it. `id` is null while the cases load. */
 export type CaseThread = {

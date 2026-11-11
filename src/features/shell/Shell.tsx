@@ -2,12 +2,13 @@
 // the bottom; the sidebar; and Library, To review and Admin tools as full-screen views over it.
 // Screens from other features come in from App.tsx as ready-made pieces (a feature never imports another).
 import { ReactNode, useEffect, useRef, useState } from 'react';
-import { BackHandler, Keyboard, Platform, StyleSheet, Text, View } from 'react-native';
+import { BackHandler, Keyboard, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { CaseListRow } from '../../contracts/cases';
-import { C, F, S } from '../../theme';
+import { C, S } from '../../theme';
 import { IconButton } from '../../ui/kit';
+import CaseLabel from './CaseLabel';
 import { ShellState, backStep, sidebarRows } from './logic';
 import Sidebar from './Sidebar';
 
@@ -17,6 +18,12 @@ type Props = {
   state: ShellState;
   onChange: (s: ShellState) => void;
   caseName: string;
+  /** The case knows its surgeon or procedure: the label sits on a fill with a breathing dot. */
+  caseKnown: boolean;
+  /** Goes up each time the case learns by itself (the label plays its ring once). */
+  caseLearned: number;
+  /** A tap on the case label: the sheet to change the case. */
+  onCaseLabel: () => void;
   /** Recent cases for the sidebar, the current one marked. */
   cases: CaseListRow[];
   onCase: (caseId: string) => void;
@@ -36,7 +43,7 @@ type Props = {
   admin: ReactNode;
 };
 
-export default function Shell({ state, onChange, caseName, cases, onCase, onNewCase, waiting, person, onPerson, body, composer, composerHeight, library, review, admin }: Props) {
+export default function Shell({ state, onChange, caseName, caseKnown, caseLearned, onCaseLabel, cases, onCase, onNewCase, waiting, person, onPerson, body, composer, composerHeight, library, review, admin }: Props) {
   const insets = useSafeAreaInsets();
   const live = useRef({ state, onChange });
   live.current = { state, onChange };
@@ -83,9 +90,7 @@ export default function Shell({ state, onChange, caseName, cases, onCase, onNewC
           <IconButton name="menu" label={waiting ? `Open the sidebar. ${waiting} to review` : 'Open the sidebar'} onPress={() => set({ sidebar: true })} bg="transparent" color={C.text} />
           {waiting > 0 && <View style={styles.dot} pointerEvents="none" />}
         </View>
-        <Text style={styles.caseLabel} numberOfLines={1} accessibilityLabel={`Current case: ${caseName}`}>
-          {caseName}
-        </Text>
+        <CaseLabel label={caseName} known={caseKnown} learned={caseLearned} onPress={onCaseLabel} />
         <IconButton name="edit" label="New case" onPress={onNewCase} bg="transparent" color={C.text} />
       </View>
 
@@ -140,7 +145,6 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.bg },
   topBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: S.xs, backgroundColor: C.bg },
   dot: { position: 'absolute', top: 12, right: 10, width: 8, height: 8, borderRadius: 4, backgroundColor: C.warn },
-  caseLabel: { flex: 1, textAlign: 'center', fontFamily: F, color: C.text2, fontSize: 15, fontWeight: '500' },
   body: { flex: 1 },
   backBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: S.xs, backgroundColor: C.bg },
   view: { backgroundColor: C.bg },

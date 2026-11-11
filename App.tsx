@@ -18,6 +18,8 @@ import DepartmentSheet from './src/features/library/DepartmentSheet';
 import LibraryScreen from './src/features/library/LibraryScreen';
 import LibrarySheet, { Selection } from './src/features/library/LibrarySheet';
 import { makeCaseStore, memoryCaseRows } from './src/core/cases/caseStore';
+import { makeCaseLearning } from './src/core/cases/learn';
+import CaseSheet from './src/features/case/CaseSheet';
 import { sqliteCaseStore } from './src/core/cases/sqliteCases';
 import { useCases } from './src/features/case/useCases';
 import { ShellState, firstName, timeGreeting } from './src/features/shell/logic';
@@ -45,6 +47,8 @@ import UpdatePanel, { UpdatePhase, UpdateState } from './src/views/UpdatePanel';
 
 /** Demo mode: sample data, no sign-in. Only in a development run started with EXPO_PUBLIC_DEMO=1. */
 const DEMO = __DEV__ && process.env.EXPO_PUBLIC_DEMO === '1';
+/** How a case learns its card (opening a card, or words that name one). Built once. */
+const caseLearning = makeCaseLearning(wordSearch);
 const DEMO_USER: SignedInUser = { id: DEMO_USER_ID, email: 'demo@example.invalid', role: 'admin' };
 const DEMO_PROFILE: ProfileRow = {
   full_name: 'Demo Nurse',
@@ -235,10 +239,11 @@ function SignedIn({
   const lib = useLibrary(source, user.id, !DEMO);
   const assistant = useMemo(() => supabaseAssistant(supabase), []);
   const caseStore = useMemo(() => (DEMO ? makeCaseStore(memoryCaseRows()) : sqliteCaseStore(user.id)), [user.id]);
-  const cases = useCases(caseStore);
+  const cases = useCases(caseStore, caseLearning);
   const omni = useOmnibar(lib, assistant, cases.thread);
   const [nameOpen, setNameOpen] = useState(false);
   const [deptOpen, setDeptOpen] = useState(false);
+  const [caseOpen, setCaseOpen] = useState(false);
   // The one box: its text, this department's search index, and the item or card open in the sheet.
   const [text, setText] = useState('');
   const deptItems = useMemo(() => lib.data.items.filter((i) => i.department_id === lib.deptId), [lib.data.items, lib.deptId]);
@@ -246,11 +251,20 @@ function SignedIn({
   const index = useMemo(() => wordSearch.index(deptItems, deptCards), [deptItems, deptCards]);
   const [selection, setSelection] = useState<Selection | null>(null);
 
+  const { learnText, learnCard, setByHand } = cases;
   const send = useCallback(async () => {
     const value = text;
+    // The case learns a card from the words sent (quietly), then the message goes to the AI.
+    learnText(value, deptCards);
     // Clear the box only when the message went out and the nurse has not typed something new.
     if (await omni.send(value)) setText((cur) => (cur === value ? '' : cur));
-  }, [omni, text]);
+  }, [omni, text, learnText, deptCards]);
+
+  // The card the case knows (opened, learned or set by hand): a line at the top of the conversation.
+  const knownCard = cases.current?.cardId ? lib.data.cards.find((c) => c.id === cases.current?.cardId) : undefined;
+  const caseCard = knownCard
+    ? { id: knownCard.id, title: knownCard.procedure, count: lib.data.cardItems.filter((ci) => ci.card_id === knownCard.id).length }
+    : null;
 
   const isAdmin = user.role === 'admin';
   const person = { name: firstName(profile), fullName: profile.full_name, emoji: profile.avatar_emoji, role: profile.role };
@@ -263,6 +277,9 @@ function SignedIn({
         state={shell}
         onChange={setShell}
         caseName={cases.label}
+        caseKnown={cases.known}
+        caseLearned={cases.learned}
+        onCaseLabel={() => setCaseOpen(true)}
         cases={cases.list}
         onCase={cases.switchTo}
         onNewCase={cases.startNew}
@@ -284,11 +301,25 @@ function SignedIn({
             }}
             pickUp={cases.pickUp}
             onPickUp={cases.switchTo}
+            caseCard={caseCard}
           />
         }
         composer={<Composer text={text} onChangeText={setText} onSend={send} busy={omni.busy} />}
         composerHeight={COMPOSER_SPACE}
-        library={(header) => <LibraryScreen lib={lib} search={wordSearch} topInset={0} bottomSpace={insets.bottom} jobRole={profile.role} header={header} />}
+        library={(header) => (
+          <LibraryScreen
+            lib={lib}
+            search={wordSearch}
+            topInset={0}
+            bottomSpace={insets.bottom}
+            jobRole={profile.role}
+            header={header}
+            onCardShown={(id) => {
+              const card = lib.data.cards.find((c) => c.id === id);
+              if (card) learnCard(card);
+            }}
+          />
+        )}
         review={<ReviewScreen lib={lib} topInset={0} bottomSpace={insets.bottom} />}
         admin={
           <ScrollView contentContainerStyle={[styles.admin, { paddingBottom: insets.bottom + S.xxl }]}>
@@ -298,6 +329,22 @@ function SignedIn({
             <AdminView user={user} update={update} profile={profile} onPreviewQuestionnaire={onPreviewQuestionnaire} />
           </ScrollView>
         }
+      />
+      <CaseSheet
+        open={caseOpen}
+        onClose={() => setCaseOpen(false)}
+        cards={deptCards}
+        search={index}
+        currentCardId={cases.current?.cardId ?? null}
+        known={cases.known}
+        onPick={(card) => {
+          setByHand(card);
+          setCaseOpen(false);
+        }}
+        onClear={() => {
+          setByHand(null);
+          setCaseOpen(false);
+        }}
       />
       <NameSheet
         open={nameOpen}
@@ -319,7 +366,16 @@ function SignedIn({
       />
       <DepartmentSheet lib={lib} open={deptOpen} onClose={() => setDeptOpen(false)} jobRole={profile.role} />
       {/* Items and cards tapped in the one box open here, over the main screen. */}
-      <LibrarySheet lib={lib} selection={selection} onSelect={setSelection} onClose={() => setSelection(null)} />
+      <LibrarySheet
+        lib={lib}
+        selection={selection}
+        onSelect={setSelection}
+        onClose={() => setSelection(null)}
+        onCardShown={(id) => {
+          const card = lib.data.cards.find((c) => c.id === id);
+          if (card) learnCard(card);
+        }}
+      />
       {/* Solid strip behind the status bar, so scrolled content never runs under the clock. */}
       <View pointerEvents="none" style={[styles.statusStrip, { height: insets.top }]} />
     </View>
