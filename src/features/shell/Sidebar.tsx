@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { CaseListRow } from '../../contracts/cases';
 import { C, F, R, S, T } from '../../theme';
 import { Avatar, Icon, IconName } from '../../ui/kit';
+import { BreathingDot } from './CaseLabel';
 import type { SidebarRow } from './logic';
 
 const ROW_ICON: Record<SidebarRow['key'], IconName> = { new: 'plus', library: 'book-open', review: 'check-circle' };
@@ -143,7 +144,7 @@ export default function Sidebar({ open, onOpen, onClose, rows, onRow, cases, onC
                   onPress={() => onCase(c.id)}
                   style={({ pressed }) => [styles.case, c.current && styles.caseCurrent, pressed && { backgroundColor: C.fill }]}
                 >
-                  {c.current && <View style={styles.caseDot} />}
+                  {c.current && <BreathingDot known={c.known} reduceMotion={reduceMotion} size={6} />}
                   <Text style={[styles.caseText, c.current && styles.caseTextCurrent]} numberOfLines={1}>
                     {c.label}
                   </Text>
@@ -186,7 +187,6 @@ const styles = StyleSheet.create({
   heading: { ...T.callout, fontSize: 14, color: C.text3, fontWeight: '500', paddingTop: S.xl, paddingBottom: 6, paddingHorizontal: 18 },
   case: { minHeight: 46, borderRadius: 23, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 18 },
   caseCurrent: { backgroundColor: C.fill },
-  caseDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: C.accent },
   caseText: { fontFamily: F, color: C.text2, fontSize: 16, flex: 1 },
   caseTextCurrent: { color: C.text, fontWeight: '600' },
   caseWhen: { fontFamily: F, color: C.text3, fontSize: 13 },

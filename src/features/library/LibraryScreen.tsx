@@ -21,7 +21,10 @@ export default function LibraryScreen({
   bottomSpace,
   jobRole,
   header,
+  onCardShown,
 }: {
+  /** A preference card was opened (the current case learns it). */
+  onCardShown?: (cardId: string) => void;
   /** Drawn above the list (the shell's back bar), inside this screen so its sheets cover it too. */
   header?: ReactNode;
   lib: Library;
@@ -160,7 +163,7 @@ export default function LibraryScreen({
         )}
       </ScrollView>
 
-      <LibrarySheet lib={lib} selection={selection} onSelect={setSelection} onClose={() => setSelection(null)} />
+      <LibrarySheet lib={lib} selection={selection} onSelect={setSelection} onClose={() => setSelection(null)} onCardShown={onCardShown} />
       <DepartmentSheet lib={lib} open={pickDept} onClose={() => setPickDept(false)} jobRole={jobRole} />
     </View>
   );

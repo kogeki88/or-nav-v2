@@ -77,9 +77,11 @@ type BodyProps = {
   /** "Pick up a case" on an empty case: the most recent other cases. */
   pickUp: CaseListRow[];
   onPickUp: (caseId: string) => void;
+  /** The card the case knows: its line sits at the top of the conversation. */
+  caseCard?: { id: string; title: string; count: number } | null;
 };
 
-export function OneBoxBody({ omni, lib, index, text, greeting, notice, onOpen, onGoTo, pickUp, onPickUp }: BodyProps) {
+export function OneBoxBody({ omni, lib, index, text, greeting, notice, onOpen, onGoTo, pickUp, onPickUp, caseCard }: BodyProps) {
   const scroll = useRef<ScrollViewInstance>(null);
   const matches = useMemo(() => boxMatches(text, index, lib.data, lib.deptId), [text, index, lib.data, lib.deptId]);
   const typing = text.trim() !== '';
@@ -90,6 +92,14 @@ export function OneBoxBody({ omni, lib, index, text, greeting, notice, onOpen, o
 
   return (
     <View style={{ flex: 1 }}>
+      {caseCard && !typing && (
+        <View style={styles.cardLine}>
+          <Text style={[T.callout, { flex: 1 }]} numberOfLines={1}>
+            {`Preference card, ${caseCard.title}, ${caseCard.count} ${caseCard.count === 1 ? 'item' : 'items'}`}
+          </Text>
+          <Button kind="secondary" label="Open" icon="clipboard" onPress={() => open({ type: 'card', id: caseCard.id })} />
+        </View>
+      )}
       {omni.messages.length === 0 ? (
         <View style={{ flex: 1 }}>
           {notice}
@@ -296,6 +306,7 @@ const styles = StyleSheet.create({
   input: { flex: 1, color: C.text, fontFamily: F, fontSize: 17, paddingVertical: 12 },
   mic: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   send: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  cardLine: { flexDirection: 'row', alignItems: 'center', gap: S.sm, paddingHorizontal: 20, paddingTop: S.sm },
   greeting: { marginTop: 52, paddingHorizontal: 20 },
   greetText: { fontFamily: F, color: C.text, fontSize: 30, lineHeight: 36, fontWeight: '600' },
   pickUp: { marginTop: 'auto', paddingHorizontal: S.sm, paddingBottom: S.xs },

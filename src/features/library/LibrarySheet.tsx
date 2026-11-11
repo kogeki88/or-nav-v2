@@ -1,5 +1,5 @@
 // What the preview sheet shows: an item, a preference card, the edit form, or "sent for review".
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import BottomSheet from '../../ui/BottomSheet';
@@ -19,15 +19,27 @@ export type Selection =
 
 type Mode = 'view' | 'edit' | 'sent';
 
-export default function LibrarySheet({ lib, selection, onSelect, onClose }: { lib: Library; selection: Selection | null; onSelect: (s: Selection) => void; onClose: () => void }) {
+type SheetProps = {
+  lib: Library;
+  selection: Selection | null;
+  onSelect: (s: Selection) => void;
+  onClose: () => void;
+  /** A preference card was opened (the current case learns it). */
+  onCardShown?: (cardId: string) => void;
+};
+
+export default function LibrarySheet({ lib, selection, onSelect, onClose, onCardShown }: SheetProps) {
   const [mode, setMode] = useState<Mode>('view');
   const [shown, setShown] = useState<Selection | null>(selection);
+  const cardShown = useRef(onCardShown);
+  cardShown.current = onCardShown;
 
   // Keep showing the last selection while the sheet slides away.
   useEffect(() => {
     if (selection) {
       setShown(selection);
       setMode(selection.type === 'new-item' || selection.type === 'new-card' ? 'edit' : 'view');
+      if (selection.type === 'card') cardShown.current?.(selection.id);
     }
   }, [selection]);
 
