@@ -1,13 +1,13 @@
 -- 0006: private bucket for feedback report screenshots (spec #18, ticket #23).
 -- Apply by hand in the Supabase SQL editor. Path: <user id>/<report id>.jpg, so a retry overwrites
 -- the same picture instead of making a second one. The PC dashboard reads with the service key.
+-- Applied 2026-11-12 in the SQL editor; check: public = false and 3 policies.
 
 insert into storage.buckets (id, name, public)
 values ('feedback-screenshots', 'feedback-screenshots', false)
 on conflict (id) do update set public = false;
 
 -- Admins upload only into their own user id folder.
-drop policy if exists "admins upload own feedback screenshots" on storage.objects;
 create policy "admins upload own feedback screenshots" on storage.objects for insert to authenticated
   with check (
     bucket_id = 'feedback-screenshots'
@@ -16,7 +16,6 @@ create policy "admins upload own feedback screenshots" on storage.objects for in
   );
 
 -- A retry may overwrite the admin's own picture (upsert needs update).
-drop policy if exists "admins replace own feedback screenshots" on storage.objects;
 create policy "admins replace own feedback screenshots" on storage.objects for update to authenticated
   using (
     bucket_id = 'feedback-screenshots'
@@ -25,7 +24,6 @@ create policy "admins replace own feedback screenshots" on storage.objects for u
   );
 
 -- Admins read the screenshots.
-drop policy if exists "admins read feedback screenshots" on storage.objects;
 create policy "admins read feedback screenshots" on storage.objects for select to authenticated
   using (
     bucket_id = 'feedback-screenshots'
