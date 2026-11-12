@@ -71,6 +71,13 @@ CREATE INDEX feedback_outbox_waiting ON feedback_outbox (user_id, sent_at, refus
 ALTER TABLE feedback_outbox ADD COLUMN screenshot TEXT;
 `,
   },
+  {
+    // Ticket #32: the picture's bucket path once it is up, so a retry sends only the row.
+    version: 6,
+    sql: `
+ALTER TABLE feedback_outbox ADD COLUMN picture_path TEXT;
+`,
+  },
 ];
 
 export const LATEST_VERSION = MIGRATIONS[MIGRATIONS.length - 1].version;

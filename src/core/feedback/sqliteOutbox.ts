@@ -1,4 +1,4 @@
-// The feedback outbox's rows in the phone's own database (ornav.db, table `feedback_outbox`, migrations v4 and v5),
+// The feedback outbox's rows in the phone's own database (ornav.db, table `feedback_outbox`, migrations v4, v5 and v6),
 // through serial(). Each account sends only its own waiting reports. Sent and refused reports stay, with sent_at or refused_at set;
 // a sent report's message text is cleared.
 import { serial } from '../../db/libraryStore';
@@ -23,7 +23,7 @@ export function sqliteOutboxRows(userId: string): OutboxRows {
     waiting: () =>
       serial((db) =>
         db.getAllAsync<FeedbackRow>(
-          'SELECT id, created_at, app_version, page, tag, message, screenshot FROM feedback_outbox WHERE user_id = ? AND sent_at IS NULL AND refused_at IS NULL ORDER BY created_at',
+          'SELECT id, created_at, app_version, page, tag, message, screenshot, picture_path FROM feedback_outbox WHERE user_id = ? AND sent_at IS NULL AND refused_at IS NULL ORDER BY created_at',
           userId,
         ),
       ),
@@ -36,6 +36,11 @@ export function sqliteOutboxRows(userId: string): OutboxRows {
     markRefused: (id, at) =>
       serial(async (db) => {
         await db.runAsync('UPDATE feedback_outbox SET refused_at = ? WHERE id = ? AND user_id = ?', at, id, userId);
+      }),
+    markPictureUp: (id, path) =>
+      serial(async (db) => {
+        // The picture is in the bucket: a retry sends only the row (ticket #32).
+        await db.runAsync('UPDATE feedback_outbox SET picture_path = ? WHERE id = ? AND user_id = ?', path, id, userId);
       }),
   };
 }

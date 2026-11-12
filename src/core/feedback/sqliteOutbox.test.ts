@@ -7,12 +7,13 @@ const mockDb = {
   runAsync: async (sql: string, ...args: unknown[]) => {
     mockRuns.push({ sql, args });
   },
-  getAllAsync: async () => [],
+  getAllAsync: async (_sql: string): Promise<unknown[]> => [],
 };
 jest.mock('../../db/libraryStore', () => ({
   serial: (job: (db: typeof mockDb) => Promise<unknown>) => job(mockDb),
 }));
 
+import { MIGRATIONS } from '../../db/schema';
 import { sqliteOutboxRows } from './sqliteOutbox';
 
 describe('sqlite feedback outbox (ticket #28)', () => {
@@ -37,6 +38,28 @@ describe('sqlite feedback outbox (ticket #28)', () => {
     });
     expect(mockRuns[0].sql).toContain('screenshot');
     expect(mockRuns[0].args).toContain('file:///files/feedback/id-1.jpg');
+  });
+
+  it('notes that the picture is up, and reads it back with the waiting reports (ticket #32)', async () => {
+    mockRuns.length = 0;
+    await sqliteOutboxRows('user-1').markPictureUp('id-1', 'user-1/id-1.jpg');
+    expect(mockRuns).toEqual([{ sql: 'UPDATE feedback_outbox SET picture_path = ? WHERE id = ? AND user_id = ?', args: ['user-1/id-1.jpg', 'id-1', 'user-1'] }]);
+    let read = '';
+    const before = mockDb.getAllAsync;
+    mockDb.getAllAsync = async (sql: string) => {
+      read = sql;
+      return [];
+    };
+    try {
+      await sqliteOutboxRows('user-1').waiting();
+    } finally {
+      mockDb.getAllAsync = before;
+    }
+    expect(read).toContain('picture_path');
+  });
+
+  it('adds the picture_path column in a new migration (ticket #32)', () => {
+    expect(MIGRATIONS.find((m) => m.version === 6)?.sql).toContain('ALTER TABLE feedback_outbox ADD COLUMN picture_path TEXT');
   });
 
   it('keeps the message text of a refused report', async () => {

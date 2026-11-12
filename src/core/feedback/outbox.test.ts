@@ -422,6 +422,52 @@ describe('feedback outbox: the screenshot (ticket #23)', () => {
     expect(faults).toEqual([new Error('disk full'), expect.anything()]);
   });
 
+  it('a retry after a partial upload (picture up, row failed) skips the picture and inserts the row once (ticket #32)', async () => {
+    // A fake uploader that works like the real one: picture first (unless the row says it is already up), then the row.
+    const pictureUps: string[] = [];
+    const table = new Map<string, FeedbackRow>();
+    let rowFails = 1;
+    const upload = async (row: FeedbackRow): Promise<UploadResult> => {
+      let uploaded: string | undefined;
+      if (row.screenshot && !row.picture_path) {
+        uploaded = `user-1/${row.id}.jpg`;
+        pictureUps.push(uploaded);
+      }
+      if (rowFails > 0) {
+        rowFails--;
+        return { ok: false, error: new TypeError('Network request failed'), retry: true, picturePath: uploaded };
+      }
+      table.set(row.id, row);
+      return { ok: true };
+    };
+    const { rows, deps } = pictureSetup();
+    const outbox = makeFeedbackOutbox(rows, upload, deps);
+    expect(await outbox.submit({ ...DRAFT, screenshot: TMP })).toEqual({ kind: 'saved' });
+    const [waiting] = await rows.waiting();
+    expect(waiting.picture_path).toBe(`user-1/${waiting.id}.jpg`);
+
+    await outbox.flush();
+    expect(pictureUps).toEqual([`user-1/${waiting.id}.jpg`]);
+    expect(table.size).toBe(1);
+    expect(await rows.waiting()).toHaveLength(0);
+    expect(rows.all()[0].sent_at).toBe(NOW.toISOString());
+  });
+
+  it('still keeps the report waiting when the phone cannot note that the picture is up', async () => {
+    const { rows, deps, faults } = pictureSetup();
+    rows.markPictureUp = async () => {
+      throw new Error('database locked');
+    };
+    const outbox = makeFeedbackOutbox(
+      rows,
+      async (row) => ({ ok: false, error: new TypeError('Network request failed'), retry: true, picturePath: `user-1/${row.id}.jpg` }),
+      deps,
+    );
+    expect(await outbox.submit({ ...DRAFT, screenshot: TMP })).toEqual({ kind: 'saved' });
+    expect(await rows.waiting()).toHaveLength(1);
+    expect(faults).toEqual([new TypeError('Network request failed'), new Error('database locked')]);
+  });
+
   it('sends a report with no picture as before', async () => {
     const { outbox, server, kept } = pictureSetup();
     expect(await outbox.submit(DRAFT)).toEqual({ kind: 'sent' });

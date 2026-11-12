@@ -76,7 +76,7 @@ const PICTURE = 'file:///data/user/0/com.ornav.app/files/feedback/x.jpg';
 function fakeSupabase() {
   const table = new Map<string, Record<string, unknown>>();
   const bucket = new Map<string, { bytes: ArrayBuffer; contentType: string; upsert: boolean }>();
-  const state = { rowFails: 0, pictureFails: 0, pictureAnswer: null as { message: string; status?: number; statusCode?: string } | null };
+  const state = { rowFails: 0, pictureFails: 0, pictureUploads: 0, pictureAnswer: null as { message: string; status?: number; statusCode?: string } | null };
   const client = {
     from(_table: string) {
       return {
@@ -94,6 +94,7 @@ function fakeSupabase() {
   };
   const store = {
     upload: async (path: string, bytes: ArrayBuffer, options: { contentType: string; upsert: boolean }) => {
+      state.pictureUploads++;
       if (state.pictureFails > 0) {
         state.pictureFails--;
         throw new TypeError('Network request failed');
@@ -184,5 +185,50 @@ describe('supabaseUploader with a screenshot (ticket #23)', () => {
     await outbox.flush();
     expect(s.table.size).toBe(1);
     expect(s.bucket.size).toBe(1);
+  });
+
+  it('gives back the picture path when the picture went up but the row failed (ticket #32)', async () => {
+    const s = fakeSupabase();
+    s.state.rowFails = 1;
+    const result = await supabaseUploader(s.client, s.pictures)(WITH_PICTURE);
+    expect(result).toEqual({ ok: false, error: new TypeError('Network request failed'), retry: true, picturePath: `${USER}/${ROW.id}.jpg` });
+  });
+
+  it('gives back the picture path when the row insert answers a retryable error (ticket #32)', async () => {
+    const s = fakeSupabase();
+    const client = { from: () => ({ insert: async () => ({ error: { message: 'JWT expired', code: 'PGRST301' } }) }) };
+    const result = await supabaseUploader(client, s.pictures)(WITH_PICTURE);
+    expect(result.ok === false && result.picturePath).toBe(`${USER}/${ROW.id}.jpg`);
+  });
+
+  it('skips the picture upload when the picture is already up, and sends only the row (ticket #32)', async () => {
+    const s = fakeSupabase();
+    const path = `${USER}/${ROW.id}.jpg`;
+    expect(await supabaseUploader(s.client, s.pictures)({ ...WITH_PICTURE, picture_path: path })).toEqual({ ok: true });
+    expect(s.state.pictureUploads).toBe(0);
+    expect(s.table.get(ROW.id)).toEqual({ ...ROW, screenshot_path: path });
+  });
+
+  it('gives back no picture path when the picture was already up before this try (ticket #32)', async () => {
+    const s = fakeSupabase();
+    s.state.rowFails = 1;
+    const result = await supabaseUploader(s.client, s.pictures)({ ...WITH_PICTURE, picture_path: `${USER}/${ROW.id}.jpg` });
+    expect(result).toEqual({ ok: false, error: new TypeError('Network request failed'), retry: true });
+  });
+
+  it('a retry after a partial upload uploads the picture once in total and ends as sent (ticket #32)', async () => {
+    const s = fakeSupabase();
+    const rows = memoryOutboxRows();
+    const outbox = makeFeedbackOutbox(rows, supabaseUploader(s.client, s.pictures), {
+      appVersion: () => '2.6.0',
+      role: () => 'admin',
+      onFault: () => undefined,
+    });
+    s.state.rowFails = 1;
+    expect(await outbox.submit({ tag: 'broken', message: 'Button too small', page: 'main', screenshot: PICTURE })).toEqual({ kind: 'saved' });
+    await outbox.flush();
+    expect(s.state.pictureUploads).toBe(1);
+    expect(s.table.size).toBe(1);
+    expect(rows.all()[0].sent_at).not.toBeNull();
   });
 });

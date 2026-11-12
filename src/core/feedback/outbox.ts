@@ -16,6 +16,11 @@ export type FeedbackRow = {
   message: string;
   /** The phone's own copy of the screenshot (a local file uri), or none. Ticket #23. */
   screenshot?: string | null;
+  /**
+   * The picture's path in the bucket once it is up, while the row still waits (ticket #32).
+   * Set: a retry goes straight to the row insert, so a weak signal never uploads the picture twice.
+   */
+  picture_path?: string | null;
 };
 
 /** The phone's table of reports (SQLite in the app, memory in tests). */
@@ -27,10 +32,15 @@ export interface OutboxRows {
   markSent(id: string, at: string): Promise<void>;
   /** The server refused it for good: never try it again. */
   markRefused(id: string, at: string): Promise<void>;
+  /** The picture is in the bucket at `path`; only the row is still to send (ticket #32). */
+  markPictureUp(id: string, path: string): Promise<void>;
 }
 
-/** `ok` also when the server already has this id (an earlier try arrived). `retry` false = refused for good. */
-export type UploadResult = { ok: true } | { ok: false; error: unknown; retry: boolean };
+/**
+ * `ok` also when the server already has this id (an earlier try arrived). `retry` false = refused for good.
+ * `picturePath`: this try put the picture up, at this bucket path, before the failure.
+ */
+export type UploadResult = { ok: true } | { ok: false; error: unknown; retry: boolean; picturePath?: string };
 export type Uploader = (row: FeedbackRow) => Promise<UploadResult>;
 
 export type OutboxDeps = {
@@ -112,6 +122,10 @@ export function makeFeedbackOutbox(rows: OutboxRows, upload: Uploader, deps: Out
       if (!result.ok) {
         if (!(timed && result.retry)) deps.onFault(result.error);
         if (result.retry) {
+          // The picture is up: note it on the phone, so the retry sends only the row (ticket #32).
+          if (result.picturePath) {
+            await rows.markPictureUp(row.id, result.picturePath).catch(deps.onFault);
+          }
           planRetry(); // No signal: try again in a while, and on the next start, return or send.
           break;
         }
@@ -197,7 +211,7 @@ export function memoryOutboxRows(): OutboxRows & { all(): StoredFeedbackRow[] } 
   const find = (id: string) => table.find((x) => x.id === id);
   return {
     add: async (row) => {
-      table.push({ ...row, screenshot: row.screenshot ?? null, sent_at: null, refused_at: null });
+      table.push({ ...row, screenshot: row.screenshot ?? null, picture_path: row.picture_path ?? null, sent_at: null, refused_at: null });
     },
     waiting: async () =>
       table.filter((r) => r.sent_at === null && r.refused_at === null).map(({ sent_at: _s, refused_at: _r, ...r }) => r),
@@ -208,6 +222,10 @@ export function memoryOutboxRows(): OutboxRows & { all(): StoredFeedbackRow[] } 
     markRefused: async (id, at) => {
       const r = find(id);
       if (r) r.refused_at = at;
+    },
+    markPictureUp: async (id, path) => {
+      const r = find(id);
+      if (r) r.picture_path = path;
     },
     all: () => table.map((r) => ({ ...r })),
   };

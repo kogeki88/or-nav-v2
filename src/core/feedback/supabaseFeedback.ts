@@ -2,7 +2,8 @@
 // (ticket #23), then one row in the Supabase table `feedback_reports` with that screenshot_path.
 // The row's id is made on the phone, so a duplicate-key answer means an earlier try already arrived,
 // and the picture path <user id>/<report id>.jpg is overwritten on a retry, never made twice.
-import type { FeedbackRow, Uploader } from './outbox';
+// Once the picture is up, the phone notes it (picture_path), and a retry sends only the row (ticket #32).
+import type { FeedbackRow, UploadResult, Uploader } from './outbox';
 
 /** Only the part of the Supabase client this uploader uses (a fake one in tests). */
 export type FeedbackClient = {
@@ -53,25 +54,32 @@ export function picturePath(userId: string, reportId: string): string {
 }
 
 export function supabaseUploader(client: FeedbackClient, pictures?: Pictures): Uploader {
-  return async (row: FeedbackRow) => {
+  return async (row: FeedbackRow): Promise<UploadResult> => {
+    // Already up on an earlier try (ticket #32): go straight to the row, so no mobile data is spent twice.
+    let screenshotPath: string | null = row.picture_path ?? null;
+    let uploadedNow = false;
+    // A row failure right after this try put the picture up gives back its path, so the outbox notes it on the phone.
+    const upNow = () => (uploadedNow && screenshotPath ? { picturePath: screenshotPath } : {});
     try {
-      let screenshotPath: string | null = null;
-      if (row.screenshot && pictures) {
+      if (row.screenshot && pictures && !screenshotPath) {
         const bytes = await pictures.read(row.screenshot);
         // No file (the phone lost it) or a picture the bucket never takes: the report still goes, without a picture.
         if (bytes) {
           const path = picturePath(pictures.userId, row.id);
           const { error } = await pictures.bucket.upload(path, bytes, { contentType: 'image/jpeg', upsert: true });
-          if (!error) screenshotPath = path;
-          else if (!pictureRefusedForGood(error)) return { ok: false, error: new Error(`feedback screenshot: ${error.message}`), retry: true };
+          if (!error) {
+            screenshotPath = path;
+            uploadedNow = true;
+          } else if (!pictureRefusedForGood(error)) return { ok: false, error: new Error(`feedback screenshot: ${error.message}`), retry: true };
         }
       }
-      const { screenshot: _local, ...fields } = row;
+      const { screenshot: _local, picture_path: _up, ...fields } = row;
       const { error } = await client.from('feedback_reports').insert({ ...fields, screenshot_path: screenshotPath });
       if (!error || error.code === DUPLICATE_KEY) return { ok: true };
-      return { ok: false, error: new Error(`feedback insert: ${error.message}`), retry: !refusedForGood(error.code) };
+      const retry = !refusedForGood(error.code);
+      return { ok: false, error: new Error(`feedback insert: ${error.message}`), retry, ...(retry ? upNow() : {}) };
     } catch (e) {
-      return { ok: false, error: e, retry: true };
+      return { ok: false, error: e, retry: true, ...upNow() };
     }
   };
 }
