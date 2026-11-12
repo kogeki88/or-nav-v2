@@ -1,0 +1,11 @@
+Ticket #23 part 2: is the phone copy of the picture gone after the send?
+
+Checked with: adb shell run-as com.ornav.app ls -la files files/feedback cache
+
+Before the tap: files/ had no feedback/ folder; cache/ had no snapshot.
+After the tap (form open): cache/ReactNative-snapshot-image2338899450300371292.jpg (121327 bytes) = the capture.
+About 5 seconds after Send:
+  files/feedback/  exists and is EMPTY (total 16, only . and ..)
+  cache/           the ReactNative-snapshot-image*.jpg is GONE
+
+Result: PASS. The picture was moved, uploaded, and the phone copy was removed after the send.

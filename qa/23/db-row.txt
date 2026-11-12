@@ -1,0 +1,22 @@
+Ticket #23 part 2: the report row on Supabase (read-only query in the SQL editor, 2026-11-12)
+
+select id, created_at, user_id, tag, page, screenshot_path, length(message) as message_length
+from public.feedback_reports order by created_at desc limit 2;
+
+Newest row (sent from the emulator, debug APK from run 43292990478):
+  id               c215e7e6-8793-431f-be17-f4f90fffa775
+  created_at       2026-11-12 19:50:45.67+00
+  user_id          16481269-f53c-477e-a6ec-8b7fb25a80ce (test admin)
+  tag              broken
+  page             main
+  screenshot_path  16481269-f53c-477e-a6ec-8b7fb25a80ce/c215e7e6-8793-431f-be17-f4f90fffa775.jpg
+  message_length   14 ("Ticket 23 test")
+
+Row before it (sent before part 1, no picture):
+  id               054f584c-0ff1-4c1d-a461-a5225b6091d0
+  screenshot_path  NULL
+
+Bucket feedback-screenshots holds exactly that file:
+  16481269-f53c-477e-a6ec-8b7fb25a80ce/c215e7e6-8793-431f-be17-f4f90fffa775.jpg
+  image/jpeg, 118.48 KB, added 11/12/2026 2:50:50 PM (local)
+The picture shows the main page (Dr. Avery lap chole chat) with NO feedback button (see bucket.png).
