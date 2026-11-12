@@ -40,6 +40,7 @@ import { useLibrary } from './src/features/library/useLibrary';
 import { greeting } from './src/profile/ProfileCard';
 import Questionnaire from './src/profile/Questionnaire';
 import type { ProfileRow } from './src/profile/profile';
+import type { FeedbackSender } from './src/contracts/feedback';
 import { loadProfile, saveProfile } from './src/profile/profileStore';
 import ReviewScreen from './src/review/ReviewScreen';
 import { C, F, S, T } from './src/theme';
@@ -255,15 +256,18 @@ function SignedIn({
   const deptCards = useMemo(() => lib.data.cards.filter((c) => c.department_id === lib.deptId), [lib.data.cards, lib.deptId]);
   const index = useMemo(() => wordSearch.index(deptItems, deptCards), [deptItems, deptCards]);
   const [selection, setSelection] = useState<Selection | null>(null);
-  const feedback = useMemo(
-    () =>
-      makeFeedbackOutbox(DEMO ? memoryOutboxRows() : sqliteOutboxRows(user.id), supabaseUploader(supabase), {
-        appVersion: installedVersion,
-        role: () => user.role,
-        onFault: (e) => logFault('feedback', e),
-      }),
-    [user.id, user.role],
-  );
+  // Made in an effect, so the outbox of an old user (or of a dev-mode remount) is closed and its timed retries stop.
+  const [feedback, setFeedback] = useState<FeedbackSender | null>(null);
+  useEffect(() => {
+    const outbox = makeFeedbackOutbox(DEMO ? memoryOutboxRows() : sqliteOutboxRows(user.id), supabaseUploader(supabase), {
+      appVersion: installedVersion,
+      role: () => user.role,
+      onFault: (e) => logFault('feedback', e),
+      retryMs: 15000, // A waiting report goes out within 15 s of the signal coming back (ticket #27).
+    });
+    setFeedback(outbox);
+    return () => outbox.close();
+  }, [user.id, user.role]);
   const page = feedbackPage(shell.view, { sidebar: shell.sidebar, case: caseOpen, name: nameOpen, department: deptOpen, item: selection !== null });
 
   const { learnText, learnCard, setByHand } = cases;
@@ -394,7 +398,7 @@ function SignedIn({
       {/* Solid strip behind the status bar, so scrolled content never runs under the clock. */}
       <View pointerEvents="none" style={[styles.statusStrip, { height: insets.top }]} />
       {/* Admins only: drawn last, so it sits above every tab and panel. */}
-      {showFeedbackButton(user) && <Feedback sender={feedback} page={() => page} bottom={insets.bottom + COMPOSER_SPACE + S.md} top={insets.top + TOP_BAR_HEIGHT + S.md} />}
+      {showFeedbackButton(user) && feedback && <Feedback sender={feedback} page={() => page} bottom={insets.bottom + COMPOSER_SPACE + S.md} top={insets.top + TOP_BAR_HEIGHT + S.md} />}
     </View>
   );
 }

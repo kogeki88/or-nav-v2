@@ -1,5 +1,6 @@
 // The feedback outbox (the feedback port): every report is saved on the phone before any network call,
-// then uploaded. Waiting reports go out on flush (app start, return to the app, after each submit).
+// then uploaded. Waiting reports go out on flush (app start, return to the app, after each submit),
+// and, with retryMs, on a timed retry while any report waits, so they leave when the signal comes back.
 // The id is made on the phone once, so a retry after an unknown result never makes a second row.
 // A report the server refuses for good is marked refused, so it never blocks the reports after it.
 // Never logs the message text.
@@ -38,6 +39,11 @@ export type OutboxDeps = {
   now?: () => Date;
   /** How long submit waits for the network before it answers "saved" (the report is safe either way). */
   waitMs?: number;
+  /**
+   * While a report waits for signal, try again after this many ms, so it goes out when the signal
+   * comes back with no app restart (ticket #27). The timer stops once nothing waits. Off when unset.
+   */
+  retryMs?: number;
 };
 
 /** The server's limit on `feedback_reports.message` (migration 0005). */
@@ -63,9 +69,23 @@ export function makeFeedbackOutbox(rows: OutboxRows, upload: Uploader, deps: Out
   const waitMs = deps.waitMs ?? 8000;
   // One flush at a time, so two flushes never upload the same report together.
   let running: Promise<unknown> = Promise.resolve();
+  let retryTimer: ReturnType<typeof setTimeout> | undefined;
+  let closed = false;
 
-  const flushNow = async (): Promise<Map<string, Outcome>> => {
+  // A report is still waiting for signal: try again later, unless a try is already planned.
+  const planRetry = () => {
+    if (deps.retryMs === undefined || closed || retryTimer !== undefined) return;
+    retryTimer = setTimeout(() => {
+      retryTimer = undefined;
+      void runFlush(true);
+    }, deps.retryMs);
+  };
+
+  // `timed`: a timed retry. Its no-signal failures are not logged again, so hours offline
+  // never push the other entries out of the fault log (it keeps the newest 500).
+  const flushNow = async (timed: boolean): Promise<Map<string, Outcome>> => {
     const outcomes = new Map<string, Outcome>();
+    if (closed) return outcomes;
     let waiting: FeedbackRow[];
     try {
       waiting = await rows.waiting();
@@ -76,8 +96,11 @@ export function makeFeedbackOutbox(rows: OutboxRows, upload: Uploader, deps: Out
     for (const row of waiting) {
       const result = await upload(row).catch((e: unknown): UploadResult => ({ ok: false, error: e, retry: true }));
       if (!result.ok) {
-        deps.onFault(result.error);
-        if (result.retry) break; // No signal: the next flush tries again.
+        if (!(timed && result.retry)) deps.onFault(result.error);
+        if (result.retry) {
+          planRetry(); // No signal: try again in a while, and on the next start, return or send.
+          break;
+        }
         outcomes.set(row.id, { kind: 'refused', reason: reasonOf(result.error) });
         await rows.markRefused(row.id, now().toISOString()).catch(deps.onFault);
         continue;
@@ -89,8 +112,8 @@ export function makeFeedbackOutbox(rows: OutboxRows, upload: Uploader, deps: Out
     return outcomes;
   };
 
-  const runFlush = (): Promise<Map<string, Outcome>> => {
-    const next = running.then(flushNow);
+  const runFlush = (timed = false): Promise<Map<string, Outcome>> => {
+    const next = running.then(() => flushNow(timed));
     running = next.catch(() => undefined);
     return next;
   };
@@ -98,6 +121,11 @@ export function makeFeedbackOutbox(rows: OutboxRows, upload: Uploader, deps: Out
   return {
     flush: async () => {
       await runFlush();
+    },
+    close() {
+      closed = true;
+      clearTimeout(retryTimer);
+      retryTimer = undefined;
     },
     async submit(draft): Promise<FeedbackResult> {
       if (deps.role() !== 'admin') return { kind: 'error', message: 'Only admins can send feedback.' };

@@ -1,0 +1,9 @@
+﻿11-12 13:27:23.277  5020  5109 I ReactNativeJS: 'DBG27 upload', false
+11-12 13:27:23.280  5020  5109 W ReactNativeJS: [fault] feedback: feedback insert: Error: fetch failed: java.net.UnknownHostException: Unable to resolve host "lmofpllllkveuxjcstfo.supabase.co": No address associated with hostname
+11-12 13:27:38.304  5020  5109 I ReactNativeJS: 'DBG27 flush start', false
+11-12 13:27:38.321  5020  5109 I ReactNativeJS: 'DBG27 waiting', 1
+11-12 13:27:38.377  5020  5109 I ReactNativeJS: 'DBG27 upload', false
+11-12 13:27:38.385  5020  5109 W ReactNativeJS: [fault] feedback: feedback insert: Error: fetch failed: java.net.UnknownHostException: Unable to resolve host "lmofpllllkveuxjcstfo.supabase.co": No address associated with hostname
+11-12 13:27:53.398  5020  5109 I ReactNativeJS: 'DBG27 flush start', false
+11-12 13:27:53.411  5020  5109 I ReactNativeJS: 'DBG27 waiting', 1
+11-12 13:27:54.456  5020  5109 I ReactNativeJS: 'DBG27 upload', true

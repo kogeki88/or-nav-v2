@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 import { FeedbackRow, UploadResult, makeFeedbackOutbox, memoryOutboxRows } from './outbox';
 
@@ -205,5 +205,98 @@ describe('feedback outbox', () => {
     expect(result.kind).toBe('error');
     expect(server.state.calls).toBe(0);
     expect(faults).toHaveLength(1);
+  });
+});
+
+describe('feedback outbox: sends again when the signal comes back (ticket #27)', () => {
+  const RETRY_MS = 15000;
+
+  function retrySetup() {
+    const server = fakeServer();
+    const rows = memoryOutboxRows();
+    const outbox = makeFeedbackOutbox(rows, server.upload, {
+      appVersion: () => '2.6.0',
+      role: () => 'admin',
+      now: () => NOW,
+      onFault: () => undefined,
+      retryMs: RETRY_MS,
+    });
+    return { outbox, rows, server };
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('sends a waiting report once the network is back, with no app restart', async () => {
+    const { outbox, rows, server } = retrySetup();
+    server.state.online = false;
+    expect(await outbox.submit(DRAFT)).toEqual({ kind: 'saved' });
+    server.state.online = true;
+    const before = server.state.calls;
+    await jest.advanceTimersByTimeAsync(RETRY_MS);
+    expect(server.state.calls - before).toBe(1);
+    expect(server.table.size).toBe(1);
+    expect(await rows.waiting()).toHaveLength(0);
+    outbox.close();
+  });
+
+  it('keeps trying while offline and stops trying once nothing waits', async () => {
+    const { outbox, server } = retrySetup();
+    server.state.online = false;
+    await outbox.submit(DRAFT);
+    await jest.advanceTimersByTimeAsync(RETRY_MS * 2);
+    expect(server.table.size).toBe(0);
+    server.state.online = true;
+    await jest.advanceTimersByTimeAsync(RETRY_MS);
+    const calls = server.state.calls;
+    await jest.advanceTimersByTimeAsync(RETRY_MS * 4);
+    expect(server.state.calls).toBe(calls);
+    expect(jest.getTimerCount()).toBe(0);
+    outbox.close();
+  });
+
+  it('two quick online events (a retry and a return to the app) upload the report once', async () => {
+    const { outbox, server } = retrySetup();
+    server.state.online = false;
+    await outbox.submit(DRAFT);
+    server.state.online = true;
+    const before = server.state.calls;
+    await Promise.all([jest.advanceTimersByTimeAsync(RETRY_MS), outbox.flush(), outbox.flush()]);
+    expect(server.state.calls - before).toBe(1);
+    expect(server.table.size).toBe(1);
+    outbox.close();
+  });
+
+  it('logs no-signal once, not on every timed retry, so the fault log keeps its other entries', async () => {
+    const server = fakeServer();
+    const faults: unknown[] = [];
+    const outbox = makeFeedbackOutbox(memoryOutboxRows(), server.upload, {
+      appVersion: () => '2.6.0',
+      role: () => 'admin',
+      onFault: (e) => faults.push(e),
+      retryMs: RETRY_MS,
+    });
+    server.state.online = false;
+    await outbox.submit(DRAFT);
+    await jest.advanceTimersByTimeAsync(RETRY_MS * 5);
+    expect(server.state.calls).toBe(6);
+    expect(faults).toHaveLength(1);
+    outbox.close();
+  });
+
+  it('stops trying after close, so a signed-out user\'s outbox never sends', async () => {
+    const { outbox, server } = retrySetup();
+    server.state.online = false;
+    await outbox.submit(DRAFT);
+    outbox.close();
+    server.state.online = true;
+    const before = server.state.calls;
+    await jest.advanceTimersByTimeAsync(RETRY_MS * 3);
+    expect(server.state.calls).toBe(before);
+    expect(jest.getTimerCount()).toBe(0);
   });
 });

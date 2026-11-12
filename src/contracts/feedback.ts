@@ -18,4 +18,6 @@ export interface FeedbackSender {
   submit(draft: FeedbackDraft): Promise<FeedbackResult>;
   /** Tries to send every waiting report (app start, return to the app). Never throws. */
   flush(): Promise<void>;
+  /** Stops the timed retries (sign-out or a new user). Reports stay saved on the phone. */
+  close(): void;
 }
