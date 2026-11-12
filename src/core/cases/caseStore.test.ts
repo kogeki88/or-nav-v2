@@ -61,7 +61,7 @@ describe('case store', () => {
 
 describe('what a case stores', () => {
   const data: LibraryData = { hospitals: [], departments: [], memberships: [], items: [], cards: [], cardItems: [], requests: [], loadedAt: '' };
-  const assistant: Assistant = { ask: async () => ({ kind: 'answer', reply: 'Ask the charge nurse.', actions: [], backup: false }) };
+  const assistant: Assistant = { ask: async () => ({ kind: 'answer', reply: 'Ask the charge nurse.', actions: [], model: 'Nemotron Ultra' }) };
 
   async function sendInto(store: ReturnType<typeof makeCaseStore>, c: Case, raw: string): Promise<Case> {
     let cur = c;

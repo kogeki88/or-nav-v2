@@ -16,8 +16,8 @@ export type CaseMessage = {
   /** The AI's actions, checked against the library when they arrived. */
   actions?: unknown[];
   drafts?: Record<number, { state: CaseDraftState; error?: string }>;
-  /** 'backup' when the free backup AI answered instead of Claude. */
-  engine?: 'claude' | 'backup';
+  /** The name of the AI model that answered, shown on the answer. */
+  model?: string;
   /** Made on the phone (offline line, privacy block, no department): shown, never saved. */
   local?: boolean;
 };

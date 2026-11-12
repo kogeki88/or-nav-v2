@@ -1,5 +1,5 @@
 // What the omnibar AI may answer: a short reply plus actions for the app.
-// Shared by the server (JSON schema for Claude's structured output) and the app (types + checks).
+// Shared by the server (JSON schema in the prompt, answer check) and the app (types + checks).
 // The AI never changes data: "draft_*" actions only fill a suggestion the nurse checks and sends for review.
 
 export const PHASE_NAMES = ['Setup', 'Incision', 'Cannulation/Main', 'Closure'] as const;
@@ -48,11 +48,8 @@ export type GoTo = { type: 'go_to'; tab: (typeof TABS)[number] };
 export type OmniAction = OpenItem | OpenCard | ShowResults | DraftItem | DraftCard | DraftCardLine | SwitchDepartment | GoTo;
 export type OmniAnswer = { reply: string; actions: OmniAction[] };
 
-/** Which AI answered: Claude, or the free backup (Groq). Set by the server, never by the model. */
-export type Engine = 'claude' | 'backup';
-
 const str = { type: 'string' } as const;
-/** A fixed value. Written as a one-item enum (not "const") so Claude and the backup accept the same schema. */
+/** A fixed value, written as a one-item enum (not "const"). */
 const one = (value: string) => ({ type: 'string', enum: [value] });
 const strOrNull = { type: ['string', 'null'] } as const;
 const kind = { type: 'string', enum: ['add', 'edit', 'remove'] } as const;
@@ -61,7 +58,7 @@ function obj(properties: Record<string, unknown>) {
   return { type: 'object', properties, required: Object.keys(properties), additionalProperties: false };
 }
 
-/** JSON schema for the structured answer (Claude output_config.format; backup response_format json_schema, strict). */
+/** JSON schema for the answer. It goes into the prompt (JSON_RULES), and answer.ts checks every answer against it. */
 export const ANSWER_SCHEMA = obj({
   reply: { ...str, description: 'Short plain answer for the nurse, 1-3 sentences.' },
   actions: {

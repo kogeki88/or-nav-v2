@@ -10,8 +10,8 @@ export type AssistantCase = { surgeon: string | null; procedure: string | null; 
 export type AssistantRequest = { message: string; history: AssistantTurn[]; department_id: string; case?: AssistantCase };
 
 export type AssistantReply =
-  /** backup = the free backup AI answered instead of Claude. */
-  | { kind: 'answer'; reply: string; actions: unknown[]; backup: boolean }
+  /** model = the name of the AI model that answered (for example "Nemotron Ultra"); null when the server sent none. */
+  | { kind: 'answer'; reply: string; actions: unknown[]; model: string | null }
   /** The server answered with a problem, in words a nurse can read. */
   | { kind: 'error'; message: string }
   /** The assistant could not be reached. */

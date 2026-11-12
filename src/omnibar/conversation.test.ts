@@ -11,7 +11,7 @@ const lap: Card = { id: 'c-lap', department_id: 'd1', surgeon: 'Avery', procedur
 const data: LibraryData = { hospitals: [], departments: [], memberships: [], items: [bovie], cards: [lap], cardItems: [], requests: [], loadedAt: '' };
 
 /** A fake assistant that remembers every call. */
-function fakeAssistant(reply: AssistantReply = { kind: 'answer', reply: 'A1, bin 1.', actions: [{ type: 'open_item', item_id: 'i-bovie' }], backup: false }) {
+function fakeAssistant(reply: AssistantReply = { kind: 'answer', reply: 'A1, bin 1.', actions: [{ type: 'open_item', item_id: 'i-bovie' }], model: 'Nemotron Ultra' }) {
   const calls: AssistantRequest[] = [];
   const assistant: Assistant = {
     ask: async (req) => {
@@ -109,7 +109,7 @@ describe('sendTurn', () => {
     const { assistant } = fakeAssistant({
       kind: 'answer',
       reply: 'Here.',
-      backup: true,
+      model: 'Claude Haiku',
       actions: [
         { type: 'open_item', item_id: 'made-up' },
         { type: 'draft_card', kind: 'edit', card_id: 'c-lap', surgeon: null, procedure: null, specialty: null, notes: 'Warm room', summary: 'Note' },
@@ -118,7 +118,7 @@ describe('sendTurn', () => {
     const { added } = await run('add a note', context(), assistant);
     expect(added[1].actions).toHaveLength(1);
     expect(added[1].drafts).toEqual({ 0: { state: 'ready' } });
-    expect(added[1].engine).toBe('backup');
+    expect(added[1].model).toBe('Claude Haiku');
   });
 
   it('sends only real turns as history, not notes or errors', async () => {

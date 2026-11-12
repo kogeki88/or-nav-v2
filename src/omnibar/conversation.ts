@@ -3,17 +3,15 @@
 import type { Assistant, AssistantCase, AssistantTurn } from '../contracts/assistant';
 import type { Case, CaseDraftState, CaseMessage } from '../contracts/cases';
 import type { LibraryData } from '../contracts/library';
-import type { Engine, OmniAction } from '../../supabase/functions/omnibar/schema';
+import type { OmniAction } from '../../supabase/functions/omnibar/schema';
 import { describeRemoved, scrub } from '../../supabase/functions/omnibar/scrub';
 import { validActions } from './validate';
 
 export type DraftState = CaseDraftState;
 
 /** A case message (contracts/cases) whose actions were checked against the library. */
-export type OmniMessage = Omit<CaseMessage, 'actions' | 'engine'> & {
+export type OmniMessage = Omit<CaseMessage, 'actions'> & {
   actions?: OmniAction[];
-  /** Set when the free backup AI answered instead of Claude. */
-  engine?: Engine;
 };
 
 export type NewMessage = Omit<OmniMessage, 'id'>;
@@ -78,7 +76,7 @@ export async function sendTurn(raw: string, ctx: TurnContext, assistant: Assista
     actions.forEach((a, i) => {
       if (a.type.startsWith('draft_')) drafts[i] = { state: 'ready' };
     });
-    add({ role: 'assistant', text: reply.reply || 'Done.', actions, drafts, engine: reply.backup ? 'backup' : 'claude' });
+    add({ role: 'assistant', text: reply.reply || 'Done.', actions, drafts, ...(reply.model ? { model: reply.model } : {}) });
   }
   return true;
 }

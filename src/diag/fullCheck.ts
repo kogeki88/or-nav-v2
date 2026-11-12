@@ -115,9 +115,7 @@ export async function runFullCheck(userId: string): Promise<CheckResult[]> {
       }
       const s = ((Date.now() - started) / 1000).toFixed(1);
       if (!data?.reply) return { status: 'fail', value: 'Empty answer' };
-      return data.engine === 'backup'
-        ? { status: 'warn', value: `Backup AI answered (${s} s); Claude did not` }
-        : { status: 'ok', value: `Claude answered (${s} s)` };
+      return { status: 'ok', value: `${typeof data.model === 'string' && data.model ? data.model : 'The AI'} answered (${s} s)` };
     }),
   );
 

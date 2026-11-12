@@ -233,7 +233,7 @@ function Message({
   const after = revealTime(m.text);
   return (
     <View style={{ gap: S.sm }}>
-      {m.engine === 'backup' ? <Badge label="Backup AI" tone="neutral" /> : null}
+      {m.model ? <Badge label={m.model} tone="neutral" /> : null}
       <FadeWords text={m.text} color={color} style={styles.answer} play={fresh} />
       {m.note ? (
         <Rise play={fresh} delay={after}>

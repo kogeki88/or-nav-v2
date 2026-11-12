@@ -1,122 +1,95 @@
-// The AI calls behind the omnibar: Claude first, then a free backup (Groq) when Claude cannot answer.
+// The AI calls behind the omnibar, all through OpenRouter: the models are tried in order, free first.
 // No Deno or Supabase code here, so it can be tested from a PC.
-import type Anthropic from 'npm:@anthropic-ai/sdk@1.3.0';
+import { checkAnswer } from './answer.ts';
+import type { OmniAnswer, OmniTurn } from './schema.ts';
+import { JSON_RULES, SYSTEM_PROMPT } from './prompt.ts';
 
-import { ANSWER_SCHEMA, type Engine, type OmniAnswer, type OmniTurn } from './schema.ts';
-import { SYSTEM_PROMPT } from './prompt.ts';
+/**
+ * The order Sean picked after the ticket #25 test (qa/25/compare-models.html): Nemotron Ultra is free and
+ * answered 14 of 14; Claude Haiku is paid (about $0.0007 a message) and answers only when Ultra cannot.
+ * The label is what the nurse sees on each answer.
+ */
+export const MODELS = [
+  { id: 'nvidia/nemotron-3-ultra-550b-a55b:free', label: 'Nemotron Ultra' },
+  { id: 'anthropic/claude-haiku-5.5', label: 'Claude Haiku' },
+] as const;
+export type Model = { id: string; label: string };
 
-export const DEFAULT_MODEL = 'claude-haiku-5-5';
-export const DEFAULT_BACKUP_MODEL = 'openai/gpt-oss-120b';
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+/** What the nurse reads when no model answered. */
+export const BUSY = 'The assistant is busy. Try again in a moment. Search still works.';
 
-/** caseNote: the case line (see prompt.ts). It goes after the cached library, so a case change keeps the cache. */
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+/** caseNote: the case line (see prompt.ts), after the library. */
 export type AskOpts = { context: string; caseNote?: string; history: OmniTurn[]; message: string };
-export type Ask = (opts: AskOpts) => Promise<OmniAnswer>;
+/** Asks one model; throws when it fails or its answer is broken. */
+export type ModelAsk = (modelId: string, opts: AskOpts) => Promise<OmniAnswer>;
 
-const NOT_UNDERSTOOD: OmniAnswer = { reply: 'Sorry, I could not understand that. Try saying it another way.', actions: [] };
-
-/** The model's JSON text → an answer. Bad JSON becomes a plain "could not understand". */
-export function parseAnswer(text: string): OmniAnswer {
-  try {
-    const parsed = JSON.parse(text) as OmniAnswer;
-    return { reply: String(parsed.reply ?? ''), actions: Array.isArray(parsed.actions) ? parsed.actions : [] };
-  } catch {
-    return NOT_UNDERSTOOD;
-  }
-}
-
-export async function askClaude(client: Anthropic, model: string, opts: AskOpts): Promise<OmniAnswer> {
-  const messages: Anthropic.MessageParam[] = [
-    ...opts.history.map((t) => ({ role: t.role, content: t.text }) as Anthropic.MessageParam),
-    { role: 'user', content: opts.message },
-  ];
-  const response = await client.messages.create({
-    model,
-    max_tokens: 4096, // answers are short; the cap keeps a runaway answer cheap
-    system: [
-      { type: 'text', text: SYSTEM_PROMPT },
-      // The library changes rarely, so it is cached between messages.
-      { type: 'text', text: opts.context, cache_control: { type: 'ephemeral' } },
-      ...(opts.caseNote ? [{ type: 'text' as const, text: opts.caseNote }] : []),
-    ],
-    messages,
-    output_config: { format: { type: 'json_schema', schema: ANSWER_SCHEMA } },
-  });
-
-  if (response.stop_reason === 'refusal') return { reply: "I can't help with that one.", actions: [] };
-  const text = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text')?.text ?? '';
-  return parseAnswer(text);
-}
-
-/** The Groq request body (OpenAI-style chat with a strict JSON schema). Exported for tests. */
-export function groqBody(model: string, opts: AskOpts) {
+/** The OpenRouter request body. No forced schema (Anthropic refuses ours); the JSON rules are in the prompt. */
+export function openRouterBody(model: string, opts: AskOpts) {
   return {
     model,
     messages: [
-      { role: 'system', content: [SYSTEM_PROMPT, opts.context, opts.caseNote].filter(Boolean).join('\n\n') },
+      { role: 'system', content: [SYSTEM_PROMPT, JSON_RULES, opts.context, opts.caseNote].filter(Boolean).join('\n\n') },
       ...opts.history.map((t) => ({ role: t.role, content: t.text })),
       { role: 'user', content: opts.message },
     ],
-    max_completion_tokens: 8192, // the backup model thinks before answering; thinking counts here
-    response_format: { type: 'json_schema', json_schema: { name: 'omnibar_answer', strict: true, schema: ANSWER_SCHEMA } },
+    max_tokens: 8192, // Nemotron thinks before answering, and thinking counts here
   };
 }
 
-/** The free backup. Plain fetch: no extra library on the server. */
-export async function askGroq(
+/** One model. Throws "status N", a TimeoutError, or "bad answer" (JSON that does not match the schema). */
+export async function askOpenRouter(
   apiKey: string,
   model: string,
   opts: AskOpts,
   fetchFn: typeof fetch = fetch,
   timeoutMs = 20_000,
 ): Promise<OmniAnswer> {
-  const res = await fetchFn(GROQ_URL, {
+  const res = await fetchFn(OPENROUTER_URL, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(groqBody(model, opts)),
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'X-Title': 'OR-Nav' },
+    body: JSON.stringify(openRouterBody(model, opts)),
     signal: AbortSignal.timeout(timeoutMs),
   });
-  if (!res.ok) throw new Error(`backup status ${res.status}`);
-  const data = (await res.json()) as { choices?: { message?: { content?: string | null } }[] };
-  return parseAnswer(data.choices?.[0]?.message?.content ?? '');
+  const data = (await res.json().catch(() => ({}))) as {
+    choices?: { message?: { content?: string | null } }[];
+    error?: { code?: number };
+  };
+  if (!res.ok) throw new Error(`status ${res.status}`);
+  if (data.error) throw new Error(`status ${data.error.code ?? 'error'}`);
+  const answer = checkAnswer(data.choices?.[0]?.message?.content ?? '');
+  if (!answer) throw new Error('bad answer');
+  return answer;
 }
 
 /**
- * Claude first; on ANY failure (no key, out of credit, busy, rate limit, down, timeout) the backup gets the
- * same request. Throws only when both fail or neither is set up. `log` receives engine names, never text.
+ * Tries each model in order; on ANY failure (error, rate limit, timeout, broken answer) the next model gets the
+ * same request. Throws BUSY when all fail. `log` receives model names and failure kinds, never text.
  */
 export async function answerWithFallback(
-  primary: Ask | null,
-  backup: Ask | null,
+  models: readonly Model[],
+  ask: ModelAsk,
   opts: AskOpts,
   log: (event: string) => void = () => {},
-): Promise<{ answer: OmniAnswer; engine: Engine }> {
-  if (primary) {
+): Promise<{ answer: OmniAnswer; model: string }> {
+  for (const m of models) {
     try {
-      const answer = await primary(opts);
-      log('claude ok');
-      return { answer, engine: 'claude' };
+      const answer = await ask(m.id, opts);
+      log(`${m.label} ok`);
+      return { answer, model: m.label };
     } catch (e) {
-      log(`claude failed${statusOf(e)}`);
+      log(`${m.label} failed (${failureKind(e)})`);
     }
-  } else {
-    log('claude not set up');
   }
-  if (!backup) throw new Error('no engine answered');
-  try {
-    const answer = await backup(opts);
-    log('backup ok');
-    return { answer, engine: 'backup' };
-  } catch (e) {
-    log(`backup failed${statusOf(e)}`);
-    throw new Error('no engine answered');
-  }
+  throw new Error(BUSY);
 }
 
-function statusOf(e: unknown): string {
-  const status = (e as { status?: unknown })?.status;
-  if (typeof status === 'number') return ` (${status})`;
+/** A short failure kind for the log: a status number, "timeout", "bad answer" or "error". Never message text. */
+function failureKind(e: unknown): string {
+  if (e instanceof Error && e.name === 'TimeoutError') return 'timeout';
   const msg = e instanceof Error ? e.message : '';
+  if (msg === 'bad answer') return 'bad answer';
   const m = /status (\d{3})/.exec(msg);
-  return m ? ` (${m[1]})` : e instanceof Error && e.name === 'TimeoutError' ? ' (timeout)' : '';
+  return m ? m[1] : 'error';
 }

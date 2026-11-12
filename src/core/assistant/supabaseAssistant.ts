@@ -31,7 +31,7 @@ export function supabaseAssistant(client: SupabaseClient): Assistant {
           kind: 'answer',
           reply: String(data?.reply ?? ''),
           actions: Array.isArray(data?.actions) ? data.actions : [],
-          backup: data?.engine === 'backup',
+          model: typeof data?.model === 'string' && data.model ? data.model.slice(0, 40) : null,
         };
       } catch (e) {
         logFault('omnibar', e);

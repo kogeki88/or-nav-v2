@@ -1,18 +1,15 @@
-// Supabase Edge Function "omnibar": the only place the AI keys are used (Anthropic, and the free Groq backup).
+// Supabase Edge Function "omnibar": the only place the AI key is used (one OpenRouter key).
 // Steps: signed-in user → member of the department → scrub again → daily limit → load library (as the user)
-// → Claude, or the backup when Claude cannot answer.
+// → the models in order (core.ts MODELS), free first.
 // Privacy: never log message text. Logs hold only event names and counts.
-import Anthropic from 'npm:@anthropic-ai/sdk@1.3.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.119.0';
 
 import { scrub } from './scrub.ts';
 import { UUID, type OmniRequest, type OmniTurn } from './schema.ts';
-import { DEFAULT_BACKUP_MODEL, DEFAULT_MODEL, answerWithFallback, askClaude, askGroq, type Ask } from './core.ts';
+import { BUSY, MODELS, answerWithFallback, askOpenRouter, type ModelAsk } from './core.ts';
 import { caseNote, libraryContext, readCase } from './prompt.ts';
 
 const DAILY_LIMIT = Number(Deno.env.get('OMNIBAR_DAILY_LIMIT') ?? '50');
-const MODEL = Deno.env.get('OMNIBAR_MODEL') ?? DEFAULT_MODEL;
-const BACKUP_MODEL = Deno.env.get('OMNIBAR_BACKUP_MODEL') ?? DEFAULT_BACKUP_MODEL;
 const MAX_MESSAGE = 1000;
 const MAX_HISTORY = 10;
 
@@ -52,9 +49,8 @@ Deno.serve(async (req) => {
   const auth = req.headers.get('Authorization');
   if (!auth) return fail(401, 'Sign in first.');
 
-  const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY');
-  const groqKey = Deno.env.get('GROQ_API_KEY');
-  if (!anthropicKey && !groqKey) {
+  const apiKey = Deno.env.get('OPENROUTER_API_KEY');
+  if (!apiKey) {
     console.error('omnibar: no AI key is set');
     return fail(503, 'The assistant is not set up yet.');
   }
@@ -109,7 +105,7 @@ Deno.serve(async (req) => {
     const s = scrub(t.text, staff);
     if (s.ok) history.push({ role: 'user', text: s.text });
   }
-  // Claude needs turns that alternate user/assistant, starting with the user.
+  // Some models need turns that alternate user/assistant, starting with the user.
   while (history.length && history[0].role !== 'user') history.shift();
   const alternating = history.filter((t, i) => i === 0 || t.role !== history[i - 1].role);
   if (alternating.length && alternating[alternating.length - 1].role === 'user') alternating.pop();
@@ -129,20 +125,16 @@ Deno.serve(async (req) => {
     cardItems: cardItems.data ?? [],
   });
 
-  // Claude fails fast (one retry, 20 s) so the backup still answers within a nurse's patience.
-  const claude: Ask | null = anthropicKey
-    ? (o) => askClaude(new Anthropic({ apiKey: anthropicKey, maxRetries: 1, timeout: 20_000 }), MODEL, o)
-    : null;
-  const backup: Ask | null = groqKey ? (o) => askGroq(groqKey, BACKUP_MODEL, o) : null;
-
   try {
     // The case's card must be one of this department's cards; any other card_id is ignored.
     const note = caseNote(body.case, cards.data ?? []);
     const opts = { context, caseNote: note, history: alternating, message: clean.text };
-    const { answer, engine } = await answerWithFallback(claude, backup, opts, (event) => console.log(`omnibar: ${event}`));
-    console.log(`omnibar: ${engine}, ${answer.actions.length} actions`);
-    return json(200, { ...answer, engine, removed: clean.removed });
+    // Each model fails fast (20 s), so the next one still answers within a nurse's patience.
+    const ask: ModelAsk = (modelId, o) => askOpenRouter(apiKey, modelId, o);
+    const { answer, model } = await answerWithFallback(MODELS, ask, opts, (event) => console.log(`omnibar: ${event}`));
+    console.log(`omnibar: ${model}, ${answer.actions.length} actions`);
+    return json(200, { ...answer, model, removed: clean.removed });
   } catch {
-    return fail(502, 'The assistant is not answering right now. Search still works.');
+    return fail(503, BUSY);
   }
 });

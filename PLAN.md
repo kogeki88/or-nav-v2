@@ -207,3 +207,8 @@ v2.5.0 on Sean's phone (2026-11-10): Brick 3 sound-alike search done, checked of
 Next: `/implement #11` in a fresh session (Part L).
 
 2026-11-11 (grill with Sean): the chat box moves to OpenRouter, ticket #25. Four models compared side by side first (Nemotron 3 Ultra, Nemotron 3.5 Super, Gemma 4 31B free; Haiku 5.5 paid, last); Sean picks the order. Jev key, scrubber only (free hosts may keep messages). Replaces the Anthropic and Groq key steps in Part I.
+- [x] Step 1: `tools/compare-models/` ran 15 questions (`qa/25/compare-models.html`). Ultra 14/14, Super 12/14 (split JSON), Gemma 0/14 (rate-limited upstream all day), Haiku 14/14 (~$0.0007 each). Q15 (patient name + DOB) blocked by the scrubber.
+- [x] Sean's order: Nemotron Ultra (free), then Claude Haiku 5.5 (paid). `core.ts` MODELS.
+- [x] Step 2 code: one `OPENROUTER_API_KEY`; Anthropic and Groq paths and tests removed; every answer checked by `answer.ts` (broken JSON = next model); all fail → 503 "The assistant is busy…"; the answer carries `model` and the app shows it as a badge (replaces "Backup AI"). Jest: model order, each failure kind, broken JSON, all fail, no message text in logs. Joined file type-checked against supabase-js types: `qa/25/omnibar-index.ts.txt`. Live check with the jev key: Ultra answered a draft in 7–12 s.
+- [ ] Sean: `OPENROUTER_API_KEY` in Supabase → Edge Functions → Secrets; deploy the joined file
+- [ ] Test phone: 15 jargon requests with labels; draft → Send for review → Pending; airplane mode → plain search; screenshots to Sean
