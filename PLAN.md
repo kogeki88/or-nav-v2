@@ -205,3 +205,5 @@ Order (each blocked by the one before): #11 new look → #12 sidebar and name sh
 ## Status
 v2.5.0 on Sean's phone (2026-11-10): Brick 3 sound-alike search done, checked offline. Issues #6–#9 closed. AI omnibar still waits for keys.
 Next: `/implement #11` in a fresh session (Part L).
+
+2026-11-11 (grill with Sean): the chat box moves to OpenRouter, ticket #25. Four models compared side by side first (Nemotron 3 Ultra, Nemotron 3.5 Super, Gemma 4 31B free; Haiku 5.5 paid, last); Sean picks the order. Jev key, scrubber only (free hosts may keep messages). Replaces the Anthropic and Groq key steps in Part I.

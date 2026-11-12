@@ -49,7 +49,7 @@ Also read: `AGENTS.md` (Expo rules: check the SDK 58 docs, never trust memory), 
 - Settings: `.env` locally (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, git-ignored); CI secrets `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`. Only the publishable key, never the secret key.
 
 ## AI omnibar (v2.3.0, Sean 2026-11-08; not in the original 7 bricks)
-- Edge Function `supabase/functions/omnibar/` (self-contained folder; the app imports `scrub.ts` and `schema.ts` from it). AI keys live only in Supabase secrets: `ANTHROPIC_API_KEY` (Claude Haiku 5.5, first), `GROQ_API_KEY` (free backup `openai/gpt-oss-120b`). Never in the app or git.
+- Edge Function `supabase/functions/omnibar/` (self-contained folder; the app imports `scrub.ts` and `schema.ts` from it). AI keys live only in Supabase secrets: `ANTHROPIC_API_KEY` (Claude Haiku 5.5, first), `GROQ_API_KEY` (free backup `openai/gpt-oss-120b`). Never in the app or git. Moving to one `OPENROUTER_API_KEY` (free models first, Haiku last): ticket #25.
 - The AI only drafts changes; the nurse sends them for review. The app re-checks every id (`src/omnibar/validate.ts`).
 - Every message is scrubbed on the phone and again on the server. Never log message text.
 - Deploy: push, then the web editor with one joined `index.ts` (see PLAN Part I); the Supabase CLI sign-in does not work in remote mode.
