@@ -22,12 +22,13 @@ describe('the OpenRouter request', () => {
     expect(openRouterBody('m', { ...base, caseNote: 'CASE' }).messages[0].content).toBe(`${SYSTEM_PROMPT}\n\n${JSON_RULES}\n\nLIBRARY\n\nCASE`);
   });
 
-  it('sends the history, then the message', () => {
-    const body = openRouterBody('m', { ...base, history: [{ role: 'user', text: 'hi' }, { role: 'assistant', text: 'hello' }] });
+  // Earlier replies go back in the answer format: plain-text replies in the history made models answer in plain text.
+  it('sends the history, then the message, with earlier replies in the answer format', () => {
+    const body = openRouterBody('m', { ...base, history: [{ role: 'user', text: 'hi' }, { role: 'assistant', text: 'hello "nurse"' }] });
     expect(body.model).toBe('m');
     expect(body.messages.slice(1)).toEqual([
       { role: 'user', content: 'hi' },
-      { role: 'assistant', content: 'hello' },
+      { role: 'assistant', content: '{"reply":"hello \\"nurse\\"","actions":[]}' },
       { role: 'user', content: 'closure?' },
     ]);
   });

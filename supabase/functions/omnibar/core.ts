@@ -31,7 +31,11 @@ export function openRouterBody(model: string, opts: AskOpts) {
     model,
     messages: [
       { role: 'system', content: [SYSTEM_PROMPT, JSON_RULES, opts.context, opts.caseNote].filter(Boolean).join('\n\n') },
-      ...opts.history.map((t) => ({ role: t.role, content: t.text })),
+      // Earlier replies go back as JSON answers: plain-text replies here made models answer in plain text.
+      ...opts.history.map((t) => ({
+        role: t.role,
+        content: t.role === 'assistant' ? JSON.stringify({ reply: t.text, actions: [] }) : t.text,
+      })),
       { role: 'user', content: opts.message },
     ],
     max_tokens: 8192, // Nemotron thinks before answering, and thinking counts here
