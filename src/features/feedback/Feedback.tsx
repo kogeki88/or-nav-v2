@@ -1,13 +1,27 @@
 // The admins' floating feedback button and its form (tickets #19 and #20: saved first, sent when online; no screenshot yet).
+// Ticket #21: drag the button and drop it; it snaps to the nearest corner, saved on the phone.
 // Drawn last in SignedIn (App.tsx), so it sits above every tab and panel. The shell decides who sees it.
 import { useEffect, useRef, useState } from 'react';
-import { AppState, StyleSheet, Text, View } from 'react-native';
+import { Animated, AppState, PanResponder, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import type { FeedbackSender, FeedbackTag } from '../../contracts/feedback';
 import { C, S, T } from '../../theme';
 import BottomSheet from '../../ui/BottomSheet';
 import { Banner, Button, Chips, Field, Icon, IconButton, PressScale } from '../../ui/kit';
-import { TAGS } from './logic';
+import { logFault } from '../../diag/faultStore';
+import { type Corner, isDrag, nearestCorner, readCorner, TAGS } from './logic';
+
+/** The button's corner, saved on the phone so it stays after a restart. */
+const CORNER_KEY = 'ornav.feedback.corner';
+
+function savedCorner(): Corner {
+  try {
+    return readCorner(localStorage.getItem(CORNER_KEY));
+  } catch (e) {
+    logFault('feedback', e);
+    return readCorner(null);
+  }
+}
 
 /** How long "Sent" shows before the form closes. */
 const SENT_MS = 1200;
@@ -18,9 +32,11 @@ type Props = {
   page: () => string;
   /** Space kept free at the bottom (the box), so the button never covers Send. */
   bottom: number;
+  /** Space kept free at the top (the top bar), so the button never covers its buttons. */
+  top: number;
 };
 
-export default function Feedback({ sender, page, bottom }: Props) {
+export default function Feedback({ sender, page, bottom, top }: Props) {
   const [open, setOpen] = useState(false);
   const [where, setWhere] = useState('');
   const [tag, setTag] = useState<FeedbackTag>('broken');
@@ -38,6 +54,36 @@ export default function Feedback({ sender, page, bottom }: Props) {
     const sub = AppState.addEventListener('change', (s) => s === 'active' && void sender.flush());
     return () => sub.remove();
   }, [sender]);
+
+  // Dragging: the button follows the finger, then snaps to the nearest corner on drop.
+  // A move past the tap slop takes the touch from the button, so a drag never opens the form.
+  const [corner, setCorner] = useState<Corner>(savedCorner);
+  const screen = useWindowDimensions();
+  const size = useRef(screen);
+  size.current = screen;
+  const pan = useRef(new Animated.ValueXY()).current;
+  const drag = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponderCapture: (_, g) => isDrag(g.dx, g.dy),
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], { useNativeDriver: false }),
+      onPanResponderRelease: (_, g) => {
+        const next = nearestCorner(g.moveX, g.moveY, size.current.width, size.current.height);
+        pan.setValue({ x: 0, y: 0 });
+        setCorner(next);
+        try {
+          localStorage.setItem(CORNER_KEY, next);
+        } catch (e) {
+          logFault('feedback', e);
+        }
+      },
+      onPanResponderTerminate: () => pan.setValue({ x: 0, y: 0 }),
+    }),
+  ).current;
+  const spot = {
+    ...(corner.startsWith('top') ? { top } : { bottom }),
+    ...(corner.endsWith('left') ? { left: S.md } : { right: S.md }),
+  };
 
   const start = () => {
     setWhere(page());
@@ -66,11 +112,11 @@ export default function Feedback({ sender, page, bottom }: Props) {
   return (
     <>
       {!open && (
-        <View style={[styles.fabHolder, { bottom }]} pointerEvents="box-none">
-          <PressScale accessibilityLabel="Send feedback" onPress={start} style={styles.fab}>
+        <Animated.View style={[styles.fabHolder, spot, { transform: pan.getTranslateTransform() }]} {...drag.panHandlers}>
+          <PressScale accessibilityLabel="Send feedback. Drag to move it to another corner." onPress={start} style={styles.fab}>
             <Icon name="message-square" size={22} color={C.onAccent} />
           </PressScale>
-        </View>
+        </Animated.View>
       )}
       <BottomSheet
         open={open}
@@ -111,7 +157,7 @@ export default function Feedback({ sender, page, bottom }: Props) {
 }
 
 const styles = StyleSheet.create({
-  fabHolder: { position: 'absolute', right: S.md },
+  fabHolder: { position: 'absolute' },
   fab: {
     width: 52,
     height: 52,

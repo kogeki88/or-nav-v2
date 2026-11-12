@@ -29,7 +29,7 @@ import { sqliteCaseStore } from './src/core/cases/sqliteCases';
 import { useCases } from './src/features/case/useCases';
 import { ShellState, firstName, timeGreeting } from './src/features/shell/logic';
 import NameSheet from './src/features/shell/NameSheet';
-import Shell from './src/features/shell/Shell';
+import Shell, { TOP_BAR_HEIGHT } from './src/features/shell/Shell';
 import { COMPOSER_SPACE, Composer, OneBoxBody } from './src/omnibar/OneBox';
 import { useOmnibar } from './src/omnibar/useOmnibar';
 import { departmentLabel, toReview } from './src/features/library/logic';
@@ -394,7 +394,7 @@ function SignedIn({
       {/* Solid strip behind the status bar, so scrolled content never runs under the clock. */}
       <View pointerEvents="none" style={[styles.statusStrip, { height: insets.top }]} />
       {/* Admins only: drawn last, so it sits above every tab and panel. */}
-      {showFeedbackButton(user) && <Feedback sender={feedback} page={() => page} bottom={insets.bottom + COMPOSER_SPACE + S.md} />}
+      {showFeedbackButton(user) && <Feedback sender={feedback} page={() => page} bottom={insets.bottom + COMPOSER_SPACE + S.md} top={insets.top + TOP_BAR_HEIGHT + S.md} />}
     </View>
   );
 }
