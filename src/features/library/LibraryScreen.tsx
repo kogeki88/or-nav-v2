@@ -1,6 +1,6 @@
 // Library view: search and browse your department's preference cards and items.
 import { ReactNode, useMemo, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Badge, Banner, Button, Chips, EmptyState, Group, Icon, IconButton, ListRow, SearchField, SectionLabel, SkeletonRows } from '../../ui/kit';
 import { C, F, S, T } from '../../theme';
@@ -69,14 +69,20 @@ export default function LibraryScreen({
           {lib.deptId && <IconButton name="plus" label="Suggest something new" onPress={() => setSelection({ type: 'new' })} color={C.onAccent} bg={C.accent} />}
         </View>
 
-        {/* Department is changed from the name sheet now; here it is only shown. */}
+        {/* Tap to switch department (the name sheet's Department row opens the same sheet). */}
         {lib.deptId && (
-          <View style={styles.dept}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Department: ${departmentLabel(lib.data, lib.deptId)}. Change`}
+            onPress={() => setPickDept(true)}
+            style={({ pressed }) => [styles.dept, pressed && { opacity: 0.6 }]}
+          >
             <Icon name="briefcase" size={18} color={C.text3} />
             <Text style={styles.deptText} numberOfLines={1}>
               {departmentLabel(lib.data, lib.deptId)}
             </Text>
-          </View>
+            <Icon name="chevron-down" size={18} color={C.text3} />
+          </Pressable>
         )}
 
         {lib.offline && <Banner text={`Offline — showing your saved copy${lib.data.loadedAt ? ` from ${timeAgo(lib.data.loadedAt)}` : ''}.`} />}
@@ -172,6 +178,6 @@ export default function LibraryScreen({
 const styles = StyleSheet.create({
   content: { paddingHorizontal: S.lg, paddingBottom: S.xxl, gap: S.sm },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  dept: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, alignSelf: 'flex-start', maxWidth: '100%' },
+  dept: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 48, alignSelf: 'flex-start', maxWidth: '100%' },
   deptText: { fontFamily: F, color: C.text2, fontSize: 16, fontWeight: '500', flexShrink: 1 },
 });
