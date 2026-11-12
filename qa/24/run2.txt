@@ -1,0 +1,28 @@
+Ticket #24 proof, after run 1 (2026-11-12)
+
+1) status ... wont_fix (the 7 other old test reports; Homunculus option A)
+7 report(s) set to wont_fix
+
+2) ticket c215e7e6-8793-431f-be17-f4f90fffa775 --title "[Test] Feedback check proof (ticket #24)" --body-file qa/24/issue-body.md --label needs-triage
+Made https://github.com/kogeki88/or-nav-v2/issues/30 (Todo); 1 report(s) set to ticket_made #30
+
+Check: gh issue view 30 -> {"labels":["needs-triage"],"number":30,"state":"OPEN","title":"[Test] Feedback check proof (ticket #24)"}
+Check: OR-Nav board card for #30 -> status Todo
+Check: Supabase feedback_reports (read with the Feedback tab reader):
+c215e7e6-8793-431f-be17-f4f90fffa775 ticket_made 30 | Ticket 23 test
+054f584c-0ff1-4c1d-a461-a5225b6091d0 wont_fix null | Ticket 28 test report
+a505781a-8048-436e-8bd1-855799351c3f wont_fix null | Ticket27 signal back test
+4b6846ab-704d-4cc2-bacd-b3b410740d86 wont_fix null | Ticket27 resend test
+f3e83868-a5b5-41fb-8e4b-4fc364c65ce3 wont_fix null | Ticket20 offline test two
+2a1f30cd-ee89-4f6a-98f7-5362a9bbbe68 wont_fix null | Ticket20 offline test
+4ec5c3d1-1b8f-4c07-9e95-a7d96a57e294 wont_fix null | Second test one tap
+464d3619-caf6-4ee2-9258-70af0773e0a4 wont_fix null | Test feedback from ticket 19
+
+3) Run 2: pull
+0 new report(s) saved in C:\Users\igles\phone app\usage-dashboard\feedback-inbox
+
+4) Run 2: the same ticket command again
+Report c215e7e6-8793-431f-be17-f4f90fffa775 is not new (it is ticket_made). Nothing was made.   (exit 1)
+Issues titled "Feedback check proof" on the repo, any state: 1
+
+5) Clean-up (no delete): comment on #30, then close it. Final: #30 CLOSED, label needs-triage, board card Done.

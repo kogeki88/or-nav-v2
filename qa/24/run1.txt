@@ -1,0 +1,17 @@
+Ticket #24 proof, run 1 (2026-11-12): node "C:\Users\igles\phone app\usage-dashboard\check-feedback.js" pull
+
+8 new report(s) saved in C:\Users\igles\phone app\usage-dashboard\feedback-inbox
+- c215e7e6-8793-431f-be17-f4f90fffa775 | broken | main | 2.0.0 | Ticket 23 test | picture: C:\Users\igles\phone app\usage-dashboard\feedback-inbox\c215e7e6-8793-431f-be17-f4f90fffa775.jpg
+- 054f584c-0ff1-4c1d-a461-a5225b6091d0 | broken | main | 2.0.0 | Ticket 28 test report | picture: none
+- a505781a-8048-436e-8bd1-855799351c3f | broken | main | 2.0.0 | Ticket27 signal back test | picture: none
+- 4b6846ab-704d-4cc2-bacd-b3b410740d86 | broken | main | 2.0.0 | Ticket27 resend test | picture: none
+- f3e83868-a5b5-41fb-8e4b-4fc364c65ce3 | idea | main | 2.0.0 | Ticket20 offline test two | picture: none
+- 2a1f30cd-ee89-4f6a-98f7-5362a9bbbe68 | idea | main | 2.0.0 | Ticket20 offline test | picture: none
+- 4ec5c3d1-1b8f-4c07-9e95-a7d96a57e294 | broken | main | 2.0.0 | Second test one tap | picture: none
+- 464d3619-caf6-4ee2-9258-70af0773e0a4 | idea | main | 2.0.0 | Test feedback from ticket 19 | picture: none
+
+All 8 are test reports from earlier tickets. Homunculus decided (option A): the 7 without the proof go to wont_fix;
+report c215e7e6 (the one with a screenshot; the downloaded picture opened fine) becomes the one test ticket.
+
+git check-ignore -v usage-dashboard/feedback-inbox/x.jpg
+.gitignore:29:usage-dashboard/feedback-inbox/	usage-dashboard/feedback-inbox/x.jpg

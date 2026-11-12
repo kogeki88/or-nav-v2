@@ -1,0 +1,2 @@
+Proof ticket: https://github.com/kogeki88/or-nav-v2/issues/30 (closed after the proof; board card Done; label needs-triage)
+Proof comment: https://github.com/kogeki88/or-nav-v2/issues/30#issuecomment-6834997311
