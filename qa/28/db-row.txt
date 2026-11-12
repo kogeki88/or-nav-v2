@@ -1,0 +1,2 @@
+id|created_at|app_version|page|tag|message|sent_at|refused_at
+054f584c-0ff1-4c1d-a461-a5225b6091d0|2026-11-12T19:23:28.851Z|2.0.0|main|broken|''|2026-11-12T19:23:44.692Z|

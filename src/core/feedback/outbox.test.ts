@@ -208,6 +208,48 @@ describe('feedback outbox', () => {
   });
 });
 
+describe('feedback outbox: the phone keeps no message text of a sent report (ticket #28)', () => {
+  it('clears the message text once the report is sent, and sets sent_at', async () => {
+    const { outbox, rows } = setup();
+    expect(await outbox.submit(DRAFT)).toEqual({ kind: 'sent' });
+    const [row] = rows.all();
+    expect(row.message).toBe('');
+    expect(row.sent_at).toBe(NOW.toISOString());
+  });
+
+  it('keeps the text of a report that waits after a failed upload', async () => {
+    const { outbox, rows, server } = setup();
+    server.state.online = false;
+    expect(await outbox.submit(DRAFT)).toEqual({ kind: 'saved' });
+    await outbox.flush();
+    const [row] = rows.all();
+    expect(row.message).toBe('Button too small');
+    expect(row.sent_at).toBeNull();
+  });
+
+  it('keeps the text of a report the server refused', async () => {
+    const rows = memoryOutboxRows();
+    const outbox = makeFeedbackOutbox(rows, async () => ({ ok: false, error: new Error('refused'), retry: false }), {
+      appVersion: () => '2.6.0',
+      role: () => 'admin',
+      onFault: () => undefined,
+    });
+    await outbox.submit(DRAFT);
+    expect(rows.all()[0].message).toBe('Button too small');
+  });
+
+  it('a retry after an unknown result makes no duplicate row and then clears the text', async () => {
+    const { outbox, rows, server } = setup();
+    server.state.lostAnswer = true;
+    expect(await outbox.submit(DRAFT)).toEqual({ kind: 'saved' });
+    expect(rows.all()[0].message).toBe('Button too small');
+    await outbox.flush();
+    expect(server.table.size).toBe(1);
+    expect(rows.all()).toHaveLength(1);
+    expect(rows.all()[0]).toMatchObject({ message: '', sent_at: NOW.toISOString() });
+  });
+});
+
 describe('feedback outbox: sends again when the signal comes back (ticket #27)', () => {
   const RETRY_MS = 15000;
 

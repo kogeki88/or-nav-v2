@@ -1,5 +1,6 @@
 // The feedback outbox's rows in the phone's own database (ornav.db, table `feedback_outbox`, migration v4),
-// through serial(). Each account sends only its own waiting reports. Sent and refused reports stay, with sent_at or refused_at set.
+// through serial(). Each account sends only its own waiting reports. Sent and refused reports stay, with sent_at or refused_at set;
+// a sent report's message text is cleared.
 import { serial } from '../../db/libraryStore';
 import type { FeedbackRow, OutboxRows } from './outbox';
 
@@ -27,7 +28,8 @@ export function sqliteOutboxRows(userId: string): OutboxRows {
       ),
     markSent: (id, at) =>
       serial(async (db) => {
-        await db.runAsync('UPDATE feedback_outbox SET sent_at = ? WHERE id = ? AND user_id = ?', at, id, userId);
+        // The row stays (so it is never sent twice), but its message text goes (ticket #28; Sean's yes, 2026-11-12).
+        await db.runAsync("UPDATE feedback_outbox SET sent_at = ?, message = '' WHERE id = ? AND user_id = ?", at, id, userId);
       }),
     markRefused: (id, at) =>
       serial(async (db) => {

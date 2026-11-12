@@ -21,6 +21,7 @@ export interface OutboxRows {
   add(row: FeedbackRow): Promise<void>;
   /** Reports not sent and not refused, oldest first. */
   waiting(): Promise<FeedbackRow[]>;
+  /** Sets sent_at and clears the message text: the phone keeps no copy of a sent report (ticket #28). */
   markSent(id: string, at: string): Promise<void>;
   /** The server refused it for good: never try it again. */
   markRefused(id: string, at: string): Promise<void>;
@@ -159,19 +160,27 @@ export function makeFeedbackOutbox(rows: OutboxRows, upload: Uploader, deps: Out
   };
 }
 
-/** Reports in memory (tests and demo mode). */
-export function memoryOutboxRows(): OutboxRows {
-  const table: (FeedbackRow & { done: boolean })[] = [];
-  const finish = async (id: string) => {
-    const r = table.find((x) => x.id === id);
-    if (r) r.done = true;
-  };
+/** A report as the phone keeps it. A sent report keeps no message text (ticket #28). */
+export type StoredFeedbackRow = FeedbackRow & { sent_at: string | null; refused_at: string | null };
+
+/** Reports in memory (tests and demo mode). Works like the SQLite table, so `all()` shows what the phone keeps. */
+export function memoryOutboxRows(): OutboxRows & { all(): StoredFeedbackRow[] } {
+  const table: StoredFeedbackRow[] = [];
+  const find = (id: string) => table.find((x) => x.id === id);
   return {
     add: async (row) => {
-      table.push({ ...row, done: false });
+      table.push({ ...row, sent_at: null, refused_at: null });
     },
-    waiting: async () => table.filter((r) => !r.done).map(({ done: _, ...r }) => r),
-    markSent: finish,
-    markRefused: finish,
+    waiting: async () =>
+      table.filter((r) => r.sent_at === null && r.refused_at === null).map(({ sent_at: _s, refused_at: _r, ...r }) => r),
+    markSent: async (id, at) => {
+      const r = find(id);
+      if (r) Object.assign(r, { sent_at: at, message: '' });
+    },
+    markRefused: async (id, at) => {
+      const r = find(id);
+      if (r) r.refused_at = at;
+    },
+    all: () => table.map((r) => ({ ...r })),
   };
 }
