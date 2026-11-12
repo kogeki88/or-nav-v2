@@ -12,6 +12,15 @@ export function shelfBin(i: Pick<Item, 'shelf' | 'sub_location'>): string {
 }
 
 /**
+ * The text for a sent-message bubble. Android measures a Manrope line a few pixels too narrow,
+ * so a shrink-to-fit bubble wrapped its last word early. One trailing space counts in the
+ * measure but hangs past the edge when drawn, which gives the missing pixels back.
+ */
+export function bubbleText(text: string): string {
+  return text.trimEnd() + ' ';
+}
+
+/**
  * What shows above the box while typing: the best items, then cards. Cards matched by name come
  * first, then this department's cards that hold a matched item ("On these cards").
  */

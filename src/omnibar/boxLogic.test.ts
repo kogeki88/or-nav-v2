@@ -3,7 +3,16 @@ import { describe, expect, it } from '@jest/globals';
 
 import type { Card, CardItem, Item, LibraryData } from '../contracts/library';
 import { wordSearch } from '../core/search/engine';
-import { answerRows, boxMatches, freshBase, shelfBin } from './boxLogic';
+import { answerRows, boxMatches, bubbleText, freshBase, shelfBin } from './boxLogic';
+
+describe('bubbleText', () => {
+  it('keeps every word and adds one trailing space for the Android width measure', () => {
+    expect(bubbleText('where is the bone wax')).toBe('where is the bone wax ');
+  });
+  it('does not stack spaces when the text already ends in one', () => {
+    expect(bubbleText('bovee  ')).toBe('bovee ');
+  });
+});
 
 const item = (id: string, name: string, shelf: string | null, sub: string | null, dept = 'd1'): Item => ({
   id,

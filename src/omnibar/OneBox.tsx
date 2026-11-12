@@ -15,7 +15,7 @@ import { Badge, Button, Icon, IconName, PressScale } from '../ui/kit';
 import { GAP, revealTime, staggerDelay } from '../ui/motion';
 import { FadeWords, Rise } from '../ui/Rise';
 import type { GoTo, OmniAction } from '../../supabase/functions/omnibar/schema';
-import { FreshBase, answerRows, boxMatches, freshBase, shelfBin } from './boxLogic';
+import { FreshBase, answerRows, boxMatches, bubbleText, freshBase, shelfBin } from './boxLogic';
 import { Greeting, INTRO_MS, LightPool } from './Greeting';
 import type { OmniMessage, Omnibar } from './useOmnibar';
 import { Draft, draftToChange } from './validate';
@@ -220,7 +220,7 @@ function Message({
     return (
       <Rise play={fresh} style={styles.userWrap}>
         <View style={styles.user}>
-          <Text style={T.body}>{m.text}</Text>
+          <Text style={styles.userText} accessibilityLabel={m.text}>{bubbleText(m.text)}</Text>
         </View>
         {m.note ? <Text style={styles.note}>{m.note}</Text> : null}
       </Rise>
@@ -361,6 +361,9 @@ const styles = StyleSheet.create({
   matchTitle: { flex: 1, fontFamily: F, color: C.text, fontSize: 17, fontWeight: '500' },
   matchRight: { fontFamily: F, color: C.text2, fontSize: 14, fontWeight: '600', maxWidth: '45%' },
   userWrap: { alignItems: 'flex-end', gap: S.xs },
+  // No fontVariant here: on Android, tabular-nums in a shrink-to-fit bubble made the
+  // bubble one line tall while the last word wrapped to a hidden second line.
+  userText: { fontFamily: F, color: C.text, fontSize: 17, lineHeight: 24 },
   user: { maxWidth: '78%', backgroundColor: C.fill2, borderRadius: 22, paddingHorizontal: S.lg, paddingVertical: S.md },
   note: { fontFamily: F, color: C.text3, fontSize: 13 },
   answer: { fontFamily: F, fontSize: 17, lineHeight: 26 },
