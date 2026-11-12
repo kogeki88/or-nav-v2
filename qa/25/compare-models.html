@@ -1,0 +1,229 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chat box model test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--page:#0b0a1f;--win:#14122e;--raised:#1d1a40;--line:#2e2a5c;--text:#f3eefe;--quiet:#aaa4d2;--faint:#6e689e;--gold:#f5c96a;--gold-d:#2f2614;--violet:#b79cff;--violet-d:#251d4d;--coral:#e63946}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--text);font:16px/1.5 Arial,sans-serif;min-height:100vh}
+.sky{position:fixed;inset:0;z-index:-1;overflow:hidden;background:
+ radial-gradient(60vw 40vh at 15% 20%,rgba(120,60,140,.28),transparent 70%),
+ radial-gradient(55vw 45vh at 85% 70%,rgba(40,50,140,.30),transparent 70%),
+ radial-gradient(40vw 30vh at 70% 10%,rgba(245,201,106,.08),transparent 70%),
+ radial-gradient(70vw 50vh at 40% 90%,rgba(90,40,120,.22),transparent 70%),var(--page)}
+.sky::before{content:"";position:absolute;left:-20%;top:30%;width:140%;height:26%;transform:rotate(-32deg);background:linear-gradient(transparent,rgba(200,180,255,.07),transparent);filter:blur(30px)}
+.sky::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 160px rgba(0,0,0,.7)}
+.stars{position:absolute;left:0;top:0;width:1px;height:1px;border-radius:50%;box-shadow:0.01vw 75.89vh 0 0px #ffffff,21.06vw 72.94vh 0 0px #cfe0ff,32.93vw 75.21vh 0 0px #d9c8ff,54.29vw 38.93vh 0 0px #f7e3b0,81.68vw 24.20vh 0 0px #ffffff,70.79vw 69.80vh 0 1px #cfe0ff,68.39vw 27.15vh 0 0px #d9c8ff,80.74vw 12.28vh 0 0px #f7e3b0,92.32vw 68.85vh 0 0px #ffffff,57.74vw 39.97vh 0 0px #cfe0ff,37.22vw 33.54vh 0 0px #d9c8ff,33.23vw 15.26vh 0 0px #f7e3b0,42.85vw 40.56vh 0 0px #ffffff,55.74vw 72.93vh 0 0px #cfe0ff,5.86vw 27.35vh 0 0px #d9c8ff,50.88vw 37.35vh 0 0px #f7e3b0,90.90vw 5.49vh 0 0px #ffffff,34.41vw 66.44vh 0 0px #cfe0ff,51.49vw 33.40vh 0 0px #d9c8ff,28.36vw 36.45vh 0 0px #f7e3b0,33.26vw 53.17vh 0 0px #ffffff,23.32vw 61.23vh 0 0px #cfe0ff,86.30vw 63.51vh 0 0px #d9c8ff,51.62vw 50.49vh 0 0px #f7e3b0,93.96vw 10.30vh 0 0px #ffffff,25.11vw 58.69vh 0 0px #cfe0ff,33.06vw 39.14vh 0 0px #d9c8ff,87.76vw 10.15vh 0 0px #f7e3b0,7.77vw 40.68vh 0 0px #ffffff,7.79vw 99.62vh 0 0px #cfe0ff,63.24vw 25.81vh 0 0px #d9c8ff,59.29vw 13.78vh 0 0px #f7e3b0,88.46vw 89.06vh 0 0px #ffffff,90.78vw 17.37vh 0 0px #cfe0ff,1.05vw 24.83vh 0 0px #d9c8ff,0.16vw 61.68vh 0 0px #f7e3b0,74.11vw 23.90vh 0 0px #ffffff,23.80vw 88.21vh 0 0px #cfe0ff,37.39vw 89.43vh 0 0px #d9c8ff,48.93vw 32.71vh 0 0px #f7e3b0,63.69vw 92.21vh 0 1px #ffffff,90.01vw 18.81vh 0 0px #cfe0ff,56.53vw 37.46vh 0 0px #d9c8ff,22.28vw 20.89vh 0 0px #f7e3b0,5.23vw 76.94vh 0 0px #ffffff,71.41vw 25.70vh 0 1px #cfe0ff,11.03vw 91.90vh 0 0px #d9c8ff,68.79vw 89.30vh 0 1px #f7e3b0,88.31vw 20.30vh 0 0px #ffffff,95.43vw 76.49vh 0 0px #cfe0ff,24.82vw 72.77vh 0 0px #d9c8ff,39.83vw 41.59vh 0 0px #f7e3b0,88.70vw 55.88vh 0 0px #ffffff,62.15vw 73.49vh 0 0px #cfe0ff,72.52vw 23.96vh 0 0px #d9c8ff,31.17vw 98.55vh 0 0px #f7e3b0,63.24vw 87.22vh 0 0px #ffffff,19.95vw 59.66vh 0 0px #cfe0ff,49.74vw 55.74vh 0 0px #d9c8ff,94.58vw 48.21vh 0 0px #f7e3b0,44.67vw 37.63vh 0 0px #ffffff,52.17vw 56.15vh 0 0px #cfe0ff,75.71vw 36.25vh 0 0px #d9c8ff,2.60vw 65.57vh 0 0px #f7e3b0,20.28vw 72.29vh 0 0px #ffffff,23.57vw 65.96vh 0 0px #cfe0ff,7.53vw 69.15vh 0 0px #d9c8ff,91.54vw 91.00vh 0 0px #f7e3b0,95.89vw 2.52vh 0 0px #ffffff,60.10vw 35.87vh 0 0px #cfe0ff,3.70vw 13.60vh 0 0px #d9c8ff,10.82vw 8.48vh 0 1px #f7e3b0,60.50vw 38.73vh 0 0px #ffffff,13.36vw 20.22vh 0 0px #cfe0ff,24.33vw 45.64vh 0 0px #d9c8ff,42.26vw 46.23vh 0 0px #f7e3b0,39.69vw 41.64vh 0 0px #ffffff,23.01vw 80.76vh 0 0px #cfe0ff,15.24vw 66.51vh 0 0px #d9c8ff,12.22vw 21.01vh 0 0px #f7e3b0,17.05vw 7.81vh 0 0px #ffffff,64.65vw 30.70vh 0 0px #cfe0ff,99.38vw 7.52vh 0 0px #d9c8ff,31.45vw 0.42vh 0 1px #f7e3b0,41.35vw 38.64vh 0 0px #ffffff,92.41vw 77.75vh 0 0px #cfe0ff,43.68vw 85.49vh 0 0px #d9c8ff,80.10vw 22.61vh 0 0px #f7e3b0,34.80vw 40.70vh 0 0px #ffffff,49.48vw 56.74vh 0 0px #cfe0ff,66.51vw 30.62vh 0 0px #d9c8ff,88.45vw 84.52vh 0 0px #f7e3b0,43.81vw 48.71vh 0 0px #ffffff,97.51vw 7.55vh 0 0px #cfe0ff,34.28vw 88.27vh 0 0px #d9c8ff,73.81vw 95.52vh 0 0px #f7e3b0,20.71vw 53.50vh 0 0px #ffffff,10.41vw 91.56vh 0 0px #cfe0ff,63.52vw 71.15vh 0 0px #d9c8ff,44.30vw 47.74vh 0 0px #f7e3b0,87.37vw 27.06vh 0 0px #ffffff,43.40vw 39.51vh 0 0px #cfe0ff,58.91vw 29.72vh 0 0px #d9c8ff,82.21vw 33.80vh 0 0px #f7e3b0,87.74vw 11.59vh 0 0px #ffffff,92.09vw 5.92vh 0 0px #cfe0ff,39.73vw 2.16vh 0 0px #d9c8ff,89.79vw 17.30vh 0 0px #f7e3b0,94.73vw 14.06vh 0 0px #ffffff,11.68vw 62.66vh 0 1px #cfe0ff,81.19vw 59.16vh 0 0px #d9c8ff,12.81vw 59.70vh 0 0px #f7e3b0,95.51vw 54.78vh 0 0px #ffffff,77.75vw 70.25vh 0 0px #cfe0ff,59.76vw 27.36vh 0 1px #d9c8ff,61.33vw 22.49vh 0 0px #f7e3b0,25.09vw 22.30vh 0 0px #ffffff,62.95vw 35.35vh 0 0px #cfe0ff,90.55vw 5.28vh 0 0px #d9c8ff,40.67vw 79.20vh 0 0px #f7e3b0,80.47vw 14.58vh 0 0px #ffffff,50.09vw 82.30vh 0 0px #cfe0ff,86.63vw 79.06vh 0 0px #d9c8ff,90.78vw 18.73vh 0 0px #f7e3b0,71.97vw 15.46vh 0 0px #ffffff,94.86vw 95.48vh 0 1px #cfe0ff,7.69vw 61.90vh 0 0px #d9c8ff,86.98vw 95.66vh 0 0px #f7e3b0,19.83vw 2.98vh 0 0px #ffffff,55.94vw 30.30vh 0 0px #cfe0ff,48.09vw 22.68vh 0 1px #d9c8ff,4.44vw 9.35vh 0 0px #f7e3b0,46.79vw 45.30vh 0 0px #ffffff,51.08vw 70.04vh 0 0px #cfe0ff,61.34vw 96.52vh 0 0px #d9c8ff,96.20vw 13.32vh 0 0px #f7e3b0,80.27vw 17.12vh 0 0px #ffffff,72.66vw 64.67vh 0 0px #cfe0ff,54.48vw 34.64vh 0 0px #d9c8ff,12.19vw 6.63vh 0 0px #f7e3b0,35.42vw 34.46vh 0 0px #ffffff,63.99vw 25.08vh 0 1px #cfe0ff,0.16vw 83.58vh 0 0px #d9c8ff,4.44vw 76.82vh 0 0px #f7e3b0,40.23vw 50.77vh 0 0px #ffffff,1.16vw 99.33vh 0 0px #cfe0ff,64.29vw 42.76vh 0 1px #d9c8ff,17.27vw 62.87vh 0 0px #f7e3b0,24.91vw 85.75vh 0 0px #ffffff,31.79vw 45.92vh 0 0px #cfe0ff,25.33vw 59.64vh 0 0px #d9c8ff,67.82vw 49.85vh 0 0px #f7e3b0,81.98vw 81.31vh 0 0px #ffffff,97.04vw 12.52vh 0 0px #cfe0ff,71.21vw 32.43vh 0 0px #d9c8ff,16.30vw 84.53vh 0 0px #f7e3b0,81.60vw 18.95vh 0 0px #ffffff,82.88vw 4.26vh 0 0px #cfe0ff,19.55vw 2.34vh 0 0px #d9c8ff,81.19vw 21.44vh 0 0px #f7e3b0,86.55vw 81.34vh 0 0px #ffffff,56.25vw 45.97vh 0 0px #cfe0ff,53.82vw 40.15vh 0 0px #d9c8ff,38.38vw 49.97vh 0 0px #f7e3b0,70.33vw 77.17vh 0 0px #ffffff,25.46vw 55.81vh 0 0px #cfe0ff,93.82vw 56.84vh 0 0px #d9c8ff,60.03vw 57.36vh 0 0px #f7e3b0,57.11vw 29.85vh 0 0px #ffffff,11.83vw 33.35vh 0 0px #cfe0ff,87.46vw 64.41vh 0 0px #d9c8ff,34.73vw 47.04vh 0 0px #f7e3b0,15.48vw 5.31vh 0 0px #ffffff,37.59vw 9.14vh 0 0px #cfe0ff,40.36vw 44.38vh 0 0px #d9c8ff,84.03vw 27.42vh 0 0px #f7e3b0,12.15vw 20.29vh 0 0px #ffffff,19.97vw 59.13vh 0 0px #cfe0ff,75.40vw 78.47vh 0 0px #d9c8ff,86.69vw 68.44vh 0 0px #f7e3b0,62.40vw 34.62vh 0 0px #ffffff,57.99vw 96.72vh 0 0px #cfe0ff,99.48vw 3.74vh 0 0px #d9c8ff,30.77vw 55.91vh 0 0px #f7e3b0,72.34vw 54.67vh 0 0px #ffffff,53.46vw 77.65vh 0 0px #cfe0ff,81.18vw 22.23vh 0 0px #d9c8ff,95.11vw 30.67vh 0 1px #f7e3b0,73.48vw 51.47vh 0 0px #ffffff,69.21vw 29.64vh 0 1px #cfe0ff,70.63vw 98.10vh 0 0px #d9c8ff,67.98vw 56.70vh 0 0px #f7e3b0,63.01vw 31.88vh 0 0px #ffffff,2.26vw 86.28vh 0 0px #cfe0ff,97.63vw 30.78vh 0 0px #d9c8ff,93.83vw 12.82vh 0 0px #f7e3b0,19.81vw 24.20vh 0 0px #ffffff,43.24vw 4.73vh 0 0px #cfe0ff,78.09vw 26.35vh 0 0px #d9c8ff,30.60vw 61.46vh 0 0px #f7e3b0,31.74vw 28.99vh 0 0px #ffffff,36.95vw 46.14vh 0 0px #cfe0ff,50.40vw 54.36vh 0 0px #d9c8ff,62.29vw 89.78vh 0 0px #f7e3b0,46.24vw 45.98vh 0 0px #ffffff,64.86vw 40.45vh 0 0px #cfe0ff,5.27vw 28.65vh 0 1px #d9c8ff,84.07vw 12.44vh 0 0px #f7e3b0,66.64vw 22.15vh 0 0px #ffffff,14.11vw 76.02vh 0 0px #cfe0ff,62.45vw 34.86vh 0 1px #d9c8ff,82.51vw 91.13vh 0 0px #f7e3b0,95.37vw 7.26vh 0 0px #ffffff,3.87vw 74.36vh 0 0px #cfe0ff,27.65vw 52.34vh 0 0px #d9c8ff,70.78vw 79.07vh 0 1px #f7e3b0,11.45vw 64.53vh 0 0px #ffffff,8.79vw 28.75vh 0 0px #cfe0ff,77.01vw 67.58vh 0 0px #d9c8ff,15.68vw 66.30vh 0 0px #f7e3b0,61.84vw 72.17vh 0 0px #ffffff,88.92vw 15.96vh 0 0px #cfe0ff,69.69vw 25.69vh 0 0px #d9c8ff,98.50vw 44.78vh 0 0px #f7e3b0,66.08vw 10.21vh 0 0px #ffffff,18.44vw 63.30vh 0 0px #cfe0ff,99.59vw 54.13vh 0 0px #d9c8ff,47.85vw 50.79vh 0 1px #f7e3b0,54.18vw 40.87vh 0 0px #ffffff,21.15vw 6.69vh 0 0px #cfe0ff,43.57vw 12.99vh 0 0px #d9c8ff,2.05vw 74.51vh 0 0px #f7e3b0,88.99vw 66.93vh 0 0px #ffffff,84.12vw 27.52vh 0 0px #cfe0ff,46.59vw 34.13vh 0 0px #d9c8ff,8.92vw 5.85vh 0 0px #f7e3b0,11.95vw 22.16vh 0 0px #ffffff,65.44vw 25.85vh 0 0px #cfe0ff,71.60vw 75.03vh 0 0px #d9c8ff,86.28vw 18.02vh 0 0px #f7e3b0,54.68vw 34.76vh 0 0px #ffffff,40.68vw 55.09vh 0 0px #cfe0ff,85.28vw 40.79vh 0 0px #d9c8ff,97.32vw 13.02vh 0 0px #f7e3b0,23.88vw 96.07vh 0 0px #ffffff,71.34vw 56.78vh 0 0px #cfe0ff,89.45vw 10.10vh 0 0px #d9c8ff,44.18vw 77.04vh 0 0px #f7e3b0,69.19vw 61.19vh 0 1px #ffffff,29.66vw 55.25vh 0 0px #cfe0ff,3.37vw 55.16vh 0 0px #d9c8ff,1.14vw 95.25vh 0 0px #f7e3b0,54.77vw 41.09vh 0 0px #ffffff,91.73vw 5.54vh 0 0px #cfe0ff,36.32vw 69.91vh 0 0px #d9c8ff,41.20vw 38.57vh 0 0px #f7e3b0,36.96vw 31.53vh 0 0px #ffffff,1.23vw 39.70vh 0 0px #cfe0ff,80.13vw 24.80vh 0 1px #d9c8ff,44.29vw 57.18vh 0 0px #f7e3b0}
+.sigil{position:absolute;right:-120px;bottom:-120px;width:420px;height:420px;border:1px solid rgba(183,156,255,.12);border-radius:50%;box-shadow:0 0 0 30px rgba(183,156,255,.03),inset 0 0 0 60px rgba(183,156,255,.025)}
+main{max-width:1280px;margin:0 auto;padding:32px 16px 64px}
+h1,h2,h3{font-family:Cinzel,Georgia,serif;margin:0}
+h1{font-size:30px;text-transform:uppercase;letter-spacing:.06em;font-weight:800;color:var(--gold)}
+h2{font-size:21px;text-transform:uppercase;letter-spacing:.06em;margin:40px 0 14px;color:var(--violet)}
+h3{font-size:18px;font-weight:600}
+.lead{color:var(--quiet);max-width:780px}
+.win{position:relative;background:rgba(29,26,64,.38);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05)}
+.win::before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(255,255,255,.04),transparent 40%);pointer-events:none}
+.c{position:absolute;width:12px;height:12px;border-color:var(--gold);border-style:solid;border-width:0;opacity:.8}
+.tl{top:6px;left:6px;border-top-width:1px;border-left-width:1px}.tr{top:6px;right:6px;border-top-width:1px;border-right-width:1px}
+.bl{bottom:6px;left:6px;border-bottom-width:1px;border-left-width:1px}.br{bottom:6px;right:6px;border-bottom-width:1px;border-right-width:1px}
+.todo{border-color:var(--gold);margin:20px 0}
+.todo b{color:var(--gold)}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--quiet);font-weight:400;font-size:14px}
+td.n{font-family:Cinzel,Georgia,serif;font-weight:600;font-size:17px}
+.tablewrap{overflow-x:auto}
+.q{margin:28px 0}
+.good{color:var(--quiet);margin:6px 0 12px}.good b{color:var(--gold);font-weight:400}
+.num{display:inline-block;min-width:30px;color:var(--violet)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){.grid{grid-template-columns:1fr}h1{font-size:24px}}
+.ans{font-size:15px}
+.ah{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.meta{color:var(--faint);font-size:13px;margin:4px 0 8px}
+.reply{margin:0 0 8px}
+.ans ul{margin:0;padding-left:18px;color:var(--violet)}
+.quiet{color:var(--quiet);margin:0}
+.tag{font-size:13px;padding:2px 8px;border:1px solid}
+.tag.ok{color:var(--violet);border-color:var(--violet);background:var(--violet-d)}
+.tag.warn{color:var(--gold);border-color:var(--gold);background:var(--gold-d)}
+.tag.bad{color:#000;background:var(--coral);border-color:var(--coral)}
+pre{white-space:pre-wrap;word-break:break-word;font:13px/1.4 Consolas,monospace;color:var(--quiet);margin:6px 0 0;max-height:180px;overflow:auto}
+.blocked{color:var(--violet)}.blocked.miss{color:#000;background:var(--coral)}
+footer{color:var(--faint);font-size:13px;margin-top:48px}
+</style></head><body>
+<div class="sky"><div class="stars"></div><div class="sigil"></div></div>
+<main>
+<h1>Chat box model test</h1>
+<p class="lead">OR-Nav ticket 25, step 1. The same 15 questions went to four AI models through OpenRouter, with the real chat box prompt and the Sample General Hospital / Main OR library. Run on Nov 11, 2026, 9:09 PM.</p>
+<div class="win todo"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+<b>Your step, Sean:</b> read the answers, then tell Claude the order to try the models in (first to last). Free models go first; Claude Haiku is paid and goes last.</div>
+
+<h2>Scorecard</h2>
+<div class="win tablewrap"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+<table><tr><th>Model</th><th>Clean answers</th><th>Failed (error, busy, timeout)</th><th>Broken format</th><th>Made-up ids</th><th>Typical time</th><th>Slowest</th><th>Cost (all 14)</th></tr>
+<tr><td class="n">Nemotron Ultra</td><td>14 of 14</td><td>0</td><td>0</td><td>0</td><td>0.4 s</td><td>1.1 s</td><td>free</td></tr><tr><td class="n">Nemotron Super</td><td>12 of 14</td><td>0</td><td>2</td><td>0</td><td>0.3 s</td><td>0.5 s</td><td>free</td></tr><tr><td class="n">Gemma 4 31B</td><td>0 of 14</td><td>14</td><td>0</td><td>0</td><td>0.0 s</td><td>0.0 s</td><td>free</td></tr><tr><td class="n">Claude Haiku 5.5</td><td>14 of 14</td><td>0</td><td>0</td><td>0</td><td>0.3 s</td><td>0.6 s</td><td>$0.0099</td></tr>
+</table>
+<p class="quiet" style="margin-top:10px;font-size:14px">“Made-up id” means the model pointed at an item or card that is not in the library. The app drops those, so they do no harm, but the nurse gets less help. “Broken format” and “Failed” answers make the server try the next model.</p>
+</div>
+
+<h2>Answers side by side</h2>
+<section class="q"><h3><span class="num">1</span> “where is the bovie”</h3>
+    
+    <p class="good"><b>A good answer:</b> Opens the Bovie pencil: A1, Bin 1.</p><div class="grid"><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Ultra</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.6 s · free</div><p class="reply">Bovie pencil is at A1 / Bin 1.</p><ul><li>Opens item: Bovie pencil</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Super</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.5 s · free</div><p class="reply">Bovie pencil is at A1 / Bin 1.</p><ul><li>Opens item: Bovie pencil</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Gemma 4 31B</b><span class="tag bad">Failed</span></div>
+    <div class="meta">0.2 s · —</div><p class="quiet">Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Claude Haiku 5.5</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.6 s · $0.0006</div><p class="reply">Bovie pencil is at A1 / Bin 1.</p><ul><li>Opens item: Bovie pencil</li></ul></div></div></section>
+<section class="q"><h3><span class="num">2</span> “lap chole closure”</h3>
+    
+    <p class="good"><b>A good answer:</b> Shows Dr. Avery's lap chole Closure: specimen bag (hold), 0 Vicryl CT-1, 4-0 Monocryl PS-2.</p><div class="grid"><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Ultra</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.4 s · free</div><p class="reply">Lap chole closure items on Dr. Avery's card: Specimen retrieval bag (hold), 0 Vicryl CT-1 (open), 4-0 Monocryl PS-2 (open).</p><ul><li>Shows: Laparoscopic cholecystectomy (Dr. Avery)</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Super</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · free</div><p class="reply">Closure on Dr. Avery's lap chole card: 1 specimen retrieval bag (hold, A4/Bin 1), 1 x 0 Vicryl CT-1 (open, S1/Drawer 2), and 1 x 4-0 Monocryl PS-2 (open, S1/Drawer 4).</p><ul><li>Opens card: Laparoscopic cholecystectomy (Dr. Avery)</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Gemma 4 31B</b><span class="tag bad">Failed</span></div>
+    <div class="meta">0.3 s · —</div><p class="quiet">Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Claude Haiku 5.5</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.4 s · $0.0008</div><p class="reply">Lap chole closure: 0 Vicryl CT-1 and 4-0 Monocryl PS-2 open, plus a specimen retrieval bag on hold. Vicryl is at S1 / Drawer 2, Monocryl at S1 / Drawer 4, and the specimen bag at A4 / Bin 1.</p><ul><li>Opens card: Laparoscopic cholecystectomy (Dr. Avery)</li></ul></div></div></section>
+<section class="q"><h3><span class="num">3</span> “kittner”</h3>
+    
+    <p class="good"><b>A good answer:</b> Says there is no Kittner in the library and offers to add one. No invented item.</p><div class="grid"><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Ultra</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.4 s · free</div><p class="reply">Kittner sponge isn't in the library. Want me to draft a new item for it?</p><p class="quiet">No action.</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Super</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · free</div><p class="reply">I don't see a kittner sponge in the library. Want me to add it so you can put it on a card?</p><p class="quiet">No action.</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Gemma 4 31B</b><span class="tag bad">Failed</span></div>
+    <div class="meta">1.6 s · —</div><p class="quiet">Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Claude Haiku 5.5</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · $0.0007</div><p class="reply">No Kittner or sponge item is in the library. Do you want me to draft adding Kittner sponges as a new item?</p><p class="quiet">No action.</p></div></div></section>
+<section class="q"><h3><span class="num">4</span> “yankauer?”</h3>
+    
+    <p class="good"><b>A good answer:</b> Says there is no Yankauer in the library and offers to add one. No invented item.</p><div class="grid"><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Ultra</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.4 s · free</div><p class="reply">Yankauer suction isn't in the library. Want to add it? If so, tell me category, shelf, and spot.</p><p class="quiet">No action.</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Super</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · free</div><p class="reply">Yankauer isn't in the library. Want me to draft it? Tell me the category, shelf, and spot.</p><p class="quiet">No action.</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Gemma 4 31B</b><span class="tag bad">Failed</span></div>
+    <div class="meta">0.3 s · —</div><p class="quiet">Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Claude Haiku 5.5</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.4 s · $0.0006</div><p class="reply">I don't see a Yankauer in this department's library. If it's stocked here, you can add it to the library so it shows up in searches.</p><p class="quiet">No action.</p></div></div></section>
+<section class="q"><h3><span class="num">5</span> “wheres the 12 port”</h3>
+    
+    <p class="good"><b>A good answer:</b> Opens the 12 mm trocar: A3, Bin 5.</p><div class="grid"><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Ultra</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · free</div><p class="reply">12 mm trocar is at A3 / Bin 5.</p><ul><li>Opens item: 12 mm trocar</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Super</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · free</div><p class="reply">12 mm trocar (12 port) is at A3 / Bin 5.</p><ul><li>Opens item: 12 mm trocar</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Gemma 4 31B</b><span class="tag bad">Failed</span></div>
+    <div class="meta">0.2 s · —</div><p class="quiet">Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Claude Haiku 5.5</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · $0.0006</div><p class="reply">The 12 mm trocar (12 port) is on shelf A3, Bin 5.</p><ul><li>Opens item: 12 mm trocar</li></ul></div></div></section>
+<section class="q"><h3><span class="num">6</span> “what does avery use for hernia”</h3>
+    
+    <p class="good"><b>A good answer:</b> Opens Dr. Avery's lap inguinal hernia card.</p><div class="grid"><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Ultra</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.4 s · free</div><p class="reply">Dr. Avery's laparoscopic inguinal hernia repair card includes mesh, tacker, moncryl, trocars, and the lap tower.</p><ul><li>Shows: Mesh 15 x 15 cm, Tacker 5 mm, 4-0 Monocryl PS-2, 5 mm trocar, 12 mm trocar, Laparoscopic tower, Laparoscopic inguinal hernia repair (Dr. Avery)</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Super</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · free</div><p class="reply">Dr. Avery's laparoscopic inguinal hernia repair card uses lap tower, trocars, mesh, tacker, and 4-0 Monocryl PS-2 for closure. I'll show it now.</p><ul><li>Shows: Laparoscopic inguinal hernia repair (Dr. Avery)</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Gemma 4 31B</b><span class="tag bad">Failed</span></div>
+    <div class="meta">0.3 s · —</div><p class="quiet">Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Claude Haiku 5.5</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · $0.0007</div><p class="reply">Dr. Avery's Laparoscopic inguinal hernia repair card uses a laparoscopic tower, two 5 mm trocars, one 12 mm trocar, mesh 15 x 15 cm and a 5 mm tacker (both on hold), and 4-0 Monocryl PS-2 for closure. Opening the card now.</p><ul><li>Opens card: Laparoscopic inguinal hernia repair (Dr. Avery)</li></ul></div></div></section>
+<section class="q"><h3><span class="num">7</span> “add a bovie to averys hernia setup”</h3>
+    
+    <p class="good"><b>A good answer:</b> Drafts: add 1 Bovie pencil to the hernia card, Setup (open). Says it is ready to send.</p><div class="grid"><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Ultra</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · free</div><p class="reply">Adding Bovie pencil to Dr. Avery's laparoscopic inguinal hernia repair card in Setup (open). Ready to send for review.</p><ul><li>Draft (add): Add 1 x Bovie pencil to Setup (open)</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Super</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · free</div><p class="reply">Added 1 Bovie pencil to Dr. Avery’s hernia card, Setup phase (open). It’s at A1 / Bin 1. Ready to send for review.</p><ul><li>Draft (add): Add 1 x Bovie pencil to Setup (open)</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Gemma 4 31B</b><span class="tag bad">Failed</span></div>
+    <div class="meta">0.3 s · —</div><p class="quiet">Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Claude Haiku 5.5</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · $0.0007</div><p class="reply">Drafted: add 1 Bovie pencil to Avery's Laparoscopic inguinal hernia repair card, Setup, open. Check it and send it to a colleague for review.</p><ul><li>Draft (add): Add 1 x Bovie pencil to Laparoscopic inguinal hernia repair (Dr. Avery) in Setup (open)</li></ul></div></div></section>
+<section class="q"><h3><span class="num">8</span> “bovie moved to A2 bin 3”</h3>
+    
+    <p class="good"><b>A good answer:</b> Drafts an edit of the Bovie pencil: shelf A2, spot Bin 3.</p><div class="grid"><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Ultra</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.6 s · free</div><p class="reply">Got it — Bovie pencil now at A2 / Bin 3. Ready to send for review.</p><ul><li>Draft (edit): Move Bovie pencil to A2 / Bin 3</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Super</b><span class="tag bad">Broken format</span></div>
+    <div class="meta">0.3 s · free</div><p class="quiet">What came back:</p><pre>{&quot;reply&quot;:&quot;I've drafted a location change for the Bovie pencil to A2 / Bin 3. It's ready to send for review.&quot;},{&quot;actions&quot;:[{&quot;type&quot;:&quot;draft_item&quot;,&quot;kind&quot;:&quot;edit&quot;,&quot;item_id&quot;:&quot;item:00000000-0000-4000-8000-000000000012&quot;,&quot;name&quot;:null,&quot;category&quot;:null,&quot;shelf&quot;:&quot;A2&quot;,&quot;sub_location&quot;:&quot;Bin 3&quot;,&quot;synonyms&quot;:null,&quot;notes&quot;:null,&quot;summary&quot;:&quot;Move Bovie pencil to A2 / Bin 3&quot;}]}}</pre></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Gemma 4 31B</b><span class="tag bad">Failed</span></div>
+    <div class="meta">0.3 s · —</div><p class="quiet">Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Claude Haiku 5.5</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.4 s · $0.0007</div><p class="reply">Got it. I've drafted the Bovie pencil move to A2 / Bin 3. Check it and send it for review.</p><ul><li>Draft (edit): Move Bovie pencil from A1 / Bin 1 to A2 / Bin 3</li></ul></div></div></section>
+<section class="q"><h3><span class="num">9</span> “add yankauer suction to the library, A1 bin 4”</h3>
+    
+    <p class="good"><b>A good answer:</b> Drafts a new item &quot;Yankauer suction&quot; at A1, Bin 4.</p><div class="grid"><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Ultra</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.6 s · free</div><p class="reply">Ready to add Yankauer suction to the library at A1 / Bin 4. I've drafted it as a disposable item. Send it for review when you're ready.</p><ul><li>Draft (add): Add Yankauer suction to A1 / Bin 4</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Super</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · free</div><p class="reply">Yankauer suction isn't in the library yet. I’ve drafted it as a disposable item at A1 / Bin 4; it’s ready to send for review.</p><ul><li>Draft (add): Add Yankauer suction to A1 / Bin 4</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Gemma 4 31B</b><span class="tag bad">Failed</span></div>
+    <div class="meta">0.3 s · —</div><p class="quiet">Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Claude Haiku 5.5</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.4 s · $0.0007</div><p class="reply">Drafted the new item Yankauer suction at A1 / Bin 4. It's ready to send for review; I left the category blank since you didn't give one.</p><ul><li>Draft (add): Add Yankauer suction to library at A1 / Bin 4</li></ul></div></div></section>
+<section class="q"><h3><span class="num">10</span> “how much cement does patel want”</h3>
+    
+    <p class="good"><b>A good answer:</b> 2 x Bone cement 40 g, held, on the TKA card. Opens that card.</p><div class="grid"><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Ultra</b><span class="tag ok">Clean</span></div>
+    <div class="meta">1.1 s · free</div><p class="reply">Dr. Patel's TKA card calls for 2 × Bone cement 40 g (80 g total) in Cannulation/Main, held unopened. It's stored at D3 / Locked cabinet.</p><p class="quiet">No action.</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Super</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · free</div><p class="reply">Dr. Patel’s TKA card has 2 x Bone cement 40 g, set to hold, in Cannulation/Main (D3 / Locked cabinet).</p><p class="quiet">No action.</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Gemma 4 31B</b><span class="tag bad">Failed</span></div>
+    <div class="meta">0.2 s · —</div><p class="quiet">Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Claude Haiku 5.5</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · $0.0007</div><p class="reply">Patel's Total knee arthroplasty card calls for 2 x Bone cement 40 g, held in the room (unopened). Cement is in D3, Locked cabinet, and should only be mixed on surgeon call.</p><ul><li>Opens card: Total knee arthroplasty (Dr. Patel)</li></ul></div></div></section>
+<section class="q"><h3><span class="num">11</span> “take the tacker off the hernia card”</h3>
+    
+    <p class="good"><b>A good answer:</b> Drafts: remove the Tacker 5 mm line from the hernia card.</p><div class="grid"><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Ultra</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.4 s · free</div><p class="reply">Draft ready to remove the tacker from Dr. Avery's laparoscopic inguinal hernia repair card.</p><ul><li>Draft (remove): Remove Tacker 5 mm from Cannulation/Main (hold)</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Super</b><span class="tag bad">Broken format</span></div>
+    <div class="meta">0.3 s · free</div><p class="quiet">What came back:</p><pre>{&quot;reply&quot;:&quot;I’ll draft removing the Tacker 5 mm from Dr. Avery’s laparoscopic inguinal hernia repair card. It’s ready to send for review once you confirm.&quot;},{&quot;actions&quot;:[{&quot;type&quot;:&quot;draft_card_line&quot;,&quot;kind&quot;:&quot;remove&quot;,&quot;card_id&quot;:&quot;card:00000000-0000-4000-8000-000000000020&quot;,&quot;card_item_id&quot;:&quot;line:00000000-0000-4000-8000-000000000036&quot;,&quot;item_id&quot;:null,&quot;phase&quot;:null,&quot;quantity&quot;:null,&quot;open_or_hold&quot;:null,&quot;note&quot;:null,&quot;summary&quot;:&quot;Remove Tacker 5 mm from hernia card&quot;}]}}</pre></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Gemma 4 31B</b><span class="tag bad">Failed</span></div>
+    <div class="meta">0.3 s · —</div><p class="quiet">Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Claude Haiku 5.5</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · $0.0008</div><p class="reply">Drafted removal of the Tacker 5 mm from the Laparoscopic inguinal hernia repair card (Cannulation/Main). It's ready to send for review.</p><ul><li>Draft (remove): Remove Tacker 5 mm (hold) from Cannulation/Main on Laparoscopic inguinal hernia repair</li></ul></div></div></section>
+<section class="q"><h3><span class="num">12</span> “what's on the closure”</h3>
+    <p class="quiet">Case open on the phone: Laparoscopic cholecystectomy.</p>
+    <p class="good"><b>A good answer:</b> Case is Avery lap chole: lists its 3 Closure lines.</p><div class="grid"><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Ultra</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · free</div><p class="reply">Closure for Dr. Avery's lap chole: 1× Specimen retrieval bag (hold, A4/Bin 1), 1× 0 Vicryl CT-1 (open, S1/Drawer 2), 1× 4-0 Monocryl PS-2 (open, S1/Drawer 4).</p><p class="quiet">No action.</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Super</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.4 s · free</div><p class="reply">Closure on Avery’s lap chole card: 1 x Specimen retrieval bag (hold), 1 x 0 Vicryl CT-1 (open), 1 x 4-0 Monocryl PS-2 (open).</p><ul><li>Shows: Specimen retrieval bag, 0 Vicryl CT-1, 4-0 Monocryl PS-2, Laparoscopic cholecystectomy (Dr. Avery)</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Gemma 4 31B</b><span class="tag bad">Failed</span></div>
+    <div class="meta">0.3 s · —</div><p class="quiet">Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Claude Haiku 5.5</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · $0.0009</div><p class="reply">Closure on the lap chole card: 0 Vicryl CT-1 (open), 4-0 Monocryl PS-2 (open), and a specimen retrieval bag (hold). Vicryl is at S1 / Drawer 2, Monocryl at S1 / Drawer 4, and the bag at A4 / Bin 1.</p><ul><li>Shows: 0 Vicryl CT-1, 4-0 Monocryl PS-2, Specimen retrieval bag</li></ul></div></div></section>
+<section class="q"><h3><span class="num">13</span> “TKR setup for patel”</h3>
+    
+    <p class="good"><b>A good answer:</b> Tourniquet cuff 34 in and Bovie pencil, both open. Opens the TKA card.</p><div class="grid"><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Ultra</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.4 s · free</div><p class="reply">Opening Dr. Patel's Total Knee Arthroplasty preference card – setup includes Tourniquet cuff 34 in (D1 / Hook 3) and Bovie pencil (A1 / Bin 1).</p><ul><li>Opens card: Total knee arthroplasty (Dr. Patel)</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Super</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.4 s · free</div><p class="reply">Opened Dr. Patel's Total knee arthroplasty preference card.</p><ul><li>Opens card: Total knee arthroplasty (Dr. Patel)</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Gemma 4 31B</b><span class="tag bad">Failed</span></div>
+    <div class="meta">0.3 s · —</div><p class="quiet">Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Claude Haiku 5.5</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · $0.0007</div><p class="reply">Opening the Total knee arthroplasty card for Dr. Patel. Setup has the tourniquet cuff 34 in and the Bovie pencil, and the card notes tourniquet time is called at 60 min.</p><ul><li>Opens card: Total knee arthroplasty (Dr. Patel)</li></ul></div></div></section>
+<section class="q"><h3><span class="num">14</span> “show me what needs review”</h3>
+    
+    <p class="good"><b>A good answer:</b> Goes to the To review list.</p><div class="grid"><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Ultra</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.4 s · free</div><p class="reply">Opening your To review list.</p><ul><li>Goes to: review</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Nemotron Super</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · free</div><p class="reply">I’ll open the To review list so you can check pending drafts and cards.</p><ul><li>Goes to: review</li></ul></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Gemma 4 31B</b><span class="tag bad">Failed</span></div>
+    <div class="meta">0.3 s · —</div><p class="quiet">Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok</p></div><div class="win ans"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+    <div class="ah"><b>Claude Haiku 5.5</b><span class="tag ok">Clean</span></div>
+    <div class="meta">0.3 s · $0.0006</div><p class="reply">Opening the To review list for you.</p><ul><li>Goes to: review</li></ul></div></div></section>
+<section class="q"><h3><span class="num">15</span> “pt Maria Lopez DOB 04/12/1961 needs extra mesh”</h3>
+    
+    <p class="good"><b>A good answer:</b> Blocked on the phone by the scrubber. Never sent.</p><div class="win blocked "><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>Blocked on the phone by the scrubber: “Remove the date of birth. Do not type patient information here.”. Not sent to any model.</div></section>
+<footer>Made by tools/compare-models (run.ts, page.ts). Raw data: qa/25/results.json. Model ids: nvidia/nemotron-3-ultra-550b-a55b:free, nvidia/nemotron-3.5-super-vl:free, google/gemma-4-31b-it:free, anthropic/claude-haiku-5.5.</footer>
+</main></body></html>

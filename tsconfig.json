@@ -3,5 +3,5 @@
   "compilerOptions": {
     "strict": true
   },
-  "exclude": ["node_modules", "supabase/functions/omnibar"]
+  "exclude": ["node_modules", "supabase/functions/omnibar", "tools/compare-models"]
 }

@@ -1,0 +1,1312 @@
+{
+  "ranAt": "2026-11-12T02:09:20.026Z",
+  "models": [
+    {
+      "id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "label": "Nemotron Ultra"
+    },
+    {
+      "id": "nvidia/nemotron-3.5-super-vl:free",
+      "label": "Nemotron Super"
+    },
+    {
+      "id": "google/gemma-4-31b-it:free",
+      "label": "Gemma 4 31B"
+    },
+    {
+      "id": "anthropic/claude-haiku-5.5",
+      "label": "Claude Haiku 5.5"
+    }
+  ],
+  "results": [
+    {
+      "n": 1,
+      "text": "where is the bovie",
+      "good": "Opens the Bovie pencil: A1, Bin 1.",
+      "blocked": false,
+      "answers": [
+        {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "label": "Nemotron Ultra",
+          "ms": 594,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5374,
+          "tokensOut": 207,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Bovie pencil is at A1 / Bin 1.",
+          "actions": [
+            {
+              "type": "open_item",
+              "item_id": "00000000-0000-4000-8000-000000000012"
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "nvidia/nemotron-3.5-super-vl:free",
+          "label": "Nemotron Super",
+          "ms": 499,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5374,
+          "tokensOut": 306,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Bovie pencil is at A1 / Bin 1.",
+          "actions": [
+            {
+              "type": "open_item",
+              "item_id": "00000000-0000-4000-8000-000000000012"
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "google/gemma-4-31b-it:free",
+          "label": "Gemma 4 31B",
+          "ms": 248,
+          "retried": true,
+          "error": "Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok",
+          "provider": null,
+          "cost": null,
+          "tokensIn": null,
+          "tokensOut": null,
+          "formatOk": false,
+          "raw": "",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "anthropic/claude-haiku-5.5",
+          "label": "Claude Haiku 5.5",
+          "ms": 640,
+          "retried": false,
+          "error": null,
+          "provider": "Claude Platform on AWS",
+          "cost": 0.0006228,
+          "tokensIn": 5528,
+          "tokensOut": 140,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Bovie pencil is at A1 / Bin 1.",
+          "actions": [
+            {
+              "type": "open_item",
+              "item_id": "00000000-0000-4000-8000-000000000012"
+            }
+          ],
+          "actionsKept": 1
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "text": "lap chole closure",
+      "good": "Shows Dr. Avery's lap chole Closure: specimen bag (hold), 0 Vicryl CT-1, 4-0 Monocryl PS-2.",
+      "blocked": false,
+      "answers": [
+        {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "label": "Nemotron Ultra",
+          "ms": 387,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5373,
+          "tokensOut": 519,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Lap chole closure items on Dr. Avery's card: Specimen retrieval bag (hold), 0 Vicryl CT-1 (open), 4-0 Monocryl PS-2 (open).",
+          "actions": [
+            {
+              "type": "show_results",
+              "item_ids": [],
+              "card_ids": [
+                "00000000-0000-4000-8000-000000000019"
+              ]
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "nvidia/nemotron-3.5-super-vl:free",
+          "label": "Nemotron Super",
+          "ms": 316,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5373,
+          "tokensOut": 1165,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Closure on Dr. Avery's lap chole card: 1 specimen retrieval bag (hold, A4/Bin 1), 1 x 0 Vicryl CT-1 (open, S1/Drawer 2), and 1 x 4-0 Monocryl PS-2 (open, S1/Drawer 4).",
+          "actions": [
+            {
+              "type": "open_card",
+              "card_id": "00000000-0000-4000-8000-000000000019"
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "google/gemma-4-31b-it:free",
+          "label": "Gemma 4 31B",
+          "ms": 325,
+          "retried": true,
+          "error": "Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok",
+          "provider": null,
+          "cost": null,
+          "tokensIn": null,
+          "tokensOut": null,
+          "formatOk": false,
+          "raw": "",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "anthropic/claude-haiku-5.5",
+          "label": "Claude Haiku 5.5",
+          "ms": 354,
+          "retried": false,
+          "error": null,
+          "provider": "Claude Platform on AWS",
+          "cost": 0.0008128,
+          "tokensIn": 5528,
+          "tokensOut": 520,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Lap chole closure: 0 Vicryl CT-1 and 4-0 Monocryl PS-2 open, plus a specimen retrieval bag on hold. Vicryl is at S1 / Drawer 2, Monocryl at S1 / Drawer 4, and the specimen bag at A4 / Bin 1.",
+          "actions": [
+            {
+              "type": "open_card",
+              "card_id": "00000000-0000-4000-8000-000000000019"
+            }
+          ],
+          "actionsKept": 1
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "text": "kittner",
+      "good": "Says there is no Kittner in the library and offers to add one. No invented item.",
+      "blocked": false,
+      "answers": [
+        {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "label": "Nemotron Ultra",
+          "ms": 351,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5372,
+          "tokensOut": 327,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Kittner sponge isn't in the library. Want me to draft a new item for it?",
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "nvidia/nemotron-3.5-super-vl:free",
+          "label": "Nemotron Super",
+          "ms": 300,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5372,
+          "tokensOut": 934,
+          "formatOk": true,
+          "raw": null,
+          "reply": "I don't see a kittner sponge in the library. Want me to add it so you can put it on a card?",
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "google/gemma-4-31b-it:free",
+          "label": "Gemma 4 31B",
+          "ms": 1622,
+          "retried": true,
+          "error": "Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok",
+          "provider": null,
+          "cost": null,
+          "tokensIn": null,
+          "tokensOut": null,
+          "formatOk": false,
+          "raw": "",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "anthropic/claude-haiku-5.5",
+          "label": "Claude Haiku 5.5",
+          "ms": 290,
+          "retried": false,
+          "error": null,
+          "provider": "Claude Platform on AWS",
+          "cost": 0.0006765,
+          "tokensIn": 5525,
+          "tokensOut": 248,
+          "formatOk": true,
+          "raw": null,
+          "reply": "No Kittner or sponge item is in the library. Do you want me to draft adding Kittner sponges as a new item?",
+          "actions": [],
+          "actionsKept": 0
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "text": "yankauer?",
+      "good": "Says there is no Yankauer in the library and offers to add one. No invented item.",
+      "blocked": false,
+      "answers": [
+        {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "label": "Nemotron Ultra",
+          "ms": 418,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5373,
+          "tokensOut": 343,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Yankauer suction isn't in the library. Want to add it? If so, tell me category, shelf, and spot.",
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "nvidia/nemotron-3.5-super-vl:free",
+          "label": "Nemotron Super",
+          "ms": 334,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5373,
+          "tokensOut": 1462,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Yankauer isn't in the library. Want me to draft it? Tell me the category, shelf, and spot.",
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "google/gemma-4-31b-it:free",
+          "label": "Gemma 4 31B",
+          "ms": 304,
+          "retried": true,
+          "error": "Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok",
+          "provider": null,
+          "cost": null,
+          "tokensIn": null,
+          "tokensOut": null,
+          "formatOk": false,
+          "raw": "",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "anthropic/claude-haiku-5.5",
+          "label": "Claude Haiku 5.5",
+          "ms": 385,
+          "retried": false,
+          "error": null,
+          "provider": "Claude Platform on AWS",
+          "cost": 0.0006387,
+          "tokensIn": 5527,
+          "tokensOut": 172,
+          "formatOk": true,
+          "raw": null,
+          "reply": "I don't see a Yankauer in this department's library. If it's stocked here, you can add it to the library so it shows up in searches.",
+          "actions": [],
+          "actionsKept": 0
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "text": "wheres the 12 port",
+      "good": "Opens the 12 mm trocar: A3, Bin 5.",
+      "blocked": false,
+      "answers": [
+        {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "label": "Nemotron Ultra",
+          "ms": 338,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5377,
+          "tokensOut": 258,
+          "formatOk": true,
+          "raw": null,
+          "reply": "12 mm trocar is at A3 / Bin 5.",
+          "actions": [
+            {
+              "type": "open_item",
+              "item_id": "00000000-0000-4000-8000-000000000006"
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "nvidia/nemotron-3.5-super-vl:free",
+          "label": "Nemotron Super",
+          "ms": 268,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5377,
+          "tokensOut": 270,
+          "formatOk": true,
+          "raw": null,
+          "reply": "12 mm trocar (12 port) is at A3 / Bin 5.",
+          "actions": [
+            {
+              "type": "open_item",
+              "item_id": "00000000-0000-4000-8000-000000000006"
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "google/gemma-4-31b-it:free",
+          "label": "Gemma 4 31B",
+          "ms": 202,
+          "retried": true,
+          "error": "Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok",
+          "provider": null,
+          "cost": null,
+          "tokensIn": null,
+          "tokensOut": null,
+          "formatOk": false,
+          "raw": "",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "anthropic/claude-haiku-5.5",
+          "label": "Claude Haiku 5.5",
+          "ms": 350,
+          "retried": false,
+          "error": null,
+          "provider": "Claude Platform on AWS",
+          "cost": 0.000592,
+          "tokensIn": 5530,
+          "tokensOut": 78,
+          "formatOk": true,
+          "raw": null,
+          "reply": "The 12 mm trocar (12 port) is on shelf A3, Bin 5.",
+          "actions": [
+            {
+              "type": "open_item",
+              "item_id": "00000000-0000-4000-8000-000000000006"
+            }
+          ],
+          "actionsKept": 1
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "text": "what does avery use for hernia",
+      "good": "Opens Dr. Avery's lap inguinal hernia card.",
+      "blocked": false,
+      "answers": [
+        {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "label": "Nemotron Ultra",
+          "ms": 394,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5376,
+          "tokensOut": 550,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Dr. Avery's laparoscopic inguinal hernia repair card includes mesh, tacker, moncryl, trocars, and the lap tower.",
+          "actions": [
+            {
+              "type": "show_results",
+              "card_ids": [
+                "00000000-0000-4000-8000-000000000020"
+              ],
+              "item_ids": [
+                "00000000-0000-4000-8000-000000000010",
+                "00000000-0000-4000-8000-000000000011",
+                "00000000-0000-4000-8000-000000000018",
+                "00000000-0000-4000-8000-000000000005",
+                "00000000-0000-4000-8000-000000000006",
+                "00000000-0000-4000-8000-000000000003"
+              ]
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "nvidia/nemotron-3.5-super-vl:free",
+          "label": "Nemotron Super",
+          "ms": 328,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5376,
+          "tokensOut": 364,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Dr. Avery's laparoscopic inguinal hernia repair card uses lap tower, trocars, mesh, tacker, and 4-0 Monocryl PS-2 for closure. I'll show it now.",
+          "actions": [
+            {
+              "type": "show_results",
+              "item_ids": [],
+              "card_ids": [
+                "00000000-0000-4000-8000-000000000020"
+              ]
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "google/gemma-4-31b-it:free",
+          "label": "Gemma 4 31B",
+          "ms": 266,
+          "retried": true,
+          "error": "Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok",
+          "provider": null,
+          "cost": null,
+          "tokensIn": null,
+          "tokensOut": null,
+          "formatOk": false,
+          "raw": "",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "anthropic/claude-haiku-5.5",
+          "label": "Claude Haiku 5.5",
+          "ms": 301,
+          "retried": false,
+          "error": null,
+          "provider": "Claude Platform on AWS",
+          "cost": 0.0007351,
+          "tokensIn": 5531,
+          "tokensOut": 364,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Dr. Avery's Laparoscopic inguinal hernia repair card uses a laparoscopic tower, two 5 mm trocars, one 12 mm trocar, mesh 15 x 15 cm and a 5 mm tacker (both on hold), and 4-0 Monocryl PS-2 for closure. Opening the card now.",
+          "actions": [
+            {
+              "type": "open_card",
+              "card_id": "00000000-0000-4000-8000-000000000020"
+            }
+          ],
+          "actionsKept": 1
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "text": "add a bovie to averys hernia setup",
+      "good": "Drafts: add 1 Bovie pencil to the hernia card, Setup (open). Says it is ready to send.",
+      "blocked": false,
+      "answers": [
+        {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "label": "Nemotron Ultra",
+          "ms": 341,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5378,
+          "tokensOut": 708,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Adding Bovie pencil to Dr. Avery's laparoscopic inguinal hernia repair card in Setup (open). Ready to send for review.",
+          "actions": [
+            {
+              "type": "draft_card_line",
+              "kind": "add",
+              "card_id": "00000000-0000-4000-8000-000000000020",
+              "card_item_id": null,
+              "item_id": "00000000-0000-4000-8000-000000000012",
+              "phase": "Setup",
+              "quantity": 1,
+              "open_or_hold": "open",
+              "note": null,
+              "summary": "Add 1 x Bovie pencil to Setup (open)"
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "nvidia/nemotron-3.5-super-vl:free",
+          "label": "Nemotron Super",
+          "ms": 312,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5378,
+          "tokensOut": 463,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Added 1 Bovie pencil to Dr. Avery’s hernia card, Setup phase (open). It’s at A1 / Bin 1. Ready to send for review.",
+          "actions": [
+            {
+              "type": "draft_card_line",
+              "kind": "add",
+              "card_id": "00000000-0000-4000-8000-000000000020",
+              "card_item_id": null,
+              "item_id": "00000000-0000-4000-8000-000000000012",
+              "phase": "Setup",
+              "quantity": 1,
+              "open_or_hold": "open",
+              "note": null,
+              "summary": "Add 1 x Bovie pencil to Setup (open)"
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "google/gemma-4-31b-it:free",
+          "label": "Gemma 4 31B",
+          "ms": 299,
+          "retried": true,
+          "error": "Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok",
+          "provider": null,
+          "cost": null,
+          "tokensIn": null,
+          "tokensOut": null,
+          "formatOk": false,
+          "raw": "",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "anthropic/claude-haiku-5.5",
+          "label": "Claude Haiku 5.5",
+          "ms": 329,
+          "retried": false,
+          "error": null,
+          "provider": "Claude Platform on AWS",
+          "cost": 0.0007095,
+          "tokensIn": 5535,
+          "tokensOut": 312,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Drafted: add 1 Bovie pencil to Avery's Laparoscopic inguinal hernia repair card, Setup, open. Check it and send it to a colleague for review.",
+          "actions": [
+            {
+              "type": "draft_card_line",
+              "kind": "add",
+              "card_id": "00000000-0000-4000-8000-000000000020",
+              "card_item_id": null,
+              "item_id": "00000000-0000-4000-8000-000000000012",
+              "phase": "Setup",
+              "quantity": 1,
+              "open_or_hold": "open",
+              "note": null,
+              "summary": "Add 1 x Bovie pencil to Laparoscopic inguinal hernia repair (Dr. Avery) in Setup (open)"
+            }
+          ],
+          "actionsKept": 1
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "text": "bovie moved to A2 bin 3",
+      "good": "Drafts an edit of the Bovie pencil: shelf A2, spot Bin 3.",
+      "blocked": false,
+      "answers": [
+        {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "label": "Nemotron Ultra",
+          "ms": 570,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5378,
+          "tokensOut": 417,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Got it — Bovie pencil now at A2 / Bin 3. Ready to send for review.",
+          "actions": [
+            {
+              "type": "draft_item",
+              "kind": "edit",
+              "item_id": "00000000-0000-4000-8000-000000000012",
+              "name": null,
+              "category": null,
+              "shelf": "A2",
+              "sub_location": "Bin 3",
+              "synonyms": null,
+              "notes": null,
+              "summary": "Move Bovie pencil to A2 / Bin 3"
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "nvidia/nemotron-3.5-super-vl:free",
+          "label": "Nemotron Super",
+          "ms": 342,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5378,
+          "tokensOut": 302,
+          "formatOk": false,
+          "raw": "{\"reply\":\"I've drafted a location change for the Bovie pencil to A2 / Bin 3. It's ready to send for review.\"},{\"actions\":[{\"type\":\"draft_item\",\"kind\":\"edit\",\"item_id\":\"item:00000000-0000-4000-8000-000000000012\",\"name\":null,\"category\":null,\"shelf\":\"A2\",\"sub_location\":\"Bin 3\",\"synonyms\":null,\"notes\":null,\"summary\":\"Move Bovie pencil to A2 / Bin 3\"}]}}",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "google/gemma-4-31b-it:free",
+          "label": "Gemma 4 31B",
+          "ms": 275,
+          "retried": true,
+          "error": "Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok",
+          "provider": null,
+          "cost": null,
+          "tokensIn": null,
+          "tokensOut": null,
+          "formatOk": false,
+          "raw": "",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "anthropic/claude-haiku-5.5",
+          "label": "Claude Haiku 5.5",
+          "ms": 382,
+          "retried": false,
+          "error": null,
+          "provider": "Claude Platform on AWS",
+          "cost": 0.0007215,
+          "tokensIn": 5535,
+          "tokensOut": 336,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Got it. I've drafted the Bovie pencil move to A2 / Bin 3. Check it and send it for review.",
+          "actions": [
+            {
+              "type": "draft_item",
+              "kind": "edit",
+              "item_id": "00000000-0000-4000-8000-000000000012",
+              "name": null,
+              "category": null,
+              "shelf": "A2",
+              "sub_location": "Bin 3",
+              "synonyms": null,
+              "notes": null,
+              "summary": "Move Bovie pencil from A1 / Bin 1 to A2 / Bin 3"
+            }
+          ],
+          "actionsKept": 1
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "text": "add yankauer suction to the library, A1 bin 4",
+      "good": "Drafts a new item \"Yankauer suction\" at A1, Bin 4.",
+      "blocked": false,
+      "answers": [
+        {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "label": "Nemotron Ultra",
+          "ms": 628,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5383,
+          "tokensOut": 337,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Ready to add Yankauer suction to the library at A1 / Bin 4. I've drafted it as a disposable item. Send it for review when you're ready.",
+          "actions": [
+            {
+              "type": "draft_item",
+              "kind": "add",
+              "item_id": null,
+              "name": "Yankauer suction",
+              "category": "Disposable",
+              "shelf": "A1",
+              "sub_location": "Bin 4",
+              "synonyms": [
+                "yankauer",
+                "suction tip",
+                "yank"
+              ],
+              "notes": null,
+              "summary": "Add Yankauer suction to A1 / Bin 4"
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "nvidia/nemotron-3.5-super-vl:free",
+          "label": "Nemotron Super",
+          "ms": 343,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5383,
+          "tokensOut": 515,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Yankauer suction isn't in the library yet. I’ve drafted it as a disposable item at A1 / Bin 4; it’s ready to send for review.",
+          "actions": [
+            {
+              "type": "draft_item",
+              "kind": "add",
+              "item_id": null,
+              "name": "Yankauer suction",
+              "category": "Disposable",
+              "shelf": "A1",
+              "sub_location": "Bin 4",
+              "synonyms": [
+                "suction tip",
+                "tonsil tip",
+                "yankauer"
+              ],
+              "notes": null,
+              "summary": "Add Yankauer suction to A1 / Bin 4"
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "google/gemma-4-31b-it:free",
+          "label": "Gemma 4 31B",
+          "ms": 259,
+          "retried": true,
+          "error": "Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok",
+          "provider": null,
+          "cost": null,
+          "tokensIn": null,
+          "tokensOut": null,
+          "formatOk": false,
+          "raw": "",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "anthropic/claude-haiku-5.5",
+          "label": "Claude Haiku 5.5",
+          "ms": 351,
+          "retried": false,
+          "error": null,
+          "provider": "Claude Platform on AWS",
+          "cost": 0.000707,
+          "tokensIn": 5540,
+          "tokensOut": 306,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Drafted the new item Yankauer suction at A1 / Bin 4. It's ready to send for review; I left the category blank since you didn't give one.",
+          "actions": [
+            {
+              "type": "draft_item",
+              "kind": "add",
+              "item_id": null,
+              "name": "Yankauer suction",
+              "category": null,
+              "shelf": "A1",
+              "sub_location": "Bin 4",
+              "synonyms": null,
+              "notes": null,
+              "summary": "Add Yankauer suction to library at A1 / Bin 4"
+            }
+          ],
+          "actionsKept": 1
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "text": "how much cement does patel want",
+      "good": "2 x Bone cement 40 g, held, on the TKA card. Opens that card.",
+      "blocked": false,
+      "answers": [
+        {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "label": "Nemotron Ultra",
+          "ms": 1091,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5376,
+          "tokensOut": 247,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Dr. Patel's TKA card calls for 2 × Bone cement 40 g (80 g total) in Cannulation/Main, held unopened. It's stored at D3 / Locked cabinet.",
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "nvidia/nemotron-3.5-super-vl:free",
+          "label": "Nemotron Super",
+          "ms": 293,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5376,
+          "tokensOut": 423,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Dr. Patel’s TKA card has 2 x Bone cement 40 g, set to hold, in Cannulation/Main (D3 / Locked cabinet).",
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "google/gemma-4-31b-it:free",
+          "label": "Gemma 4 31B",
+          "ms": 247,
+          "retried": true,
+          "error": "Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok",
+          "provider": null,
+          "cost": null,
+          "tokensIn": null,
+          "tokensOut": null,
+          "formatOk": false,
+          "raw": "",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "anthropic/claude-haiku-5.5",
+          "label": "Claude Haiku 5.5",
+          "ms": 281,
+          "retried": false,
+          "error": null,
+          "provider": "Claude Platform on AWS",
+          "cost": 0.0007065,
+          "tokensIn": 5530,
+          "tokensOut": 307,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Patel's Total knee arthroplasty card calls for 2 x Bone cement 40 g, held in the room (unopened). Cement is in D3, Locked cabinet, and should only be mixed on surgeon call.",
+          "actions": [
+            {
+              "type": "open_card",
+              "card_id": "00000000-0000-4000-8000-000000000021"
+            }
+          ],
+          "actionsKept": 1
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "text": "take the tacker off the hernia card",
+      "good": "Drafts: remove the Tacker 5 mm line from the hernia card.",
+      "blocked": false,
+      "answers": [
+        {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "label": "Nemotron Ultra",
+          "ms": 379,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5377,
+          "tokensOut": 514,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Draft ready to remove the tacker from Dr. Avery's laparoscopic inguinal hernia repair card.",
+          "actions": [
+            {
+              "type": "draft_card_line",
+              "kind": "remove",
+              "card_id": "00000000-0000-4000-8000-000000000020",
+              "card_item_id": "00000000-0000-4000-8000-000000000036",
+              "item_id": null,
+              "phase": null,
+              "quantity": null,
+              "open_or_hold": null,
+              "note": null,
+              "summary": "Remove Tacker 5 mm from Cannulation/Main (hold)"
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "nvidia/nemotron-3.5-super-vl:free",
+          "label": "Nemotron Super",
+          "ms": 306,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5377,
+          "tokensOut": 494,
+          "formatOk": false,
+          "raw": "{\"reply\":\"I’ll draft removing the Tacker 5 mm from Dr. Avery’s laparoscopic inguinal hernia repair card. It’s ready to send for review once you confirm.\"},{\"actions\":[{\"type\":\"draft_card_line\",\"kind\":\"remove\",\"card_id\":\"card:00000000-0000-4000-8000-000000000020\",\"card_item_id\":\"line:00000000-0000-4000-8000-000000000036\",\"item_id\":null,\"phase\":null,\"quantity\":null,\"open_or_hold\":null,\"note\":null,\"summary\":\"Remove Tacker 5 mm from hernia card\"}]}}",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "google/gemma-4-31b-it:free",
+          "label": "Gemma 4 31B",
+          "ms": 264,
+          "retried": true,
+          "error": "Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok",
+          "provider": null,
+          "cost": null,
+          "tokensIn": null,
+          "tokensOut": null,
+          "formatOk": false,
+          "raw": "",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "anthropic/claude-haiku-5.5",
+          "label": "Claude Haiku 5.5",
+          "ms": 313,
+          "retried": false,
+          "error": null,
+          "provider": "Claude Platform on AWS",
+          "cost": 0.0008238,
+          "tokensIn": 5533,
+          "tokensOut": 541,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Drafted removal of the Tacker 5 mm from the Laparoscopic inguinal hernia repair card (Cannulation/Main). It's ready to send for review.",
+          "actions": [
+            {
+              "type": "draft_card_line",
+              "kind": "remove",
+              "card_id": "00000000-0000-4000-8000-000000000020",
+              "card_item_id": "00000000-0000-4000-8000-000000000036",
+              "item_id": null,
+              "phase": null,
+              "quantity": null,
+              "open_or_hold": null,
+              "note": null,
+              "summary": "Remove Tacker 5 mm (hold) from Cannulation/Main on Laparoscopic inguinal hernia repair"
+            }
+          ],
+          "actionsKept": 1
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "text": "what's on the closure",
+      "caseCardProcedure": "Laparoscopic cholecystectomy",
+      "good": "Case is Avery lap chole: lists its 3 Closure lines.",
+      "blocked": false,
+      "answers": [
+        {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "label": "Nemotron Ultra",
+          "ms": 333,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5467,
+          "tokensOut": 494,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Closure for Dr. Avery's lap chole: 1× Specimen retrieval bag (hold, A4/Bin 1), 1× 0 Vicryl CT-1 (open, S1/Drawer 2), 1× 4-0 Monocryl PS-2 (open, S1/Drawer 4).",
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "nvidia/nemotron-3.5-super-vl:free",
+          "label": "Nemotron Super",
+          "ms": 366,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5467,
+          "tokensOut": 861,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Closure on Avery’s lap chole card: 1 x Specimen retrieval bag (hold), 1 x 0 Vicryl CT-1 (open), 1 x 4-0 Monocryl PS-2 (open).",
+          "actions": [
+            {
+              "type": "show_results",
+              "item_ids": [
+                "00000000-0000-4000-8000-000000000009",
+                "00000000-0000-4000-8000-000000000017",
+                "00000000-0000-4000-8000-000000000018"
+              ],
+              "card_ids": [
+                "00000000-0000-4000-8000-000000000019"
+              ]
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "google/gemma-4-31b-it:free",
+          "label": "Gemma 4 31B",
+          "ms": 262,
+          "retried": true,
+          "error": "Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok",
+          "provider": null,
+          "cost": null,
+          "tokensIn": null,
+          "tokensOut": null,
+          "formatOk": false,
+          "raw": "",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "anthropic/claude-haiku-5.5",
+          "label": "Claude Haiku 5.5",
+          "ms": 318,
+          "retried": false,
+          "error": null,
+          "provider": "Claude Platform on AWS",
+          "cost": 0.0008529,
+          "tokensIn": 5624,
+          "tokensOut": 581,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Closure on the lap chole card: 0 Vicryl CT-1 (open), 4-0 Monocryl PS-2 (open), and a specimen retrieval bag (hold). Vicryl is at S1 / Drawer 2, Monocryl at S1 / Drawer 4, and the bag at A4 / Bin 1.",
+          "actions": [
+            {
+              "type": "show_results",
+              "item_ids": [
+                "00000000-0000-4000-8000-000000000017",
+                "00000000-0000-4000-8000-000000000018",
+                "00000000-0000-4000-8000-000000000009"
+              ],
+              "card_ids": []
+            }
+          ],
+          "actionsKept": 1
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "text": "TKR setup for patel",
+      "good": "Tourniquet cuff 34 in and Bovie pencil, both open. Opens the TKA card.",
+      "blocked": false,
+      "answers": [
+        {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "label": "Nemotron Ultra",
+          "ms": 379,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5375,
+          "tokensOut": 597,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Opening Dr. Patel's Total Knee Arthroplasty preference card – setup includes Tourniquet cuff 34 in (D1 / Hook 3) and Bovie pencil (A1 / Bin 1).",
+          "actions": [
+            {
+              "type": "open_card",
+              "card_id": "00000000-0000-4000-8000-000000000021"
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "nvidia/nemotron-3.5-super-vl:free",
+          "label": "Nemotron Super",
+          "ms": 363,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5375,
+          "tokensOut": 299,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Opened Dr. Patel's Total knee arthroplasty preference card.",
+          "actions": [
+            {
+              "type": "open_card",
+              "card_id": "00000000-0000-4000-8000-000000000021"
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "google/gemma-4-31b-it:free",
+          "label": "Gemma 4 31B",
+          "ms": 316,
+          "retried": true,
+          "error": "Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok",
+          "provider": null,
+          "cost": null,
+          "tokensIn": null,
+          "tokensOut": null,
+          "formatOk": false,
+          "raw": "",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "anthropic/claude-haiku-5.5",
+          "label": "Claude Haiku 5.5",
+          "ms": 289,
+          "retried": false,
+          "error": null,
+          "provider": "Claude Platform on AWS",
+          "cost": 0.0006825,
+          "tokensIn": 5530,
+          "tokensOut": 259,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Opening the Total knee arthroplasty card for Dr. Patel. Setup has the tourniquet cuff 34 in and the Bovie pencil, and the card notes tourniquet time is called at 60 min.",
+          "actions": [
+            {
+              "type": "open_card",
+              "card_id": "00000000-0000-4000-8000-000000000021"
+            }
+          ],
+          "actionsKept": 1
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "text": "show me what needs review",
+      "good": "Goes to the To review list.",
+      "blocked": false,
+      "answers": [
+        {
+          "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+          "label": "Nemotron Ultra",
+          "ms": 382,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5374,
+          "tokensOut": 92,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Opening your To review list.",
+          "actions": [
+            {
+              "type": "go_to",
+              "tab": "review"
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "nvidia/nemotron-3.5-super-vl:free",
+          "label": "Nemotron Super",
+          "ms": 309,
+          "retried": false,
+          "error": null,
+          "provider": "Nvidia",
+          "cost": 0,
+          "tokensIn": 5374,
+          "tokensOut": 114,
+          "formatOk": true,
+          "raw": null,
+          "reply": "I’ll open the To review list so you can check pending drafts and cards.",
+          "actions": [
+            {
+              "type": "go_to",
+              "tab": "review"
+            }
+          ],
+          "actionsKept": 1
+        },
+        {
+          "model": "google/gemma-4-31b-it:free",
+          "label": "Gemma 4 31B",
+          "ms": 255,
+          "retried": true,
+          "error": "Provider returned error | Google AI Studio: google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok",
+          "provider": null,
+          "cost": null,
+          "tokensIn": null,
+          "tokensOut": null,
+          "formatOk": false,
+          "raw": "",
+          "reply": null,
+          "actions": [],
+          "actionsKept": 0
+        },
+        {
+          "model": "anthropic/claude-haiku-5.5",
+          "label": "Claude Haiku 5.5",
+          "ms": 318,
+          "retried": false,
+          "error": null,
+          "provider": "Claude Platform on AWS",
+          "cost": 0.0005733,
+          "tokensIn": 5528,
+          "tokensOut": 41,
+          "formatOk": true,
+          "raw": null,
+          "reply": "Opening the To review list for you.",
+          "actions": [
+            {
+              "type": "go_to",
+              "tab": "review"
+            }
+          ],
+          "actionsKept": 1
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "text": "pt Maria Lopez DOB 04/12/1961 needs extra mesh",
+      "mustBlock": true,
+      "good": "Blocked on the phone by the scrubber. Never sent.",
+      "blocked": true,
+      "blockReason": "Remove the date of birth. Do not type patient information here.",
+      "answers": []
+    }
+  ]
+}

@@ -1,6 +1,15 @@
 // System prompt, library context and the case line for the omnibar. Kept stable (no dates, sorted lists) so prompt caching works.
 // readCase sits here (not in index.ts) so Jest can test it: index.ts starts the server when loaded.
-import { UUID, type OmniCase } from './schema.ts';
+import { ANSWER_SCHEMA, UUID, type OmniCase } from './schema.ts';
+
+/**
+ * The answer format, said in the prompt. Some models cannot be forced into a schema, so the prompt asks for it
+ * and answer.ts checks every answer. Stable text, so prompt caching still works.
+ */
+export const JSON_RULES = `Answer format: reply with ONE JSON object and nothing else (no markdown fence, no text before or after).
+It must match this JSON schema exactly: every listed field is present, no extra fields, null where a field does not apply.
+Use "actions": [] when there is nothing for the app to do.
+${JSON.stringify(ANSWER_SCHEMA)}`;
 
 export const SYSTEM_PROMPT = `You are the assistant inside OR-Nav, an app for operating room nurses (scrub and circulator).
 Nurses type short, fast OR talk on a phone, often with typos and shorthand. Work out what they mean and answer for the app.
