@@ -1,7 +1,7 @@
-// The admins' floating feedback button and its form (ticket #19: online only, no screenshot yet).
+// The admins' floating feedback button and its form (tickets #19 and #20: saved first, sent when online; no screenshot yet).
 // Drawn last in SignedIn (App.tsx), so it sits above every tab and panel. The shell decides who sees it.
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { AppState, StyleSheet, Text, View } from 'react-native';
 
 import type { FeedbackSender, FeedbackTag } from '../../contracts/feedback';
 import { C, S, T } from '../../theme';
@@ -27,18 +27,24 @@ export default function Feedback({ sender, page, bottom }: Props) {
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [sent, setSent] = useState(false);
+  const [sent, setSent] = useState<'sent' | 'saved' | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => {
     if (timer.current) clearTimeout(timer.current);
   }, []);
+  // Waiting reports go out on app start and on each return to the app.
+  useEffect(() => {
+    void sender.flush();
+    const sub = AppState.addEventListener('change', (s) => s === 'active' && void sender.flush());
+    return () => sub.remove();
+  }, [sender]);
 
   const start = () => {
     setWhere(page());
     setTag('broken');
     setMessage('');
     setError('');
-    setSent(false);
+    setSent(null);
     setOpen(true);
   };
   const close = () => {
@@ -53,7 +59,7 @@ export default function Feedback({ sender, page, bottom }: Props) {
       setError(result.message);
       return;
     }
-    setSent(true);
+    setSent(result.kind);
     timer.current = setTimeout(() => setOpen(false), SENT_MS);
   };
 
@@ -84,8 +90,10 @@ export default function Feedback({ sender, page, bottom }: Props) {
           </View>
         }
         footer={
-          sent ? (
+          sent === 'sent' ? (
             <Banner text="Sent" tone="ok" icon="check-circle" />
+          ) : sent === 'saved' ? (
+            <Banner text="Saved, will send when online" tone="warn" icon="cloud-off" />
           ) : (
             <View style={styles.actions}>
               <Button label="Cancel" kind="secondary" onPress={close} disabled={busy} style={{ flex: 1 }} />

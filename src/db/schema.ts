@@ -53,6 +53,17 @@ CREATE TABLE cases (
 CREATE INDEX cases_user_last_used ON cases (user_id, last_used_at);
 `,
   },
+  {
+    // Feedback outbox (src/core/feedback): reports wait here until sent (sent_at) or refused for good
+    // by the server (refused_at). Not a library table.
+    version: 4,
+    sql: `
+CREATE TABLE feedback_outbox (
+  id TEXT PRIMARY KEY NOT NULL, user_id TEXT NOT NULL, created_at TEXT NOT NULL, app_version TEXT NOT NULL,
+  page TEXT NOT NULL, tag TEXT NOT NULL, message TEXT NOT NULL, sent_at TEXT, refused_at TEXT);
+CREATE INDEX feedback_outbox_waiting ON feedback_outbox (user_id, sent_at, refused_at, created_at);
+`,
+  },
 ];
 
 export const LATEST_VERSION = MIGRATIONS[MIGRATIONS.length - 1].version;

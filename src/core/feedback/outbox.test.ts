@@ -1,0 +1,209 @@
+import { describe, expect, it } from '@jest/globals';
+
+import { FeedbackRow, UploadResult, makeFeedbackOutbox, memoryOutboxRows } from './outbox';
+
+const NOW = new Date('2026-11-12T10:00:00.000Z');
+
+/** A fake server: one table keyed by id. `online` and `failNext` steer what it answers. */
+function fakeServer() {
+  const table = new Map<string, FeedbackRow>();
+  const state = { online: true, calls: 0, lostAnswer: false };
+  const upload = async (row: FeedbackRow): Promise<UploadResult> => {
+    state.calls++;
+    if (!state.online) return { ok: false, error: new TypeError('Network request failed'), retry: true };
+    const isNew = !table.has(row.id);
+    if (isNew) table.set(row.id, row);
+    if (state.lostAnswer) {
+      // The row arrived, but the phone never heard back.
+      state.lostAnswer = false;
+      return { ok: false, error: new TypeError('Network request failed'), retry: true };
+    }
+    return { ok: true };
+  };
+  return { table, state, upload };
+}
+
+function setup(role: string | null = 'admin') {
+  const server = fakeServer();
+  const rows = memoryOutboxRows();
+  const faults: unknown[] = [];
+  const outbox = makeFeedbackOutbox(rows, server.upload, {
+    appVersion: () => '2.6.0',
+    role: () => role,
+    now: () => NOW,
+    onFault: (e) => faults.push(e),
+  });
+  return { outbox, rows, server, faults };
+}
+
+const DRAFT = { tag: 'broken' as const, message: '  Button too small  ', page: 'main / case panel' };
+
+describe('feedback outbox', () => {
+  it('sends a report at once when online and marks it sent', async () => {
+    const { outbox, rows, server } = setup();
+    expect(await outbox.submit(DRAFT)).toEqual({ kind: 'sent' });
+    expect(server.table.size).toBe(1);
+    const [row] = [...server.table.values()];
+    expect(row).toMatchObject({ tag: 'broken', message: 'Button too small', page: 'main / case panel', created_at: NOW.toISOString(), app_version: '2.6.0' });
+    expect(await rows.waiting()).toHaveLength(0);
+  });
+
+  it('saves an offline submit on the phone and reports it as saved', async () => {
+    const { outbox, rows, server } = setup();
+    server.state.online = false;
+    expect(await outbox.submit(DRAFT)).toEqual({ kind: 'saved' });
+    expect(server.table.size).toBe(0);
+    expect(await rows.waiting()).toHaveLength(1);
+  });
+
+  it('sends a waiting report on a later flush and marks it sent', async () => {
+    const { outbox, rows, server } = setup();
+    server.state.online = false;
+    await outbox.submit(DRAFT);
+    server.state.online = true;
+    await outbox.flush();
+    expect(server.table.size).toBe(1);
+    expect(await rows.waiting()).toHaveLength(0);
+  });
+
+  it('keeps a failed upload waiting and sends it on the next flush', async () => {
+    const { outbox, rows, server } = setup();
+    server.state.online = false;
+    await outbox.submit(DRAFT);
+    await outbox.flush();
+    expect(await rows.waiting()).toHaveLength(1);
+    server.state.online = true;
+    await outbox.flush();
+    expect(server.table.size).toBe(1);
+    expect(await rows.waiting()).toHaveLength(0);
+  });
+
+  it('sends older waiting reports after a new submit', async () => {
+    const { outbox, server } = setup();
+    server.state.online = false;
+    await outbox.submit(DRAFT);
+    server.state.online = true;
+    expect(await outbox.submit({ ...DRAFT, message: 'second' })).toEqual({ kind: 'sent' });
+    expect(server.table.size).toBe(2);
+  });
+
+  it('never uploads a sent report again', async () => {
+    const { outbox, server } = setup();
+    await outbox.submit(DRAFT);
+    const calls = server.state.calls;
+    await outbox.flush();
+    await outbox.flush();
+    expect(server.state.calls).toBe(calls);
+  });
+
+  it('makes no duplicate row when a retry follows an unknown result', async () => {
+    const { outbox, rows, server } = setup();
+    server.state.lostAnswer = true;
+    expect(await outbox.submit(DRAFT)).toEqual({ kind: 'saved' });
+    await outbox.flush();
+    expect(server.table.size).toBe(1);
+    expect(await rows.waiting()).toHaveLength(0);
+  });
+
+  it('runs two flushes at the same time one after the other, so nothing is sent twice', async () => {
+    const { outbox, server } = setup();
+    server.state.online = false;
+    await outbox.submit(DRAFT);
+    server.state.online = true;
+    const before = server.state.calls;
+    await Promise.all([outbox.flush(), outbox.flush()]);
+    expect(server.state.calls - before).toBe(1);
+  });
+
+  it('refuses a non-admin and saves nothing', async () => {
+    const { outbox, rows, server } = setup('nurse');
+    const result = await outbox.submit(DRAFT);
+    expect(result.kind).toBe('error');
+    expect(await rows.waiting()).toHaveLength(0);
+    expect(server.state.calls).toBe(0);
+  });
+
+  it('refuses an empty message and saves nothing', async () => {
+    const { outbox, rows } = setup();
+    expect((await outbox.submit({ ...DRAFT, message: '   ' })).kind).toBe('error');
+    expect(await rows.waiting()).toHaveLength(0);
+  });
+
+  it('logs a failed upload with the error only, never the message text', async () => {
+    const { outbox, server, faults } = setup();
+    server.state.online = false;
+    await outbox.submit({ ...DRAFT, message: 'secret words' });
+    expect(faults).toHaveLength(1);
+    expect(faults[0]).toBeInstanceOf(TypeError);
+    expect(String(faults[0])).not.toContain('secret words');
+  });
+
+  it('refuses a message longer than the server takes (4000 characters) and saves nothing', async () => {
+    const { outbox, rows } = setup();
+    expect((await outbox.submit({ ...DRAFT, message: 'x'.repeat(4001) })).kind).toBe('error');
+    expect(await rows.waiting()).toHaveLength(0);
+  });
+
+  it('shows a server refusal plainly, stops trying that report, and still sends the ones after it', async () => {
+    const { outbox, rows, server } = setup();
+    server.state.online = false;
+    await outbox.submit({ ...DRAFT, message: 'first' });
+    server.state.online = true;
+    const upload = server.upload;
+    let refuse = true;
+    const refusing = makeFeedbackOutbox(rows, async (row) => {
+      if (refuse && row.message === 'first') return { ok: false, error: new Error('feedback insert: check violation'), retry: false };
+      return upload(row);
+    }, { appVersion: () => '2.6.0', role: () => 'admin', onFault: () => undefined });
+    expect(await refusing.submit({ ...DRAFT, message: 'second' })).toEqual({ kind: 'sent' });
+    expect([...server.table.values()].map((r) => r.message)).toEqual(['second']);
+    expect(await rows.waiting()).toHaveLength(0);
+    refuse = false;
+    await refusing.flush();
+    expect(server.table.size).toBe(1);
+    void outbox;
+  });
+
+  it('answers with the server reason when its own report is refused', async () => {
+    const rows = memoryOutboxRows();
+    const outbox = makeFeedbackOutbox(rows, async () => ({ ok: false, error: new Error('feedback insert: row-level security'), retry: false }), {
+      appVersion: () => '2.6.0',
+      role: () => 'admin',
+      onFault: () => undefined,
+    });
+    expect(await outbox.submit(DRAFT)).toEqual({ kind: 'error', message: 'Not sent: feedback insert: row-level security' });
+  });
+
+  it('answers sent when the upload worked but marking it sent on the phone failed', async () => {
+    const { outbox, rows, server, faults } = setup();
+    rows.markSent = async () => {
+      throw new Error('database locked');
+    };
+    expect(await outbox.submit(DRAFT)).toEqual({ kind: 'sent' });
+    expect(server.table.size).toBe(1);
+    expect(faults).toHaveLength(1);
+  });
+
+  it('answers saved when sending takes too long, while the report stays safe on the phone', async () => {
+    const rows = memoryOutboxRows();
+    const outbox = makeFeedbackOutbox(rows, () => new Promise<never>(() => undefined), {
+      appVersion: () => '2.6.0',
+      role: () => 'admin',
+      onFault: () => undefined,
+      waitMs: 10,
+    });
+    expect(await outbox.submit(DRAFT)).toEqual({ kind: 'saved' });
+    expect(await rows.waiting()).toHaveLength(1);
+  });
+
+  it('shows an error and logs it when the phone cannot save the report', async () => {
+    const { outbox, rows, server, faults } = setup();
+    rows.add = async () => {
+      throw new Error('disk full');
+    };
+    const result = await outbox.submit(DRAFT);
+    expect(result.kind).toBe('error');
+    expect(server.state.calls).toBe(0);
+    expect(faults).toHaveLength(1);
+  });
+});

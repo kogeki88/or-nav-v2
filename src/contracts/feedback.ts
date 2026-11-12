@@ -1,5 +1,5 @@
 // The feedback port: the admins' floating button sends a short report (spec #18).
-// This first slice sends online only and has no screenshot. See src/core/feedback/.
+// Each report is saved on the phone first, then sent (ticket #20: the outbox). See src/core/feedback/.
 
 export type FeedbackTag = 'broken' | 'looks_wrong' | 'idea';
 
@@ -8,9 +8,14 @@ export type FeedbackDraft = { tag: FeedbackTag; message: string; page: string };
 
 export type FeedbackResult =
   | { kind: 'sent' }
+  /** Saved on the phone; it sends on its own when the signal comes back. */
+  | { kind: 'saved' }
   /** In words an admin can read. The message text is never logged. */
   | { kind: 'error'; message: string };
 
 export interface FeedbackSender {
+  /** Saves the report on the phone, then tries to send every waiting report. */
   submit(draft: FeedbackDraft): Promise<FeedbackResult>;
+  /** Tries to send every waiting report (app start, return to the app). Never throws. */
+  flush(): Promise<void>;
 }
