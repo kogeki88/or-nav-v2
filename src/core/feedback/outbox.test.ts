@@ -342,3 +342,90 @@ describe('feedback outbox: sends again when the signal comes back (ticket #27)',
     expect(jest.getTimerCount()).toBe(0);
   });
 });
+
+describe('feedback outbox: the screenshot (ticket #23)', () => {
+  const TMP = 'file:///cache/ReactNative-snapshot-1.jpg';
+
+  function pictureSetup() {
+    const server = fakeServer();
+    const rows = memoryOutboxRows();
+    const kept: { from: string; id: string }[] = [];
+    const dropped: string[] = [];
+    const faults: unknown[] = [];
+    const deps = {
+      appVersion: () => '2.6.0',
+      role: () => 'admin',
+      now: () => NOW,
+      onFault: (e: unknown) => faults.push(e),
+      keepScreenshot: async (from: string, id: string) => {
+        kept.push({ from, id });
+        return `file:///files/feedback/${id}.jpg`;
+      },
+      dropScreenshot: async (uri: string) => {
+        dropped.push(uri);
+      },
+    };
+    return { server, rows, kept, dropped, faults, deps, outbox: makeFeedbackOutbox(rows, server.upload, deps) };
+  }
+
+  it('keeps the picture on the phone under the report id and saves it with the waiting report', async () => {
+    const { outbox, rows, server, kept } = pictureSetup();
+    server.state.online = false;
+    expect(await outbox.submit({ ...DRAFT, screenshot: TMP })).toEqual({ kind: 'saved' });
+    const [row] = await rows.waiting();
+    expect(kept).toEqual([{ from: TMP, id: row.id }]);
+    expect(row.screenshot).toBe(`file:///files/feedback/${row.id}.jpg`);
+  });
+
+  it('uploads the kept picture with the report', async () => {
+    const { outbox, server } = pictureSetup();
+    await outbox.submit({ ...DRAFT, screenshot: TMP });
+    const [row] = [...server.table.values()];
+    expect(row.screenshot).toBe(`file:///files/feedback/${row.id}.jpg`);
+  });
+
+  it('removes the phone copy of the picture once the report is sent (like ticket #28)', async () => {
+    const { outbox, rows, dropped } = pictureSetup();
+    expect(await outbox.submit({ ...DRAFT, screenshot: TMP })).toEqual({ kind: 'sent' });
+    const [row] = rows.all();
+    expect(dropped).toEqual([`file:///files/feedback/${row.id}.jpg`]);
+    expect(row.screenshot).toBeNull();
+  });
+
+  it('removes the phone copy of a refused report\'s picture, which can never be sent', async () => {
+    const { rows, deps, dropped } = pictureSetup();
+    const outbox = makeFeedbackOutbox(rows, async () => ({ ok: false, error: new Error('refused'), retry: false }), deps);
+    await outbox.submit({ ...DRAFT, screenshot: TMP });
+    const [row] = rows.all();
+    expect(dropped).toEqual([`file:///files/feedback/${row.id}.jpg`]);
+  });
+
+  it('keeps the phone copy while the report waits', async () => {
+    const { outbox, server, dropped } = pictureSetup();
+    server.state.online = false;
+    await outbox.submit({ ...DRAFT, screenshot: TMP });
+    await outbox.flush();
+    expect(dropped).toEqual([]);
+  });
+
+  it('still saves the report, without a picture, when the phone cannot keep the picture', async () => {
+    const { rows, server, faults, deps } = pictureSetup();
+    const outbox = makeFeedbackOutbox(rows, server.upload, {
+      ...deps,
+      keepScreenshot: async () => {
+        throw new Error('disk full');
+      },
+    });
+    server.state.online = false;
+    expect(await outbox.submit({ ...DRAFT, screenshot: TMP })).toEqual({ kind: 'saved' });
+    expect((await rows.waiting())[0].screenshot).toBeNull();
+    expect(faults).toEqual([new Error('disk full'), expect.anything()]);
+  });
+
+  it('sends a report with no picture as before', async () => {
+    const { outbox, server, kept } = pictureSetup();
+    expect(await outbox.submit(DRAFT)).toEqual({ kind: 'sent' });
+    expect(kept).toEqual([]);
+    expect([...server.table.values()][0].screenshot).toBeNull();
+  });
+});

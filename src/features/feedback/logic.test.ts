@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { feedbackPage, isDrag, nearestCorner, readCorner, showFeedbackButton } from './logic';
+import { feedbackPage, isDrag, nearestCorner, readCorner, shootWithoutButton, showFeedbackButton } from './logic';
 
 describe('nearestCorner', () => {
   // A 400 x 800 screen: each drop point sits in one quarter.
@@ -65,5 +65,48 @@ describe('feedbackPage', () => {
     expect(feedbackPage('main', { ...none, case: true })).toBe('main / case panel');
     expect(feedbackPage('main', { ...none, sidebar: true })).toBe('main / sidebar');
     expect(feedbackPage('main', { ...none, item: true })).toBe('main / library sheet');
+  });
+});
+
+describe('shootWithoutButton (ticket #23)', () => {
+  it('hides the button before the capture, so the picture never shows it', async () => {
+    const steps: string[] = [];
+    const uri = await shootWithoutButton({
+      hide: async () => {
+        steps.push('hide');
+      },
+      capture: async () => {
+        steps.push('capture');
+        return 'file:///cache/shot.jpg';
+      },
+      onFault: () => undefined,
+    });
+    expect(steps).toEqual(['hide', 'capture']);
+    expect(uri).toBe('file:///cache/shot.jpg');
+  });
+
+  it('gives no picture, and logs the error, when the capture fails (the report still goes)', async () => {
+    const faults: unknown[] = [];
+    const uri = await shootWithoutButton({
+      hide: async () => undefined,
+      capture: async () => {
+        throw new Error('RNViewShot is undefined');
+      },
+      onFault: (e) => faults.push(e),
+    });
+    expect(uri).toBeNull();
+    expect(faults).toEqual([new Error('RNViewShot is undefined')]);
+  });
+
+  it('gives up on a capture that never answers, so the form still opens', async () => {
+    const faults: unknown[] = [];
+    const uri = await shootWithoutButton({
+      hide: async () => undefined,
+      capture: () => new Promise<string>(() => undefined),
+      onFault: (e) => faults.push(e),
+      timeoutMs: 20,
+    });
+    expect(uri).toBeNull();
+    expect(faults).toHaveLength(1);
   });
 });

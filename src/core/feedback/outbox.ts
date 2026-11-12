@@ -14,6 +14,8 @@ export type FeedbackRow = {
   page: string;
   tag: string;
   message: string;
+  /** The phone's own copy of the screenshot (a local file uri), or none. Ticket #23. */
+  screenshot?: string | null;
 };
 
 /** The phone's table of reports (SQLite in the app, memory in tests). */
@@ -21,7 +23,7 @@ export interface OutboxRows {
   add(row: FeedbackRow): Promise<void>;
   /** Reports not sent and not refused, oldest first. */
   waiting(): Promise<FeedbackRow[]>;
-  /** Sets sent_at and clears the message text: the phone keeps no copy of a sent report (ticket #28). */
+  /** Sets sent_at and clears the message text and screenshot: the phone keeps no copy of a sent report (tickets #28, #23). */
   markSent(id: string, at: string): Promise<void>;
   /** The server refused it for good: never try it again. */
   markRefused(id: string, at: string): Promise<void>;
@@ -45,6 +47,13 @@ export type OutboxDeps = {
    * comes back with no app restart (ticket #27). The timer stops once nothing waits. Off when unset.
    */
   retryMs?: number;
+  /**
+   * Moves the screenshot from the cache into the app's own folder under the report id, so it stays
+   * with the waiting report after a restart. Gives the new uri. Unset: the draft's uri is kept as is.
+   */
+  keepScreenshot?: (from: string, id: string) => Promise<string>;
+  /** Removes the phone's copy of a sent report's screenshot; the bucket keeps its copy (Homunculus, ticket #23). */
+  dropScreenshot?: (uri: string) => Promise<void>;
 };
 
 /** The server's limit on `feedback_reports.message` (migration 0005). */
@@ -82,6 +91,10 @@ export function makeFeedbackOutbox(rows: OutboxRows, upload: Uploader, deps: Out
     }, deps.retryMs);
   };
 
+  const dropPicture = async (row: FeedbackRow) => {
+    if (row.screenshot && deps.dropScreenshot) await deps.dropScreenshot(row.screenshot).catch(deps.onFault);
+  };
+
   // `timed`: a timed retry. Its no-signal failures are not logged again, so hours offline
   // never push the other entries out of the fault log (it keeps the newest 500).
   const flushNow = async (timed: boolean): Promise<Map<string, Outcome>> => {
@@ -104,10 +117,14 @@ export function makeFeedbackOutbox(rows: OutboxRows, upload: Uploader, deps: Out
         }
         outcomes.set(row.id, { kind: 'refused', reason: reasonOf(result.error) });
         await rows.markRefused(row.id, now().toISOString()).catch(deps.onFault);
+        await dropPicture(row); // It can never be sent.
         continue;
       }
       outcomes.set(row.id, { kind: 'sent' });
-      // If this fails, the next flush uploads it again; the server keeps one row per id.
+      // The server has the row (and the picture): the phone's copy goes first, so no file is ever left
+      // that no row points to. If markSent then fails, the next flush tries again; the server answers
+      // "already there" for the row, so nothing is made twice.
+      await dropPicture(row);
       await rows.markSent(row.id, now().toISOString()).catch(deps.onFault);
     }
     return outcomes;
@@ -133,18 +150,29 @@ export function makeFeedbackOutbox(rows: OutboxRows, upload: Uploader, deps: Out
       const message = draft.message.trim();
       if (message === '') return { kind: 'error', message: 'Type a message first.' };
       if (message.length > MAX_MESSAGE) return { kind: 'error', message: `Too long: keep it under ${MAX_MESSAGE} characters.` };
+      const id = newReportId();
+      let screenshot = draft.screenshot ?? null;
+      if (screenshot && deps.keepScreenshot) {
+        // A lost picture never stops the report: it goes without one.
+        screenshot = await deps.keepScreenshot(screenshot, id).catch((e: unknown) => {
+          deps.onFault(e);
+          return null;
+        });
+      }
       const row: FeedbackRow = {
-        id: newReportId(),
+        id,
         created_at: now().toISOString(),
         app_version: deps.appVersion(),
         page: draft.page,
         tag: draft.tag,
         message,
+        screenshot,
       };
       try {
         await rows.add(row);
       } catch (e) {
         deps.onFault(e);
+        await dropPicture(row);
         return { kind: 'error', message: 'Not saved: the phone could not store the report. Try again.' };
       }
       let timer: ReturnType<typeof setTimeout> | undefined;
@@ -169,13 +197,13 @@ export function memoryOutboxRows(): OutboxRows & { all(): StoredFeedbackRow[] } 
   const find = (id: string) => table.find((x) => x.id === id);
   return {
     add: async (row) => {
-      table.push({ ...row, sent_at: null, refused_at: null });
+      table.push({ ...row, screenshot: row.screenshot ?? null, sent_at: null, refused_at: null });
     },
     waiting: async () =>
       table.filter((r) => r.sent_at === null && r.refused_at === null).map(({ sent_at: _s, refused_at: _r, ...r }) => r),
     markSent: async (id, at) => {
       const r = find(id);
-      if (r) Object.assign(r, { sent_at: at, message: '' });
+      if (r) Object.assign(r, { sent_at: at, message: '', screenshot: null });
     },
     markRefused: async (id, at) => {
       const r = find(id);

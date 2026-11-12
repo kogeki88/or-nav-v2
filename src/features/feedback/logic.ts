@@ -45,6 +45,32 @@ export function readCorner(saved: string | null): Corner {
   return CORNERS.find((c) => c === saved) ?? DEFAULT_CORNER;
 }
 
+/**
+ * Takes the report's picture: hides the button first, so the picture shows the page as a nurse sees it
+ * (ticket #23). A failed or stuck capture gives no picture (the report still goes) and logs the error only.
+ */
+export async function shootWithoutButton(steps: {
+  hide: () => Promise<void>;
+  capture: () => Promise<string>;
+  onFault: (e: unknown) => void;
+  /** A capture that takes longer is given up, so the form always opens. */
+  timeoutMs?: number;
+}): Promise<string | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await steps.hide();
+    const stuck = new Promise<never>((_, fail) => {
+      timer = setTimeout(() => fail(new Error('feedback screenshot: capture took too long')), steps.timeoutMs ?? 3000);
+    });
+    return await Promise.race([steps.capture(), stuck]);
+  } catch (e) {
+    steps.onFault(e);
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export const TAGS: { key: FeedbackTag; label: string }[] = [
   { key: 'broken', label: 'Broken' },
   { key: 'looks_wrong', label: 'Looks wrong' },

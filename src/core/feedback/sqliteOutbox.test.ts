@@ -20,8 +20,23 @@ describe('sqlite feedback outbox (ticket #28)', () => {
     mockRuns.length = 0;
     await sqliteOutboxRows('user-1').markSent('id-1', '2026-11-12T10:00:00.000Z');
     expect(mockRuns).toHaveLength(1);
-    expect(mockRuns[0].sql).toBe("UPDATE feedback_outbox SET sent_at = ?, message = '' WHERE id = ? AND user_id = ?");
+    expect(mockRuns[0].sql).toBe("UPDATE feedback_outbox SET sent_at = ?, message = '', screenshot = NULL WHERE id = ? AND user_id = ?");
     expect(mockRuns[0].args).toEqual(['2026-11-12T10:00:00.000Z', 'id-1', 'user-1']);
+  });
+
+  it('saves the screenshot uri with the waiting report (ticket #23)', async () => {
+    mockRuns.length = 0;
+    await sqliteOutboxRows('user-1').add({
+      id: 'id-1',
+      created_at: '2026-11-12T10:00:00.000Z',
+      app_version: '2.6.0',
+      page: 'main',
+      tag: 'broken',
+      message: 'Button too small',
+      screenshot: 'file:///files/feedback/id-1.jpg',
+    });
+    expect(mockRuns[0].sql).toContain('screenshot');
+    expect(mockRuns[0].args).toContain('file:///files/feedback/id-1.jpg');
   });
 
   it('keeps the message text of a refused report', async () => {

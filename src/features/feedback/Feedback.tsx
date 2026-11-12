@@ -1,4 +1,5 @@
-// The admins' floating feedback button and its form (tickets #19 and #20: saved first, sent when online; no screenshot yet).
+// The admins' floating feedback button and its form (tickets #19 and #20: saved first, sent when online).
+// Ticket #23: a tap hides the button, takes a picture of the page, then opens the form; the picture goes with the report.
 // Ticket #21: drag the button and drop it; it snaps to the nearest corner, saved on the phone.
 // Drawn last in SignedIn (App.tsx), so it sits above every tab and panel. The shell decides who sees it.
 import { useEffect, useRef, useState } from 'react';
@@ -9,7 +10,12 @@ import { C, S, T } from '../../theme';
 import BottomSheet from '../../ui/BottomSheet';
 import { Banner, Button, Chips, Field, Icon, IconButton, PressScale } from '../../ui/kit';
 import { logFault } from '../../diag/faultStore';
-import { type Corner, isDrag, nearestCorner, readCorner, TAGS } from './logic';
+import { type Corner, isDrag, nearestCorner, readCorner, shootWithoutButton, TAGS } from './logic';
+
+/** Waits until the screen has drawn the latest change (two frames, then a short pause for the native side). */
+function afterPaint(): Promise<void> {
+  return new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(done, 50))));
+}
 
 /** The button's corner, saved on the phone so it stays after a restart. */
 const CORNER_KEY = 'ornav.feedback.corner';
@@ -34,10 +40,16 @@ type Props = {
   bottom: number;
   /** Space kept free at the top (the top bar), so the button never covers its buttons. */
   top: number;
+  /** Takes a picture of the whole screen and gives its file uri. */
+  capture: () => Promise<string>;
 };
 
-export default function Feedback({ sender, page, bottom, top }: Props) {
+export default function Feedback({ sender, page, bottom, top, capture }: Props) {
   const [open, setOpen] = useState(false);
+  /** The button is hidden while the picture is taken. */
+  const [shooting, setShooting] = useState(false);
+  const [screenshot, setScreenshot] = useState<string | null>(null);
+  const busyShot = useRef(false);
   const [where, setWhere] = useState('');
   const [tag, setTag] = useState<FeedbackTag>('broken');
   const [message, setMessage] = useState('');
@@ -85,13 +97,28 @@ export default function Feedback({ sender, page, bottom, top }: Props) {
     ...(corner.endsWith('left') ? { left: S.md } : { right: S.md }),
   };
 
-  const start = () => {
+  const start = async () => {
+    // A ref, not the state, so a quick double tap still takes one picture.
+    if (busyShot.current) return;
+    busyShot.current = true;
     setWhere(page());
     setTag('broken');
     setMessage('');
     setError('');
     setSent(null);
+    // The picture is taken before the form opens, with the button hidden.
+    const shot = await shootWithoutButton({
+      hide: () => {
+        setShooting(true);
+        return afterPaint();
+      },
+      capture,
+      onFault: (e) => logFault('feedback', e),
+    });
+    setScreenshot(shot);
+    setShooting(false);
     setOpen(true);
+    busyShot.current = false;
   };
   const close = () => {
     if (!busy) setOpen(false);
@@ -99,7 +126,7 @@ export default function Feedback({ sender, page, bottom, top }: Props) {
   const send = async () => {
     setBusy(true);
     setError('');
-    const result = await sender.submit({ tag, message, page: where });
+    const result = await sender.submit({ tag, message, page: where, screenshot });
     setBusy(false);
     if (result.kind === 'error') {
       setError(result.message);
@@ -111,7 +138,7 @@ export default function Feedback({ sender, page, bottom, top }: Props) {
 
   return (
     <>
-      {!open && (
+      {!open && !shooting && (
         <Animated.View style={[styles.fabHolder, spot, { transform: pan.getTranslateTransform() }]} {...drag.panHandlers}>
           <PressScale accessibilityLabel="Send feedback. Drag to move it to another corner." onPress={start} style={styles.fab}>
             <Icon name="message-square" size={22} color={C.onAccent} />

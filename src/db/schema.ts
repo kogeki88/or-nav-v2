@@ -64,6 +64,13 @@ CREATE TABLE feedback_outbox (
 CREATE INDEX feedback_outbox_waiting ON feedback_outbox (user_id, sent_at, refused_at, created_at);
 `,
   },
+  {
+    // Ticket #23: the uri of the report's screenshot on the phone, kept while the report waits.
+    version: 5,
+    sql: `
+ALTER TABLE feedback_outbox ADD COLUMN screenshot TEXT;
+`,
+  },
 ];
 
 export const LATEST_VERSION = MIGRATIONS[MIGRATIONS.length - 1].version;

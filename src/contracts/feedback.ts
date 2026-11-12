@@ -4,7 +4,13 @@
 export type FeedbackTag = 'broken' | 'looks_wrong' | 'idea';
 
 /** What the form gives. The page, time, app version and id are added by the sender. */
-export type FeedbackDraft = { tag: FeedbackTag; message: string; page: string };
+export type FeedbackDraft = {
+  tag: FeedbackTag;
+  message: string;
+  page: string;
+  /** The picture of the page, taken before the form opened with the button hidden (a local file uri). Ticket #23. */
+  screenshot?: string | null;
+};
 
 export type FeedbackResult =
   | { kind: 'sent' }

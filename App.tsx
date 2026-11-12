@@ -23,6 +23,8 @@ import CaseSheet from './src/features/case/CaseSheet';
 import { makeFeedbackOutbox, memoryOutboxRows } from './src/core/feedback/outbox';
 import { sqliteOutboxRows } from './src/core/feedback/sqliteOutbox';
 import { supabaseUploader } from './src/core/feedback/supabaseFeedback';
+import { dropPicture, keepPicture, readPicture } from './src/core/feedback/pictureFiles';
+import { captureScreen } from 'react-native-view-shot';
 import Feedback from './src/features/feedback/Feedback';
 import { feedbackPage, showFeedbackButton } from './src/features/feedback/logic';
 import { sqliteCaseStore } from './src/core/cases/sqliteCases';
@@ -53,6 +55,8 @@ import UpdatePanel, { UpdatePhase, UpdateState } from './src/views/UpdatePanel';
 
 /** Demo mode: sample data, no sign-in. Only in a development run started with EXPO_PUBLIC_DEMO=1. */
 const DEMO = __DEV__ && process.env.EXPO_PUBLIC_DEMO === '1';
+/** The feedback report's picture of the whole screen, as a JPEG file in the cache (ticket #23). */
+const captureFeedbackScreen = () => captureScreen({ format: 'jpg', quality: 0.7, result: 'tmpfile' });
 /** How a case learns its card (opening a card, or words that name one). Built once. */
 const caseLearning = makeCaseLearning(wordSearch);
 const DEMO_USER: SignedInUser = { id: DEMO_USER_ID, email: 'demo@example.invalid', role: 'admin' };
@@ -259,11 +263,15 @@ function SignedIn({
   // Made in an effect, so the outbox of an old user (or of a dev-mode remount) is closed and its timed retries stop.
   const [feedback, setFeedback] = useState<FeedbackSender | null>(null);
   useEffect(() => {
-    const outbox = makeFeedbackOutbox(DEMO ? memoryOutboxRows() : sqliteOutboxRows(user.id), supabaseUploader(supabase), {
+    // The screenshot goes to the private bucket under this admin's own folder (ticket #23, migration 0006).
+    const pictures = { userId: user.id, bucket: supabase.storage.from('feedback-screenshots'), read: readPicture };
+    const outbox = makeFeedbackOutbox(DEMO ? memoryOutboxRows() : sqliteOutboxRows(user.id), supabaseUploader(supabase, pictures), {
       appVersion: installedVersion,
       role: () => user.role,
       onFault: (e) => logFault('feedback', e),
       retryMs: 15000, // A waiting report goes out within 15 s of the signal coming back (ticket #27).
+      keepScreenshot: keepPicture,
+      dropScreenshot: dropPicture,
     });
     setFeedback(outbox);
     return () => outbox.close();
@@ -398,7 +406,7 @@ function SignedIn({
       {/* Solid strip behind the status bar, so scrolled content never runs under the clock. */}
       <View pointerEvents="none" style={[styles.statusStrip, { height: insets.top }]} />
       {/* Admins only: drawn last, so it sits above every tab and panel. */}
-      {showFeedbackButton(user) && feedback && <Feedback sender={feedback} page={() => page} bottom={insets.bottom + COMPOSER_SPACE + S.md} top={insets.top + TOP_BAR_HEIGHT + S.md} />}
+      {showFeedbackButton(user) && feedback && <Feedback sender={feedback} page={() => page} capture={captureFeedbackScreen} bottom={insets.bottom + COMPOSER_SPACE + S.md} top={insets.top + TOP_BAR_HEIGHT + S.md} />}
     </View>
   );
 }
