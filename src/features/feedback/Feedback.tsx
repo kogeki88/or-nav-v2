@@ -10,7 +10,7 @@ import { C, S, T } from '../../theme';
 import BottomSheet from '../../ui/BottomSheet';
 import { Banner, Button, Chips, Field, Icon, IconButton, PressScale } from '../../ui/kit';
 import { logFault } from '../../diag/faultStore';
-import { type Corner, cornerSpot, isDrag, nearestCorner, readCorner, shootWithoutButton, TAGS } from './logic';
+import { type Corner, cornerSpot, FEEDBACK_BUTTON, isDrag, nearestCorner, readCorner, shootWithoutButton, TAGS } from './logic';
 
 /** Waits until the screen has drawn the latest change (two frames, then a short pause for the native side). */
 function afterPaint(): Promise<void> {
@@ -183,9 +183,9 @@ export default function Feedback({ sender, page, bottom, top, capture }: Props) 
 const styles = StyleSheet.create({
   fabHolder: { position: 'absolute' },
   fab: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: FEEDBACK_BUTTON,
+    height: FEEDBACK_BUTTON,
+    borderRadius: FEEDBACK_BUTTON / 2,
     backgroundColor: C.accent,
     alignItems: 'center',
     justifyContent: 'center',

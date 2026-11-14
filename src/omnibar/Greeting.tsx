@@ -25,6 +25,9 @@ const LINE_H = 36;
 const TRACE_GAP = 22;
 /** Height of the greeting below the top bar: its top space, two lines and the heartbeat. */
 export const GREETING_SPACE = GREET_TOP + 2 * LINE_H + TRACE_GAP + TRACE_H;
+const GREET_SIZE = 30;
+/** Empty space between the top bar and the greeting's first letters: its top space and the line's extra height above the text. */
+export const GREETING_STRIP = GREET_TOP + (LINE_H - GREET_SIZE) / 2;
 
 /** The light pool. It sits at the top of the empty screen, behind everything. */
 export function LightPool({ play }: { play: boolean }) {
@@ -89,7 +92,7 @@ const styles = StyleSheet.create({
     experimental_backgroundImage: 'radial-gradient(closest-side, rgba(125,211,184,0.10), rgba(125,211,184,0.03) 55%, transparent)',
   },
   greeting: { marginTop: GREET_TOP, paddingHorizontal: 20 },
-  greetText: { fontFamily: F, color: C.text, fontSize: 30, lineHeight: LINE_H, fontWeight: '600' },
+  greetText: { fontFamily: F, color: C.text, fontSize: GREET_SIZE, lineHeight: LINE_H, fontWeight: '600' },
   trace: { marginTop: TRACE_GAP, height: TRACE_H, overflow: 'hidden' },
   traceImg: { width: TRACE_W, height: TRACE_H },
 });

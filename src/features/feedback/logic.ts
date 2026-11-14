@@ -34,6 +34,9 @@ export function nearestCorner(x: number, y: number, width: number, height: numbe
   return top ? (left ? 'top-left' : 'top-right') : left ? 'bottom-left' : 'bottom-right';
 }
 
+/** The round button's width and height. */
+export const FEEDBACK_BUTTON = 52;
+
 /** Where the button sits for a corner: `top` or `bottom` edge, plus `side` space from the left or right. */
 export function cornerSpot(corner: Corner, edges: { top: number; bottom: number; side: number }) {
   return {
@@ -45,6 +48,8 @@ export function cornerSpot(corner: Corner, edges: { top: number; bottom: number;
 /**
  * The top and bottom edges for the button (ticket #33): the top corners sit below the top bar and the
  * greeting, the bottom corners above the box and the "Pick up a case" list, so the button covers no text.
+ * Ticket #35: on a short screen that gap holds one button, not two apart, so the top corners move up into
+ * the empty strip between the top bar and the greeting text (`strip` high), centred in it.
  */
 export function feedbackEdges(l: {
   insetTop: number;
@@ -54,8 +59,17 @@ export function feedbackEdges(l: {
   composer: number;
   pickUp: number;
   gap: number;
+  /** Screen height. */
+  height: number;
+  /** The button's height. */
+  size: number;
+  /** Empty space between the top bar and the greeting text. */
+  strip: number;
 }): { top: number; bottom: number } {
-  return { top: l.insetTop + l.topBar + l.greeting + l.gap, bottom: l.insetBottom + l.composer + l.pickUp + l.gap };
+  const bottom = l.insetBottom + l.composer + l.pickUp + l.gap;
+  const below = l.insetTop + l.topBar + l.greeting + l.gap;
+  const fitsBoth = l.height - bottom - below >= 2 * l.size + l.gap;
+  return { top: fitsBoth ? below : l.insetTop + l.topBar + (l.strip - l.size) / 2, bottom };
 }
 
 /** Finger moves of up to 10 points still count as a tap, so a shaky tap opens the form. */

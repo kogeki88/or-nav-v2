@@ -33,12 +33,35 @@ describe('cornerSpot (ticket #33)', () => {
 });
 
 describe('feedbackEdges (ticket #33)', () => {
-  const layout = { insetTop: 40, insetBottom: 20, topBar: 56, greeting: 170, composer: 90, pickUp: 200, gap: 12 };
+  // A tall screen (ornav_pixel is about 411 x 914): room for both spots, so the #33 rule stands.
+  const layout = { insetTop: 40, insetBottom: 20, topBar: 56, greeting: 170, composer: 90, pickUp: 200, gap: 12, height: 914, size: 52, strip: 55 };
   it('keeps the top corners below the top bar and the greeting', () => {
     expect(feedbackEdges(layout).top).toBe(40 + 56 + 170 + 12);
   });
   it('keeps the bottom corners above the box and the pick-up list', () => {
     expect(feedbackEdges(layout).bottom).toBe(20 + 90 + 200 + 12);
+  });
+});
+
+describe('feedbackEdges on a short screen (ticket #35)', () => {
+  // A 360 x 640 screen: the gap between the greeting and the pick-up list holds one button, not two.
+  const short = { insetTop: 36, insetBottom: 24, topBar: 56, greeting: 170, composer: 76, pickUp: 200, gap: 12, height: 640, size: 52, strip: 55 };
+  it('moves the top corners into the empty strip between the top bar and the greeting', () => {
+    expect(feedbackEdges(short).top).toBe(36 + 56 + (55 - 52) / 2);
+  });
+  it('keeps the bottom corners above the box and the pick-up list', () => {
+    expect(feedbackEdges(short).bottom).toBe(24 + 76 + 200 + 12);
+  });
+  it('keeps the top and bottom spots clearly apart', () => {
+    const { top, bottom } = feedbackEdges(short);
+    const between = 640 - bottom - 52 - (top + 52);
+    expect(between).toBeGreaterThanOrEqual(12);
+  });
+  it('uses the short-screen rule only when both spots cannot fit apart below the greeting', () => {
+    // Just tall enough: two buttons and one gap fit between the #33 edges.
+    const justTall = { ...short, height: 36 + 56 + 170 + 12 + 52 + 12 + 52 + 24 + 76 + 200 + 12 };
+    expect(feedbackEdges(justTall).top).toBe(36 + 56 + 170 + 12);
+    expect(feedbackEdges({ ...justTall, height: justTall.height - 1 }).top).toBe(36 + 56 + (55 - 52) / 2);
   });
 });
 

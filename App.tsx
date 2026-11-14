@@ -2,7 +2,7 @@ import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, AppState, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaFrame, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import LoginScreen from './src/auth/LoginScreen';
 import {
@@ -26,14 +26,14 @@ import { supabaseUploader } from './src/core/feedback/supabaseFeedback';
 import { dropPicture, keepPicture, readPicture } from './src/core/feedback/pictureFiles';
 import { captureScreen } from 'react-native-view-shot';
 import Feedback from './src/features/feedback/Feedback';
-import { feedbackEdges, feedbackPage, showFeedbackButton } from './src/features/feedback/logic';
+import { FEEDBACK_BUTTON, feedbackEdges, feedbackPage, showFeedbackButton } from './src/features/feedback/logic';
 import { sqliteCaseStore } from './src/core/cases/sqliteCases';
 import { useCases } from './src/features/case/useCases';
 import { ShellState, firstName, timeGreeting } from './src/features/shell/logic';
 import NameSheet from './src/features/shell/NameSheet';
 import Shell, { TOP_BAR_HEIGHT } from './src/features/shell/Shell';
 import { COMPOSER_SPACE, Composer, OneBoxBody, PICK_UP_SPACE } from './src/omnibar/OneBox';
-import { GREETING_SPACE } from './src/omnibar/Greeting';
+import { GREETING_SPACE, GREETING_STRIP } from './src/omnibar/Greeting';
 import { useOmnibar } from './src/omnibar/useOmnibar';
 import { departmentLabel, toReview } from './src/features/library/logic';
 import { supabaseAssistant } from './src/core/assistant/supabaseAssistant';
@@ -246,6 +246,7 @@ function SignedIn({
   onPreviewQuestionnaire: () => void;
 }) {
   const insets = useSafeAreaInsets();
+  const frame = useSafeAreaFrame();
   const source = useMemo(() => (DEMO ? demoSource() : supabaseSource(user.id)), [user.id]);
   const lib = useLibrary(source, user.id, !DEMO);
   const assistant = useMemo(() => supabaseAssistant(supabase), []);
@@ -412,7 +413,7 @@ function SignedIn({
           sender={feedback}
           page={() => page}
           capture={captureFeedbackScreen}
-          {...feedbackEdges({ insetTop: insets.top, insetBottom: insets.bottom, topBar: TOP_BAR_HEIGHT, greeting: GREETING_SPACE, composer: COMPOSER_SPACE, pickUp: PICK_UP_SPACE, gap: S.md })}
+          {...feedbackEdges({ insetTop: insets.top, insetBottom: insets.bottom, topBar: TOP_BAR_HEIGHT, greeting: GREETING_SPACE, composer: COMPOSER_SPACE, pickUp: PICK_UP_SPACE, gap: S.md, height: frame.height, size: FEEDBACK_BUTTON, strip: GREETING_STRIP })}
         />
       )}
     </View>
