@@ -26,13 +26,14 @@ import { supabaseUploader } from './src/core/feedback/supabaseFeedback';
 import { dropPicture, keepPicture, readPicture } from './src/core/feedback/pictureFiles';
 import { captureScreen } from 'react-native-view-shot';
 import Feedback from './src/features/feedback/Feedback';
-import { feedbackPage, showFeedbackButton } from './src/features/feedback/logic';
+import { feedbackEdges, feedbackPage, showFeedbackButton } from './src/features/feedback/logic';
 import { sqliteCaseStore } from './src/core/cases/sqliteCases';
 import { useCases } from './src/features/case/useCases';
 import { ShellState, firstName, timeGreeting } from './src/features/shell/logic';
 import NameSheet from './src/features/shell/NameSheet';
 import Shell, { TOP_BAR_HEIGHT } from './src/features/shell/Shell';
-import { COMPOSER_SPACE, Composer, OneBoxBody } from './src/omnibar/OneBox';
+import { COMPOSER_SPACE, Composer, OneBoxBody, PICK_UP_SPACE } from './src/omnibar/OneBox';
+import { GREETING_SPACE } from './src/omnibar/Greeting';
 import { useOmnibar } from './src/omnibar/useOmnibar';
 import { departmentLabel, toReview } from './src/features/library/logic';
 import { supabaseAssistant } from './src/core/assistant/supabaseAssistant';
@@ -406,7 +407,14 @@ function SignedIn({
       {/* Solid strip behind the status bar, so scrolled content never runs under the clock. */}
       <View pointerEvents="none" style={[styles.statusStrip, { height: insets.top }]} />
       {/* Admins only: drawn last, so it sits above every tab and panel. */}
-      {showFeedbackButton(user) && feedback && <Feedback sender={feedback} page={() => page} capture={captureFeedbackScreen} bottom={insets.bottom + COMPOSER_SPACE + S.md} top={insets.top + TOP_BAR_HEIGHT + S.md} />}
+      {showFeedbackButton(user) && feedback && (
+        <Feedback
+          sender={feedback}
+          page={() => page}
+          capture={captureFeedbackScreen}
+          {...feedbackEdges({ insetTop: insets.top, insetBottom: insets.bottom, topBar: TOP_BAR_HEIGHT, greeting: GREETING_SPACE, composer: COMPOSER_SPACE, pickUp: PICK_UP_SPACE, gap: S.md })}
+        />
+      )}
     </View>
   );
 }

@@ -34,6 +34,30 @@ export function nearestCorner(x: number, y: number, width: number, height: numbe
   return top ? (left ? 'top-left' : 'top-right') : left ? 'bottom-left' : 'bottom-right';
 }
 
+/** Where the button sits for a corner: `top` or `bottom` edge, plus `side` space from the left or right. */
+export function cornerSpot(corner: Corner, edges: { top: number; bottom: number; side: number }) {
+  return {
+    ...(corner.startsWith('top') ? { top: edges.top } : { bottom: edges.bottom }),
+    ...(corner.endsWith('left') ? { left: edges.side } : { right: edges.side }),
+  };
+}
+
+/**
+ * The top and bottom edges for the button (ticket #33): the top corners sit below the top bar and the
+ * greeting, the bottom corners above the box and the "Pick up a case" list, so the button covers no text.
+ */
+export function feedbackEdges(l: {
+  insetTop: number;
+  insetBottom: number;
+  topBar: number;
+  greeting: number;
+  composer: number;
+  pickUp: number;
+  gap: number;
+}): { top: number; bottom: number } {
+  return { top: l.insetTop + l.topBar + l.greeting + l.gap, bottom: l.insetBottom + l.composer + l.pickUp + l.gap };
+}
+
 /** Finger moves of up to 10 points still count as a tap, so a shaky tap opens the form. */
 const TAP_SLOP = 10;
 export function isDrag(dx: number, dy: number): boolean {

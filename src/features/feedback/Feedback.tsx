@@ -10,7 +10,7 @@ import { C, S, T } from '../../theme';
 import BottomSheet from '../../ui/BottomSheet';
 import { Banner, Button, Chips, Field, Icon, IconButton, PressScale } from '../../ui/kit';
 import { logFault } from '../../diag/faultStore';
-import { type Corner, isDrag, nearestCorner, readCorner, shootWithoutButton, TAGS } from './logic';
+import { type Corner, cornerSpot, isDrag, nearestCorner, readCorner, shootWithoutButton, TAGS } from './logic';
 
 /** Waits until the screen has drawn the latest change (two frames, then a short pause for the native side). */
 function afterPaint(): Promise<void> {
@@ -36,9 +36,9 @@ type Props = {
   sender: FeedbackSender;
   /** The page name at the moment the button is tapped ("main / case panel"). */
   page: () => string;
-  /** Space kept free at the bottom (the box), so the button never covers Send. */
+  /** Space kept free at the bottom (the box and the pick-up list), so the button never covers Send or a row. */
   bottom: number;
-  /** Space kept free at the top (the top bar), so the button never covers its buttons. */
+  /** Space kept free at the top (the top bar and the greeting), so the button never covers them. */
   top: number;
   /** Takes a picture of the whole screen and gives its file uri. */
   capture: () => Promise<string>;
@@ -92,10 +92,7 @@ export default function Feedback({ sender, page, bottom, top, capture }: Props) 
       onPanResponderTerminate: () => pan.setValue({ x: 0, y: 0 }),
     }),
   ).current;
-  const spot = {
-    ...(corner.startsWith('top') ? { top } : { bottom }),
-    ...(corner.endsWith('left') ? { left: S.md } : { right: S.md }),
-  };
+  const spot = cornerSpot(corner, { top, bottom, side: S.md });
 
   const start = async () => {
     // A ref, not the state, so a quick double tap still takes one picture.

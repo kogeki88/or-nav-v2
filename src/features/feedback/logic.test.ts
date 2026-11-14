@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { feedbackPage, isDrag, nearestCorner, readCorner, shootWithoutButton, showFeedbackButton } from './logic';
+import { cornerSpot, feedbackEdges, feedbackPage, isDrag, nearestCorner, readCorner, shootWithoutButton, showFeedbackButton } from './logic';
 
 describe('nearestCorner', () => {
   // A 400 x 800 screen: each drop point sits in one quarter.
@@ -17,6 +17,28 @@ describe('nearestCorner', () => {
   it('keeps a drop off the screen on the nearest corner', () => {
     expect(nearestCorner(-20, 900, 400, 800)).toBe('bottom-left');
     expect(nearestCorner(500, -10, 400, 800)).toBe('top-right');
+  });
+});
+
+describe('cornerSpot (ticket #33)', () => {
+  const edges = { top: 300, bottom: 420, side: 12 };
+  it('puts the top corners at the top edge it is given, left or right', () => {
+    expect(cornerSpot('top-left', edges)).toEqual({ top: 300, left: 12 });
+    expect(cornerSpot('top-right', edges)).toEqual({ top: 300, right: 12 });
+  });
+  it('puts the bottom corners at the bottom edge it is given, left or right', () => {
+    expect(cornerSpot('bottom-left', edges)).toEqual({ bottom: 420, left: 12 });
+    expect(cornerSpot('bottom-right', edges)).toEqual({ bottom: 420, right: 12 });
+  });
+});
+
+describe('feedbackEdges (ticket #33)', () => {
+  const layout = { insetTop: 40, insetBottom: 20, topBar: 56, greeting: 170, composer: 90, pickUp: 200, gap: 12 };
+  it('keeps the top corners below the top bar and the greeting', () => {
+    expect(feedbackEdges(layout).top).toBe(40 + 56 + 170 + 12);
+  });
+  it('keeps the bottom corners above the box and the pick-up list', () => {
+    expect(feedbackEdges(layout).bottom).toBe(20 + 90 + 200 + 12);
   });
 });
 

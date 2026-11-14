@@ -26,6 +26,10 @@ const PAD_BOTTOM = S.md;
 /** Height of the composer above the bottom safe area. */
 export const COMPOSER_SPACE = BOX + PAD_TOP + PAD_BOTTOM;
 
+const PICK_UP_ROW = 56;
+/** Room the "Pick up a case" list takes above the composer: its header and up to 3 rows (PICK_UP in useCases). */
+export const PICK_UP_SPACE = 24 + S.xs + 3 * PICK_UP_ROW + S.xs;
+
 const GO_TO_LABEL: Record<GoTo['tab'], string> = { library: 'Library', review: 'To review', me: 'your name' };
 
 export function Composer({ text, onChangeText, onSend, busy }: { text: string; onChangeText: (t: string) => void; onSend: () => void; busy: boolean }) {
@@ -351,7 +355,7 @@ const styles = StyleSheet.create({
   cardLine: { flexDirection: 'row', alignItems: 'center', gap: S.sm, paddingHorizontal: 20, paddingTop: S.sm },
   pickUp: { marginTop: 'auto', paddingHorizontal: S.sm, paddingBottom: S.xs },
   pickUpHead: { fontFamily: F, color: C.text3, fontSize: 15, fontWeight: '500', paddingHorizontal: S.md, paddingBottom: S.xs },
-  pickUpRow: { flexDirection: 'row', alignItems: 'center', gap: S.md, minHeight: 56, paddingHorizontal: S.md, borderRadius: 12 },
+  pickUpRow: { flexDirection: 'row', alignItems: 'center', gap: S.md, minHeight: PICK_UP_ROW, paddingHorizontal: S.md, borderRadius: 12 },
   pickUpWhen: { fontFamily: F, color: C.text3, fontSize: 14 },
   thread: { paddingHorizontal: S.lg, paddingTop: S.lg, paddingBottom: S.lg, gap: S.lg },
   thinking: { flexDirection: 'row', alignItems: 'center', gap: S.sm },
