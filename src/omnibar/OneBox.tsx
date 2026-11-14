@@ -86,9 +86,11 @@ type BodyProps = {
   onPickUp: (caseId: string) => void;
   /** The card the case knows: its line sits at the top of the conversation. */
   caseCard?: { id: string; title: string; count: number } | null;
+  /** Extra space above the greeting, so the feedback button fits above it on a short screen (ticket #35). */
+  greetingShift?: number;
 };
 
-export function OneBoxBody({ omni, lib, index, text, greeting, notice, onOpen, onGoTo, pickUp, onPickUp, caseCard }: BodyProps) {
+export function OneBoxBody({ omni, lib, index, text, greeting, notice, onOpen, onGoTo, pickUp, onPickUp, caseCard, greetingShift = 0 }: BodyProps) {
   const scroll = useRef<ScrollViewInstance>(null);
   const matches = useMemo(() => boxMatches(text, index, lib.data, lib.deptId), [text, index, lib.data, lib.deptId]);
   const typing = text.trim() !== '';
@@ -123,7 +125,7 @@ export function OneBoxBody({ omni, lib, index, text, greeting, notice, onOpen, o
         <View style={{ flex: 1, overflow: 'hidden' }}>
           {showGreeting && <LightPool key={`pool-${omni.caseId}`} play={playIntro} />}
           {notice}
-          {showGreeting && <Greeting key={`greet-${omni.caseId}`} lines={greeting} play={playIntro} />}
+          {showGreeting && <Greeting key={`greet-${omni.caseId}`} lines={greeting} play={playIntro} shift={greetingShift} />}
           {showGreeting && pickUp.length > 0 && (
             <View key={`pick-${omni.caseId}`} style={styles.pickUp}>
               <Rise play={playIntro} delay={INTRO_MS}>

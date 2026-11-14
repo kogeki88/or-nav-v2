@@ -247,6 +247,8 @@ function SignedIn({
 }) {
   const insets = useSafeAreaInsets();
   const frame = useSafeAreaFrame();
+  // The feedback button's corner edges; on a short screen the greeting moves down to make room (ticket #35).
+  const edges = feedbackEdges({ insetTop: insets.top, insetBottom: insets.bottom, topBar: TOP_BAR_HEIGHT, greeting: GREETING_SPACE, composer: COMPOSER_SPACE, pickUp: PICK_UP_SPACE, gap: S.md, height: frame.height, size: FEEDBACK_BUTTON, strip: GREETING_STRIP });
   const source = useMemo(() => (DEMO ? demoSource() : supabaseSource(user.id)), [user.id]);
   const lib = useLibrary(source, user.id, !DEMO);
   const assistant = useMemo(() => supabaseAssistant(supabase), []);
@@ -264,6 +266,7 @@ function SignedIn({
   const [selection, setSelection] = useState<Selection | null>(null);
   // Made in an effect, so the outbox of an old user (or of a dev-mode remount) is closed and its timed retries stop.
   const [feedback, setFeedback] = useState<FeedbackSender | null>(null);
+  const withFeedback = showFeedbackButton(user) && feedback !== null;
   useEffect(() => {
     // The screenshot goes to the private bucket under this admin's own folder (ticket #23, migration 0006).
     const pictures = { userId: user.id, bucket: supabase.storage.from('feedback-screenshots'), read: readPicture };
@@ -331,6 +334,7 @@ function SignedIn({
             pickUp={cases.pickUp}
             onPickUp={cases.switchTo}
             caseCard={caseCard}
+            greetingShift={withFeedback ? edges.greetingShift : 0}
           />
         }
         composer={<Composer text={text} onChangeText={setText} onSend={send} busy={omni.busy} />}
@@ -408,12 +412,13 @@ function SignedIn({
       {/* Solid strip behind the status bar, so scrolled content never runs under the clock. */}
       <View pointerEvents="none" style={[styles.statusStrip, { height: insets.top }]} />
       {/* Admins only: drawn last, so it sits above every tab and panel. */}
-      {showFeedbackButton(user) && feedback && (
+      {withFeedback && feedback && (
         <Feedback
           sender={feedback}
           page={() => page}
           capture={captureFeedbackScreen}
-          {...feedbackEdges({ insetTop: insets.top, insetBottom: insets.bottom, topBar: TOP_BAR_HEIGHT, greeting: GREETING_SPACE, composer: COMPOSER_SPACE, pickUp: PICK_UP_SPACE, gap: S.md, height: frame.height, size: FEEDBACK_BUTTON, strip: GREETING_STRIP })}
+          top={edges.top}
+          bottom={edges.bottom}
         />
       )}
     </View>

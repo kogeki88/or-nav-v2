@@ -42,9 +42,10 @@ export function LightPool({ play }: { play: boolean }) {
   return <Animated.View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[styles.pool, { opacity: o }]} />;
 }
 
-export function Greeting({ lines, play }: { lines: [string, string]; play: boolean }) {
+/** `shift` adds space above the greeting (ticket #35: room for the feedback button on a short screen). */
+export function Greeting({ lines, play, shift = 0 }: { lines: [string, string]; play: boolean; shift?: number }) {
   return (
-    <View style={styles.greeting}>
+    <View style={[styles.greeting, shift > 0 && { marginTop: GREET_TOP + shift }]}>
       <Rise play={play} delay={LINES_AT + staggerDelay(0, GAP.greeting)}>
         <Text style={styles.greetText}>{lines[0]}</Text>
       </Rise>

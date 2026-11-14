@@ -49,7 +49,10 @@ export function cornerSpot(corner: Corner, edges: { top: number; bottom: number;
  * The top and bottom edges for the button (ticket #33): the top corners sit below the top bar and the
  * greeting, the bottom corners above the box and the "Pick up a case" list, so the button covers no text.
  * Ticket #35: on a short screen that gap holds one button, not two apart, so the top corners move up into
- * the empty strip between the top bar and the greeting text (`strip` high), centred in it.
+ * the strip between the top bar and the greeting text, a `gap` below the top bar. `greetingShift` is how far
+ * the greeting moves down so the button also has a `gap` above the headline (0 on a tall screen). The moved
+ * greeting leaves less room, so the bottom corners sit in the middle of the space left between it and the
+ * pick-up list.
  */
 export function feedbackEdges(l: {
   insetTop: number;
@@ -65,11 +68,14 @@ export function feedbackEdges(l: {
   size: number;
   /** Empty space between the top bar and the greeting text. */
   strip: number;
-}): { top: number; bottom: number } {
+}): { top: number; bottom: number; greetingShift: number } {
   const bottom = l.insetBottom + l.composer + l.pickUp + l.gap;
   const below = l.insetTop + l.topBar + l.greeting + l.gap;
-  const fitsBoth = l.height - bottom - below >= 2 * l.size + l.gap;
-  return { top: fitsBoth ? below : l.insetTop + l.topBar + (l.strip - l.size) / 2, bottom };
+  if (l.height - bottom - below >= 2 * l.size + l.gap) return { top: below, bottom, greetingShift: 0 };
+  const greetingShift = Math.max(0, l.size + 2 * l.gap - l.strip);
+  const pickUpTop = l.insetBottom + l.composer + l.pickUp;
+  const free = l.height - pickUpTop - (below - l.gap + greetingShift) - l.size;
+  return { top: l.insetTop + l.topBar + l.gap, bottom: pickUpTop + Math.max(0, free / 2), greetingShift };
 }
 
 /** Finger moves of up to 10 points still count as a tap, so a shaky tap opens the form. */

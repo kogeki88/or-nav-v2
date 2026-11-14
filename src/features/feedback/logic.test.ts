@@ -46,11 +46,28 @@ describe('feedbackEdges (ticket #33)', () => {
 describe('feedbackEdges on a short screen (ticket #35)', () => {
   // A 360 x 640 screen: the gap between the greeting and the pick-up list holds one button, not two.
   const short = { insetTop: 36, insetBottom: 24, topBar: 56, greeting: 170, composer: 76, pickUp: 200, gap: 12, height: 640, size: 52, strip: 55 };
-  it('moves the top corners into the empty strip between the top bar and the greeting', () => {
-    expect(feedbackEdges(short).top).toBe(36 + 56 + (55 - 52) / 2);
+  it('moves the top corners into the strip between the top bar and the greeting, a full gap below the top bar', () => {
+    expect(feedbackEdges(short).top).toBe(36 + 56 + 12);
   });
-  it('keeps the bottom corners above the box and the pick-up list', () => {
-    expect(feedbackEdges(short).bottom).toBe(24 + 76 + 200 + 12);
+  it('moves the greeting down so the button has a full gap above the headline too', () => {
+    const { top, greetingShift } = feedbackEdges(short);
+    const headline = 36 + 56 + 55 + greetingShift;
+    expect(greetingShift).toBe(52 + 2 * 12 - 55);
+    expect(headline - (top + 52)).toBe(12);
+  });
+  it('never moves the greeting on a tall screen', () => {
+    expect(feedbackEdges({ ...short, height: 914 }).greetingShift).toBe(0);
+  });
+  it('never moves the greeting when the strip is already tall enough', () => {
+    expect(feedbackEdges({ ...short, strip: 90 }).greetingShift).toBe(0);
+  });
+  it('centres the bottom corners between the moved greeting and the pick-up list, so neither is crowded', () => {
+    const { bottom, greetingShift } = feedbackEdges(short);
+    const greetingEnd = 36 + 56 + 170 + greetingShift;
+    const pickUpTop = 640 - (24 + 76 + 200);
+    const buttonTop = 640 - bottom - 52;
+    expect(buttonTop - greetingEnd).toBe(pickUpTop - (buttonTop + 52));
+    expect(bottom).toBeGreaterThanOrEqual(24 + 76 + 200);
   });
   it('keeps the top and bottom spots clearly apart', () => {
     const { top, bottom } = feedbackEdges(short);
@@ -61,7 +78,7 @@ describe('feedbackEdges on a short screen (ticket #35)', () => {
     // Just tall enough: two buttons and one gap fit between the #33 edges.
     const justTall = { ...short, height: 36 + 56 + 170 + 12 + 52 + 12 + 52 + 24 + 76 + 200 + 12 };
     expect(feedbackEdges(justTall).top).toBe(36 + 56 + 170 + 12);
-    expect(feedbackEdges({ ...justTall, height: justTall.height - 1 }).top).toBe(36 + 56 + (55 - 52) / 2);
+    expect(feedbackEdges({ ...justTall, height: justTall.height - 1 }).top).toBe(36 + 56 + 12);
   });
 });
 
